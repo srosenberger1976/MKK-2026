@@ -390,22 +390,23 @@ flex-end; height: 22px; border-bottom: 1.2px solid #000 !important; font-size:
      Neues Spiel starten (Daten leeren) ⚠
  </button>
  
-<div class="panel" id="meta-panel-fix" style="margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-
-     <div>
-         <label>Gruppe:</label>
-         <select id="meta_group" onchange="syncMetaToLabels()"><option value="">-- wählen --</option><option value="Gruppe A">Gruppe A</option><option value="Gruppe B">Gruppe B</option><option value="Gruppe C">Gruppe C</option></select>
-     </div>
-     <div>
-         <label>Spieltag:</label>
-         <select id="meta_day" onchange="syncMetaToLabels()"><option value="">-- wählen --</option>
-         <script>for(let i=1; i<=30; i++) { document.write(`<option value="${i}. Spieltag">${i}. Spieltag</option>`); }</script></select>
-     </div>
-     <div>
-         <label>Datum:</label>
-         <input type="text" id="meta_date" value="" oninput="syncMetaToLabels()">
-     </div>
+<!-- DIESER BLOCK ERSETZT DIE GEQUETSCHTEN FELDER FÜR SMARTPHONES -->
+<div class="panel" style="margin-bottom: 15px; display: flex; flex-direction: column; gap: 12px;">
+ <div>
+ <label>Gruppe:</label>
+ <select id="meta_group" onchange="syncMetaToLabels()"><option value="">-- wählen --</option><option value="Gruppe A">Gruppe A</option><option value="Gruppe B">Gruppe B</option><option value="Gruppe C">Gruppe C</option></select>
  </div>
+ <div>
+ <label>Spieltag:</label>
+ <select id="meta_day" onchange="syncMetaToLabels()"><option value="">-- wählen --</option>
+ <script>for(let i=1; i<=30; i++) { document.write(`<option value="${i}. Spieltag">${i}. Spieltag</option>`); }</script></select>
+ </div>
+ <div>
+ <label>Datum:</label>
+ <input type="text" id="meta_date" value="" oninput="syncMetaToLabels()">
+ </div>
+</div>
+
  
  <div id="validation_status_bar" class="status-bar status-locked">Spiel gesperrt: Bitte Teams wählen und mindestens 4 Hauptspieler (H1-H4 & G1-G4) besetzen!</div>
 
