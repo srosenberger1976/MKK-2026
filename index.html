@@ -9,6 +9,41 @@
  <meta charset="UTF-8">
  <title>American Dart - Liga MKK Live-Bogen</title>
  <style>
+
+/* Styling für das einklappbare Mannschaften-Menü */
+.accordion-menu {
+    background: #333;
+    border: 1px solid #ffcc00;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+.accordion-header {
+    background: #222;
+    color: #ffcc00;
+    padding: 12px 15px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    font-size: 15px;
+}
+.accordion-header:hover {
+    background: #2a2a2a;
+}
+.accordion-content {
+    display: none;
+    padding: 15px;
+    border-top: 1px solid #444;
+    background: #2d2d2d;
+}
+
+
+
+
+
  body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #1a1a1a; color: #fff; margin: 0; padding: 15px; }
  .container { max-width: 1200px; margin: 0 auto; background: #2a2a2a; border: 2px solid #ffcc00; border-radius: 8px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
  h1 { text-align: center; color: #ffcc00; margin-top: 0; border-bottom: 2px solid #ffcc00; padding-bottom: 10px; }
@@ -58,47 +93,90 @@
  .tab-btn.active { background: #ffcc00; color: #000; border-color: #ffcc00; }
  .tab-content { display: none; }
  .tab-content.active { display: block; }
-@media (max-width: 768px) {
- .main-grid { display: flex !important; flex-direction: column !important; gap: 15px !important; }
- .panel { padding: 12px !important; width: 100% !important; box-sizing: border-box !important; }
- input, select { font-size: 15px !important; padding: 10px !important; }
- .click-box { font-size: 15px !important; padding: 12px !important; }
- .row-flex { display: grid !important; grid-template-columns: 2fr 1fr !important; gap: 5px !important; }
 
- /* 📱 AB HIER NEU: VOLLBILD FÜR DAS POPUP AUF MOBILGERÄTEN */
- .popup-content {
-   position: fixed !important;
-   top: 0 !important;
-   left: 0 !important;
-   transform: none !important;
-   width: 100% !important;
-   height: 100% !important;
-   max-width: 100% !important;
-   border: none !important;
-   border-radius: 0 !important;
-   box-sizing: border-box !important;
-   overflow-y: auto !important; /* Erlaubt Scrollen, falls die Spielerliste lang ist */
-   padding: 15px !important;
-   display: flex;
-   flex-direction: column;
- }
 
- /* Macht die Gewinner-Buttons (Heim/Gast) auf dem Handy riesig und leicht treffbar */
- .popup-content .click-box {
-   font-size: 18px !important;
-   padding: 16px !important;
-   margin: 8px 0 !important;
-   min-height: 55px; /* Perfekte Touch-Größe für den Daumen */
- }
- 
- /* Fixiert die Schließen-Taste ganz unten im Sichtfeld */
- .popup-content .close-btn {
-   margin-top: auto !important; /* Schiebt den Button nach ganz unten */
-   padding: 15px !important;
-   font-size: 16px !important;
- }
+
+
+/* Full-Screen Setup Popups */
+.setup-popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(26, 26, 26, 0.98);
+    z-index: 10000;
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.setup-popup-content {
+    max-width: 600px;
+    margin: 30px auto;
+    background: #2a2a2a;
+    border: 3px solid #ffcc00;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.7);
+}
+.setup-popup-header {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffcc00;
+    border-bottom: 2px solid #ffcc00;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.setup-popup-close {
+    background: #cc3333;
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+.setup-trigger-btn {
+    background: #333;
+    color: #ffcc00;
+    border: 1px solid #ffcc00;
+    padding: 10px 15px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    width: 100%;
+    font-size: 14px;
+    transition: 0.2s;
+}
+.setup-trigger-btn:hover {
+    background: #ffcc00;
+    color: #000;
+}
+.flex-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
 }
 
+
+
+
+
+ @media (max-width: 768px) {
+  .main-grid { display: flex !important; flex-direction: column !important; gap: 15px !important; }
+  .panel { padding: 12px !important; width: 100% !important; box-sizing: border-box !important; }
+  input, select { font-size: 15px !important; padding: 10px !important; }
+  .click-box { font-size: 15px !important; padding: 12px !important; }
+  .row-flex { display: grid !important; grid-template-columns: 2fr 1fr !important; gap: 5px !important; }
+ }
  @media print {
   body { background: #fff; color: #000 !important; padding: 0; margin: 0; font-family: Arial, sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .container, .popup-overlay, #livePopup, .status-bar, .import-box, .print-btn { display: none !important; }
@@ -137,157 +215,141 @@
   <button id="btn_tab_game" class="tab-btn" onclick="switchTab('game')">2. Live-Spielplan & Statistik</button>
  </div>
 
- <div id="tab_setup" class="tab-content active">
-<div class="import-box">
- <label style="font-weight: bold; color: #ffcc00;"> 📋 Spieler-TXT hier einfügen und speichern (Format: Team, Nachname, Vorname, Passnummer):</label>
- <textarea id="txt_import_area" placeholder="Füge hier deine komplette Liste mit allen Mannschaften ein..." style="width:100%; height:120px; background:#222; color:#fff; border:1px solid #555; padding:8px; border-radius:4px; box-sizing:border-box;"></textarea>
+
+
+
+
+
+
+<div id="tab_setup" class="tab-content active">
+
+ <!-- NEUES SEPARATES MENÜ: MANNSCHAFTEN UND SPIELER -->
+ <div class="accordion-menu">
+     <div class="accordion-header" onclick="toggleAccordion()">
+         <span>📋 Mannschaften und Spieler</span>
+         <span id="accordion_arrow">▼</span>
+     </div>
+     <div id="accordion_panel" class="accordion-content">
+         <label style="font-weight: bold; color: #ffcc00; display:block; margin-bottom:8px;">
+             Spieler-TXT hier einfügen und speichern (Format: Team, Nachname, Vorname, Passnummer):
+         </label>
+         <textarea id="txt_import_area" placeholder="Füge hier deine komplette Liste mit allen Mannschaften ein..." style="width:100%; height:120px; background:#222; color:#fff; border:1px solid #555; padding:8px; border-radius:4px; box-sizing:border-box;"></textarea>
+         
+         <button onclick="ladeSpielerVonGitHub()" style="margin-top:8px; margin-bottom:5px; padding: 12px; background: #00cc66; color: #fff; border: none; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; font-size: 14px;">
+             Spielerliste frisch von GitHub laden 🔄
+         </button>
+         
+         <button onclick="importTeamsFromTxt()" style="margin-top:5px; padding: 12px; background: #ffcc00; color: #000; border: none; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; font-size: 14px;">
+             Mannschaften dauerhaft im Browser-Gedächtnis speichern / überschreiben 💾
+         </button>
+     </div>
+ </div>
+
+ <button onclick="resetWholeMatchday()" style="width: 100%; margin-bottom: 20px; padding: 10px; background: #cc3333; color: #fff; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; font-size: 12px;"> 
+     Neues Spiel starten (Daten leeren) ⚠
+ </button>
  
- <!-- DIESER BUTTON IST NEU -->
- <button onclick="ladeSpielerVonGitHub()" style="margin-top:5px; margin-bottom:5px; padding: 12px; background: #00cc66; color: #fff; border: none; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; font-size: 14px;">🔄 Spielerliste frisch von GitHub laden</button>
+ <div class="panel" style="margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+     <div>
+         <label>Gruppe:</label>
+         <select id="meta_group" onchange="syncMetaToLabels()"><option value="">-- wählen --</option><option value="Gruppe A">Gruppe A</option><option value="Gruppe B">Gruppe B</option><option value="Gruppe C">Gruppe C</option></select>
+     </div>
+     <div>
+         <label>Spieltag:</label>
+         <select id="meta_day" onchange="syncMetaToLabels()"><option value="">-- wählen --</option>
+         <script>for(let i=1; i<=30; i++) { document.write(`<option value="${i}. Spieltag">${i}. Spieltag</option>`); }</script></select>
+     </div>
+     <div>
+         <label>Datum:</label>
+         <input type="text" id="meta_date" value="" oninput="syncMetaToLabels()">
+     </div>
+ </div>
  
- <button onclick="importTeamsFromTxt()" style="margin-top:5px; padding: 12px; background: #ffcc00; color: #000; border: none; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; font-size: 14px;">Mannschaften dauerhaft im Browser-Gedächtnis speichern / überschreiben</button> 💾
-</div>
+ <div id="validation_status_bar" class="status-bar status-locked">Spiel gesperrt: Bitte Teams wählen und mindestens 4 Hauptspieler (H1-H4 & G1-G4) besetzen!</div>
 
-  <button onclick="resetWholeMatchday()" style="width: 100%; margin-top: 10px; padding: 10px; background: #cc3333; color: #fff; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; font-size: 12px;"> Neues Spiel starten (Daten leeren)</button> ⚠
-  <div class="panel" style="margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-   <div>
-    <label>Gruppe:</label>
-    <select id="meta_group" onchange="syncMetaToLabels()"><option value="">-- wählen --</option><option value="Gruppe A">Gruppe A</option><option value="Gruppe B">Gruppe B</option><option value="Gruppe C">Gruppe C</option></select>
-   </div>
-   <div>
-    <label>Spieltag:</label>
-    <select id="meta_day" onchange="syncMetaToLabels()"><option value="">-- wählen --</option><script>for(let i=1; i<=30; i++) { document.write(`<option value="${i}. Spieltag">${i}. Spieltag</option>`); }</script></select>
-   </div>
-   <div>
-    <label>Datum:</label>
-    <input type="text" id="meta_date" value="" oninput="syncMetaToLabels()">
-   </div>
-  </div>
-  <div id="validation_status_bar" class="status-bar status-locked">Spiel gesperrt: Bitte Teams wählen und mindestens 4 Hauptspieler (H1-H4 & G1-G4) besetzen!</div>
+ <!-- Buttons zum Öffnen der getrennten Popups -->
+ <div class="flex-buttons">
+     <button class="setup-trigger-btn" onclick="openSetupPopup('H')">🏠 Heimteam Aufstellung bearbeiten</button>
+     <button class="setup-trigger-btn" onclick="openSetupPopup('G')">🚀 Gastteam Aufstellung bearbeiten</button>
+ </div>
 
-  <div class="main-grid">
-   <div class="panel">
-    
+ <!-- FULL-SCREEN POPUP HEIMTEAM -->
+ <div id="popup_setup_H" class="setup-popup-overlay">
+     <div class="setup-popup-content">
+         <div class="setup-popup-header">
+             <span>Aufstellung: Heimteam 🏠</span>
+             <button class="setup-popup-close" onclick="closeSetupPopup('H')">Fertig & Schließen</button>
+         </div>
+         <div class="panel">
+             <label>Mannschaft Heim-Team:</label>
+             <select id="team_home"><option value="">-- wählen --</option></select>
+             
+             <label style="color:#ffcc00; font-weight:bold;">Heim TC 👑 (Kapitän):</label>
+             <select id="captain_home"></select>
+             
+             <h4 style="margin: 15px 0 5px 0; color: #ffcc00; border-bottom: 1px solid #555;">Stamm- & Ersatzspieler (Name / Passnummer):</h4>
+             
+             <div class="row-flex"><label>H1 Stammspieler</label><label>Passnummer</label></div>
+             <div class="row-flex"><select id="p_H1" class="p-select-H"></select><input type="text" id="pass_H1"></div>
+             
+             <div class="row-flex"><label>H2 Stammspieler</label><label>Passnummer</label></div>
+             <div class="row-flex"><select id="p_H2" class="p-select-H"></select><input type="text" id="pass_H2"></div>
+             
+             <div class="row-flex"><label>H3 Stammspieler</label><label>Passnummer</label></div>
+             <div class="row-flex"><select id="p_H3" class="p-select-H"></select><input type="text" id="pass_H3"></div>
+             
+             <div class="row-flex"><label>H4 Stammspieler</label><label>Passnummer</label></div>
+             <div class="row-flex"><select id="p_H4" class="p-select-H"></select><input type="text" id="pass_H4"></div>
+             
+             <label style="margin-top:10px; color:#aaa;">Auswechselspieler Heim (HE1 🔄 - HE4):</label>
+             <div class="row-flex"><select id="p_HE1" class="p-select-H"></select><input type="text" id="pass_HE1"></div>
+             <div class="row-flex"><select id="p_HE2" class="p-select-H"></select><input type="text" id="pass_HE2"></div>
+             <div class="row-flex"><select id="p_HE3" class="p-select-H"></select><input type="text" id="pass_HE3"></div>
+             <div class="row-flex"><select id="p_HE4" class="p-select-H"></select><input type="text" id="pass_HE4"></div>
+         </div>
+         <button class="close-btn" onclick="closeSetupPopup('H')">Speichern & Fenster schließen</button>
+     </div>
+ </div>
 
+ <!-- FULL-SCREEN POPUP GASTTEAM -->
+ <div id="popup_setup_G" class="setup-popup-overlay">
+     <div class="setup-popup-content">
+         <div class="setup-popup-header">
+             <span>Aufstellung: Gastteam 🚀</span>
+             <button class="setup-popup-close" onclick="closeSetupPopup('G')">Fertig & Schließen</button>
+         </div>
+         <div class="panel">
+             <label>Mannschaft Gast-Team:</label>
+             <select id="team_guest"><option value="">-- wählen --</option></select>
+             
+             <label style="color:#ffcc00; font-weight:bold;">Gast TC 👑 (Kapitän):</label>
+             <select id="captain_guest"></select>
+             
+             <h4 style="margin: 15px 0 5px 0; color: #ffcc00; border-bottom: 1px solid #555;">Stamm- & Ersatzspieler (Name / Passnummer):</h4>
+             
+             <div class="row-flex"><label>G1 Stammspieler</label><label>Passnummer</label></div>
+             <div class="row-flex"><select id="p_G1" class="p-select-G"></select><input type="text" id="pass_G1"></div>
+             
+             <div class="row-flex"><label>G2 Stammspieler</label><label>Passnummer</label></div>
+             <div class="row-flex"><select id="p_G2" class="p-select-G"></select><input type="text" id="pass_G2"></div>
+             
+             <div class="row-flex"><label>G3 Stammspieler</label><label>Passnummer</label></div>
+             <div class="row-flex"><select id="p_G3" class="p-select-G"></select><input type="text" id="pass_G3"></div>
+             
+             <div class="row-flex"><label>G4 Stammspieler</label><label>Passnummer</label></div>
+             <div class="row-flex"><select id="p_G4" class="p-select-G"></select><input type="text" id="pass_G4"></div>
+             
+             <label style="margin-top:10px; color:#aaa;">Auswechselspieler Gast (GE1 🔄 - GE4):</label>
+             <div class="row-flex"><select id="p_GE1" class="p-select-G"></select><input type="text" id="pass_GE1"></div>
+             <div class="row-flex"><select id="p_GE2" class="p-select-G"></select><input type="text" id="pass_GE2"></div>
+             <div class="row-flex"><select id="p_GE3" class="p-select-G"></select><input type="text" id="pass_GE3"></div>
+             <div class="row-flex"><select id="p_GE4" class="p-select-G"></select><input type="text" id="pass_GE4"></div>
+         </div>
+         <button class="close-btn" onclick="closeSetupPopup('G')">Speichern & Fenster schließen</button>
+     </div>
+ </div>
 
-
-<h3>Heimteam</h3> 🏠
-<label>Mannschaft Heim-Team:</label>
-<input type="text" id="team_home" list="list_teams" onchange="handleTeamSelection('H')">
-<datalist id="list_teams"></datalist>
-
-<label style="color:#ffcc00; font-weight:bold;"> Heim TC 👑 (Kapitän):</label>
-<input type="text" id="captain_home" list="list_players_home" onchange="syncMetaToLabels()">
-
-<h4 style="margin: 15px 0 5px 0; color: #ffcc00; border-bottom: 1px solid #555;">Stamm- & Ersatzspieler (Name / Passnummer):</h4>
-
-<div class="row-flex"><label>H1 Stammspieler</label><label>Passnummer</label></div>
-<div class="row-flex">
-  <input type="text" id="p_H1" class="p-select-H" list="list_players_home">
-  <input type="text" id="pass_H1" oninput="syncMetaToLabels()">
-</div>
-
-<div class="row-flex"><label>H2 Stammspieler</label><label>Passnummer</label></div>
-<div class="row-flex">
-  <input type="text" id="p_H2" class="p-select-H" list="list_players_home">
-  <input type="text" id="pass_H2" oninput="syncMetaToLabels()">
-</div>
-
-<div class="row-flex"><label>H3 Stammspieler</label><label>Passnummer</label></div>
-<div class="row-flex">
-  <input type="text" id="p_H3" class="p-select-H" list="list_players_home">
-  <input type="text" id="pass_H3" oninput="syncMetaToLabels()">
-</div>
-
-<div class="row-flex"><label>H4 Stammspieler</label><label>Passnummer</label></div>
-<div class="row-flex">
-  <input type="text" id="p_H4" class="p-select-H" list="list_players_home">
-  <input type="text" id="pass_H4" oninput="syncMetaToLabels()">
-</div>
-
-<label style="margin-top:10px; color:#aaa;"> Auswechselspieler Heim (HE1 🔄 - HE4):</label>
-<div class="row-flex">
-  <input type="text" id="p_HE1" class="p-select-H" list="list_players_home">
-  <input type="text" id="pass_HE1" oninput="syncMetaToLabels()">
-</div>
-<div class="row-flex">
-  <input type="text" id="p_HE2" class="p-select-H" list="list_players_home">
-  <input type="text" id="pass_HE2" oninput="syncMetaToLabels()">
-</div>
-<div class="row-flex">
-  <input type="text" id="p_HE3" class="p-select-H" list="list_players_home">
-  <input type="text" id="pass_HE3" oninput="syncMetaToLabels()">
-</div>
-<div class="row-flex">
-  <input type="text" id="p_HE4" class="p-select-H" list="list_players_home">
-  <input type="text" id="pass_HE4" oninput="syncMetaToLabels()">
-</div>
-
-<datalist id="list_players_home"></datalist>
-
-
-
-
-
-
-<h3>Gastteam</h3> 🚀
-<label>Mannschaft Gast-Team:</label>
-<input type="text" id="team_guest" list="list_teams" onchange="handleTeamSelection('G')">
-
-<label style="color:#ffcc00; font-weight:bold;"> Gast TC 👑:</label>
-<input type="text" id="captain_guest" list="list_players_guest" onchange="syncMetaToLabels()">
-
-<h4 style="margin: 15px 0 5px 0; color: #ffcc00; border-bottom: 1px solid #555;">Stamm- & Ersatzspieler (Name / Passnummer):</h4>
-
-<div class="row-flex"><label>G1 Stammspieler</label><label>Passnummer</label></div>
-<div class="row-flex">
-  <input type="text" id="p_G1" class="p-select-G" list="list_players_guest">
-  <input type="text" id="pass_G1" oninput="syncMetaToLabels()">
-</div>
-
-<div class="row-flex"><label>G2 Stammspieler</label><label>Passnummer</label></div>
-<div class="row-flex">
-  <input type="text" id="p_G2" class="p-select-G" list="list_players_guest">
-  <input type="text" id="pass_G2" oninput="syncMetaToLabels()">
-</div>
-
-<div class="row-flex"><label>G3 Stammspieler</label><label>Passnummer</label></div>
-<div class="row-flex">
-  <input type="text" id="p_G3" class="p-select-G" list="list_players_guest">
-  <input type="text" id="pass_G3" oninput="syncMetaToLabels()">
-</div>
-
-<div class="row-flex"><label>G4 Stammspieler</label><label>Passnummer</label></div>
-<div class="row-flex">
-  <input type="text" id="p_G4" class="p-select-G" list="list_players_guest">
-  <input type="text" id="pass_G4" oninput="syncMetaToLabels()">
-</div>
-
-<label style="margin-top:10px; color:#aaa;"> Auswechselspieler Gast (GE1 🔄 - GE4):</label>
-<div class="row-flex">
-  <input type="text" id="p_GE1" class="p-select-G" list="list_players_guest">
-  <input type="text" id="pass_GE1" oninput="syncMetaToLabels()">
-</div>
-<div class="row-flex">
-  <input type="text" id="p_GE2" class="p-select-G" list="list_players_guest">
-  <input type="text" id="pass_GE2" oninput="syncMetaToLabels()">
-</div>
-<div class="row-flex">
-  <input type="text" id="p_GE3" class="p-select-G" list="list_players_guest">
-  <input type="text" id="pass_GE3" oninput="syncMetaToLabels()">
-</div>
-<div class="row-flex">
-  <input type="text" id="p_GE4" class="p-select-G" list="list_players_guest">
-  <input type="text" id="pass_GE4" oninput="syncMetaToLabels()">
-</div>
-
-<datalist id="list_players_guest"></datalist>
-
-
-</div> <!-- Schließt das offene panel -->
-</div> <!-- Schließt das offene main-grid -->
-</div> <!-- Schließt das komplette tab_setup -->
-
+ </div>
 
 
  <div id="tab_game" class="tab-content">
@@ -542,59 +604,79 @@ function importTeamsFromTxt() {
   initTeamDropdowns();
 }
 
+function toggleAccordion() {
+    const panel = document.getElementById("accordion_panel");
+    const arrow = document.getElementById("accordion_arrow");
+    if (panel.style.display === "block") {
+        panel.style.display = "none";
+        arrow.innerText = "▼";
+    } else {
+        panel.style.display = "block";
+        arrow.innerText = "▲";
+    }
+}
 
 
 function initTeamDropdowns() {
-  const listTeams = document.getElementById("list_teams");
-  if (!listTeams) return;
-  
-  listTeams.innerHTML = '';
-  Object.keys(importedTeams).forEach(team => {
-    listTeams.innerHTML += `<option value="${team}">`;
-  });
+ const sHome = document.getElementById("team_home"); const sGuest = document.getElementById("team_guest");
+ const currentHome = sHome.value; const currentGuest = sGuest.value;
+ sHome.innerHTML = '<option value="">-- Team wählen --</option>';
+ sGuest.innerHTML = '<option value="">-- Team wählen --</option>';
+ Object.keys(importedTeams).forEach(team => {
+  sHome.innerHTML += `<option value="${team}">${team}</option>`;
+  sGuest.innerHTML += `<option value="${team}">${team}</option>`;
+ });
+ if(currentHome && importedTeams[currentHome]) sHome.value = currentHome;
+ if(currentGuest && importedTeams[currentGuest]) sGuest.value = currentGuest;
 }
-
 function handleTeamSelection(side) {
-  // Leert die Spielereingaben und Passnummern beim Teamwechsel
-  document.querySelectorAll(".p-select-" + side).forEach(input => {
-    input.value = "";
-    const passField = document.getElementById(input.id.replace("p_", "pass_"));
-    if (passField) passField.value = "";
-  });
-  const captainInput = document.getElementById("captain_" + (side === 'H' ? 'home' : 'guest'));
-  if (captainInput) captainInput.value = "";
-  
-  rebuildPlayerDropdowns(side, true); 
-  validateRosterAndSetup();
+ document.querySelectorAll(".p-select-" + side).forEach(sel => {
+  sel.innerHTML = '<option value="">-- wählen --</option>';
+  const passField = document.getElementById(sel.id.replace("p_", "pass_"));
+  if (passField) passField.value = "";
+ });
+ const captainSel = document.getElementById("captain_" + (side === 'H' ? 'home' : 'guest'));
+ if (captainSel) captainSel.innerHTML = '<option value="">-- wählen --</option>';
+ rebuildPlayerDropdowns(side, true); 
+ validateRosterAndSetup();
 }
 
 function rebuildPlayerDropdowns(side, isInitialTeamLoad = false) {
-  const teamName = document.getElementById("team_" + (side === 'H' ? 'home' : 'guest')).value;
-  const datalist = document.getElementById("list_players_" + (side === 'H' ? 'home' : 'guest'));
-  if (!datalist) return;
-
-  const allPlayers = importedTeams[teamName] || [];
-  datalist.innerHTML = '';
-  
+ const teamName = document.getElementById("team_" + (side === 'H' ? 'home' : 'guest')).value;
+ const selects = document.querySelectorAll(".p-select-" + side);
+ const captainSel = document.getElementById("captain_" + (side === 'H' ? 'home' : 'guest'));
+ let currentSelections = {}; selects.forEach(sel => { currentSelections[sel.id] = sel.value; });
+ const savedCaptain = captainSel ? captainSel.value : "";
+ const allPlayers = importedTeams[teamName] || [];
+ selects.forEach(targetSel => {
+  const targetId = targetSel.id; const savedValue = currentSelections[targetId];
+  let blockedNames = []; selects.forEach(s => { if(s.id !== targetId && s.value) { blockedNames.push(s.value); } });
+  targetSel.innerHTML = '<option value="">-- wählen --</option>';
   allPlayers.forEach(player => {
-    datalist.innerHTML += `<option value="${player.name}">`;
+   if(!blockedNames.includes(player.name)) {
+    const selectedAttr = (player.name === savedValue) ? "selected" : "";
+    targetSel.innerHTML += `<option value="${player.name}" ${selectedAttr}>${player.name}</option>`;
+   }
   });
-
-  // Automatische Passnummern-Zuordnung, falls der getippte/gewählte Name in der Liste existiert
-  const inputs = document.querySelectorAll(".p-select-" + side);
-  inputs.forEach(input => {
-    const passField = document.getElementById(input.id.replace("p_", "pass_"));
-    if (passField) {
-      if (input.value) {
-        const found = allPlayers.find(p => p.name === input.value);
-        if (found) passField.value = found.pass;
-      } else { 
-        passField.value = ""; 
-      }
-    }
+ });
+ if (captainSel && (isInitialTeamLoad || captainSel.innerHTML === "" || captainSel.innerHTML.includes("-- wählen --"))) {
+  captainSel.innerHTML = '<option value="">-- wählen --</option>';
+  allPlayers.forEach(player => {
+   const selectedAttr = (player.name === savedCaptain) ? "selected" : "";
+   captainSel.innerHTML += `<option value="${player.name}" ${selectedAttr}>${player.name}</option>`;
   });
+  if(savedCaptain) captainSel.value = savedCaptain;
+ }
+ selects.forEach(sel => {
+  const passField = document.getElementById(sel.id.replace("p_", "pass_"));
+  if (passField) {
+   if (sel.value) {
+    const found = allPlayers.find(p => p.name === sel.value);
+    passField.value = found ? found.pass : "";
+   } else { passField.value = ""; }
+  }
+ });
 }
-
 function validateRosterAndSetup() {
  const metaG = document.getElementById("meta_group").value;
  const metaD = document.getElementById("meta_day").value;
@@ -809,14 +891,10 @@ function registerWinner(checkerName, checkerPos, side, assistantName = null, ass
  
  renderTable(); 
  saveMatchdayToLocalStorage();
-// Neu: Schließt das Fenster sauber, damit man die Tabellen-Übersicht sieht
-setTimeout(() => { 
- closeLivePopup();
- if(activePopupMatchId === 34) { 
-   alert("Alle 34 Spiele erfasst! Der Spielberichtsbogen ist fertig."); 
- }
-}, 300);
-
+ setTimeout(() => { 
+  if(activePopupMatchId < 34) { openLivePopup(activePopupMatchId + 1); } 
+  else { alert("Alle 34 Spiele erfasst! Der Spielberichtsbogen ist fertig."); closeLivePopup(); } 
+ }, 300);
 }
 
 function updateStats() {
@@ -938,24 +1016,43 @@ document.addEventListener("DOMContentLoaded", () => {
     .catch(err => console.error('Service Worker Fehler:', err));
   }
 
+  // Hier wird die Textbox jetzt JEDES MAL korrekt über ihre echte ID geladen!
   const spielerTextarea = document.getElementById("txt_import_area"); 
+
+  // 1. ZUERST: Lokales Backup aus dem Browser laden, falls vorhanden
   const savedTeams = localStorage.getItem("mkk_dart_teams");
   if (savedTeams) { importedTeams = JSON.parse(savedTeams); }
   const savedRawText = localStorage.getItem("mkk_dart_raw_text");
   if (savedRawText && spielerTextarea) { spielerTextarea.value = savedRawText; }
-  
   initTeamDropdowns();
 
-  // Wiederherstellung der getippten/ausgewählten Felder aus dem Speicher
+  // 2. DANACH: Das frische Update von GitHub ziehen (Lokaler, sicherer Abruf)
+ 
+
+
+
+
+
+
+
+  // 3. Alte Dropdown-Auswahlen wiederherstellen
   const savedDropdowns = localStorage.getItem("mkk_live_dropdown_state");
   if(savedDropdowns) {
     const dropdownState = JSON.parse(savedDropdowns);
+    if(dropdownState["team_home"]) { 
+      document.getElementById("team_home").value = dropdownState["team_home"]; 
+      handleTeamSelection('H'); 
+    }
+    if(dropdownState["team_guest"]) { 
+      document.getElementById("team_guest").value = dropdownState["team_guest"]; 
+      handleTeamSelection('G'); 
+    }
     Object.keys(dropdownState).forEach(id => {
       const el = document.getElementById(id); 
-      if(el) { el.value = dropdownState[id]; }
+      if(el && id !== "team_home" && id !== "team_guest") { el.value = dropdownState[id]; }
     });
-    if(document.getElementById("team_home")?.value) rebuildPlayerDropdowns('H', false);
-    if(document.getElementById("team_guest")?.value) rebuildPlayerDropdowns('G', false);
+    if(dropdownState["team_home"]) rebuildPlayerDropdowns('H', false);
+    if(dropdownState["team_guest"]) rebuildPlayerDropdowns('G', false);
   }
 
   const loadResults = localStorage.getItem("mkk_live_match_results"); 
@@ -978,8 +1075,7 @@ document.addEventListener("DOMContentLoaded", () => {
   syncMetaToLabels(); 
   validateRosterAndSetup();
 
-  // Event Listener für Eingabefelder und neue Freitextfelder anpassen
-  document.querySelectorAll("input, select").forEach(el => {
+  document.querySelectorAll("select, input").forEach(el => {
     el.addEventListener("change", () => {
       if(el.id === "team_home") { handleTeamSelection('H'); }
       else if(el.id === "team_guest") { handleTeamSelection('G'); }
@@ -989,22 +1085,7 @@ document.addEventListener("DOMContentLoaded", () => {
       syncMetaToLabels(); 
       saveActiveDropdowns();
     });
-    el.addEventListener("input", () => { 
-      if(el.id.startsWith("p_H") || el.id.startsWith("p_G")) {
-        // Falls manuell getippt wird, live die Passnummern prüfen
-        const side = el.id.startsWith("p_H") ? 'H' : 'G';
-        const teamName = document.getElementById("team_" + (side === 'H' ? 'home' : 'guest')).value;
-        const allPlayers = importedTeams[teamName] || [];
-        const passField = document.getElementById(el.id.replace("p_", "pass_"));
-        if (passField) {
-          const found = allPlayers.find(p => p.name === el.value);
-          passField.value = found ? found.pass : "";
-        }
-      }
-      validateRosterAndSetup();
-      syncMetaToLabels(); 
-      saveActiveDropdowns(); 
-    });
+    el.addEventListener("input", () => { syncMetaToLabels(); saveActiveDropdowns(); });
   });
 });
 
@@ -1033,6 +1114,39 @@ function triggerPwaInstallation() {
 }
 
 function closePwaPopup() { if (popup) popup.style.display = 'none'; const hideUntil = Date.now() + (7 * 24 * 60 * 60 * 1000); localStorage.setItem('pwa_popup_hidden_until', hideUntil); }
+
+
+
+
+
+
+
+
+function openSetupPopup(side) {
+    document.getElementById("popup_setup_" + side).style.display = "block";
+    // Verhindert das Scrollen des Hintergrunds, wenn das Popup offen ist
+    document.body.style.overflow = "hidden";
+}
+
+function closeSetupPopup(side) {
+    document.getElementById("popup_setup_" + side).style.display = "none";
+    // Aktiviert das normale Scrollen wieder
+    document.body.style.overflow = "auto";
+    
+    // Erzwingt eine Validierung und Speicherung beim Schließen
+    validateRosterAndSetup();
+    syncMetaToLabels();
+    saveActiveDropdowns();
+}
+
+
+
+
+
+
+
+
+
 </script>
 </body>
 </html>
