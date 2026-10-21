@@ -97,7 +97,61 @@
 
 
 
-/* Modernes App-Design für das Setup-Popup */
+
+/* Modernes Kachel-Design für die Setup-Buttons im Hauptmenü */
+.flex-buttons {
+    display: grid;
+    grid-template-columns: 1fr; /* Untereinander auf kleinen Displays */
+    gap: 12px;
+    margin: 20px 0;
+    width: 100%;
+}
+
+/* Große, touch-freundliche Buttons im edlen App-Look */
+.setup-trigger-btn {
+    width: 100% !important;
+    height: 54px; /* Angenehme Höhe zum bequemen Antippen */
+    background: #2a2a2a !important; /* Anthrazit wie die Panels */
+    border: 2px solid #ffcc00 !important; /* Markanter gelber Rahmen */
+    color: #ffcc00 !important; /* Gelbe Schrift */
+    font-size: 15px !important;
+    font-weight: bold !important;
+    border-radius: 8px !important;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+/* Visuelles Feedback beim Drücken / Hovern */
+.setup-trigger-btn:hover, 
+.setup-trigger-btn:active {
+    background: #ffcc00 !important;
+    color: #1a1a1a !important;
+    transform: scale(1.01);
+}
+
+/* Wenn du Tablets oder größere Bildschirme nutzt, stehen sie schick nebeneinander */
+@media (min-width: 600px) {
+    .flex-buttons {
+        grid-template-columns: 1fr 1fr; /* Zwei Spalten nebeneinander */
+    }
+}
+
+
+
+
+
+
+
+/* ========================================================
+   PREMIUM APP-DESIGN FÜR DAS SETUP-POPUP
+   ======================================================== */
+
 .setup-popup-overlay {
     display: none;
     position: fixed;
@@ -105,7 +159,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: #1a1a1a;
+    background: #121212; /* Tiefer, nativer AMOLED-Black Hintergrund */
     z-index: 10000;
     overflow-y: auto;
     box-sizing: border-box;
@@ -115,99 +169,146 @@
     width: 100%;
     min-height: 100%;
     margin: 0;
-    background: #1a1a1a;
-    padding: 70px 15px 80px 15px; /* Platz für fixierten Header & Footer */
+    background: #121212;
+    padding: 75px 16px 90px 16px; /* Großzügiger Abstand für Header und Footer */
     box-sizing: border-box;
 }
 
-/* Fixierter Header ganz oben */
+/* Fixierter, edler Header */
 .setup-popup-header {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    height: 55px;
-    background: #2a2a2a;
+    height: 60px;
+    background: #1e1e1e;
     border-bottom: 2px solid #ffcc00;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 15px;
+    padding: 0 16px;
     box-sizing: border-box;
     z-index: 10001;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
 .setup-popup-header span {
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 18px;
+    font-weight: 700;
     color: #ffcc00;
+    letter-spacing: 0.5px;
 }
 
 .setup-popup-close {
     background: #cc3333;
     color: white;
     border: none;
-    padding: 6px 12px;
+    padding: 8px 14px;
     font-weight: bold;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-/* Schicke Karten für die Spieler-Eingaben */
-.setup-popup-content .panel {
-    background: transparent;
-    border: none;
-    padding: 0;
-}
-
-/* Jede Spieler-Zeile wird zu einer schicken Box */
-.setup-popup-content .row-flex {
-    background: #2a2a2a;
-    border: 1px solid #444;
     border-radius: 6px;
-    padding: 12px;
-    margin-bottom: 12px;
-    display: grid !important;
-    grid-template-columns: 2fr 1fr !important; /* Name breiter, Passnummer schmaler */
-    gap: 10px !important;
-    align-items: center;
-}
-
-/* Labels über den Zeilen (z.B. "H1 Stammspieler") */
-.setup-popup-content label {
-    grid-column: 1 / -1; /* Geht über die volle Breite der Karte */
-    margin: 0 0 4px 0;
-    font-weight: bold;
-    color: #ffcc00;
+    cursor: pointer;
     font-size: 13px;
+    transition: 0.2s;
+}
+.setup-popup-close:hover { background: #ff3333; }
+
+/* Entfernt das alte Tabellen-Layout im Popup */
+.setup-popup-content .panel {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
 }
 
-/* Inputs und Selects in den Karten optimieren */
-.setup-popup-content input, 
-.setup-popup-content select {
-    background: #1a1a1a;
-    border: 1px solid #555;
-    padding: 10px;
-    font-size: 14px;
-    border-radius: 4px;
-    height: 42px; /* Einheitliche Touch-Höhe */
-}
-
-/* Fixierter Speicher-Button ganz unten */
-.setup-popup-content .close-btn {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    margin: 0;
-    border-radius: 0;
-    padding: 15px;
+/* Gruppierungs-Überschriften (z.B. Stammspieler) */
+.setup-popup-content h4 {
+    color: #ffcc00;
     font-size: 15px;
-    background: #00cc66 !important; /* Schickes Grün für "Speichern" */
-    color: #fff;
-    z-index: 10001;
-    box-shadow: 0 -4px 10px rgba(0,0,0,0.5);
+    font-weight: bold;
+    margin: 25px 0 15px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+/* DIE SPIELER-KARTE: Macht jede Zeile zu einer sichtbaren App-Card */
+.setup-popup-content .row-flex {
+    background: #1e1e1e !important; /* Deutlich sichtbares, helleres Anthrazit */
+    border: 1px solid #333 !important;
+    border-left: 4px solid #ffcc00 !important; /* Gelber Design-Akzentstreifen links */
+    border-radius: 8px !important;
+    padding: 16px !important;
+    margin-bottom: 16px !important;
+    display: flex !important;
+    flex-direction: column !important; /* Untereinander auf Handys für maximalen Platz */
+    gap: 12px !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Jedes Label innerhalb einer Spieler-Karte */
+.setup-popup-content .row-flex label {
+    color: #ffffff !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    margin: 0 0 2px 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+/* Eingabefelder im edlen App-Look */
+.setup-popup-content select,
+.setup-popup-content input[type="text"] {
+    width: 100% !important;
+    background: #262626 !important; /* Kontrastreicher Feld-Hintergrund */
+    border: 1px solid #444 !important;
+    color: #fff !important;
+    padding: 12px 14px !important;
+    font-size: 15px !important;
+    border-radius: 6px !important;
+    height: 46px !important; /* Perfekte Daumen-Bedienung */
+    box-sizing: border-box !important;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Fokus-Effekt beim Antippen */
+.setup-popup-content select:focus,
+.setup-popup-content input[type="text"]:focus {
+    border-color: #ffcc00 !important;
+    box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.2) !important;
+    outline: none !important;
+}
+
+/* Teamauswahl-Block (Ganz oben auf der Karte) */
+.setup-popup-content > .panel > label {
+    color: #aaa;
+    font-size: 13px;
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+/* Fixierter, fetter Button ganz unten */
+.setup-popup-content .close-btn {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    padding: 18px !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    background: #00cc66 !important;
+    color: #000 !important; /* Schwarze Schrift auf hellem Grün für besten Kontrast */
+    z-index: 10001 !important;
+    border: none !important;
+    box-shadow: 0 -6px 20px rgba(0,0,0,0.6) !important;
+    cursor: pointer !important;
+}
+.setup-popup-content .close-btn:hover {
+    background: #00ff88 !important;
 }
 
 
