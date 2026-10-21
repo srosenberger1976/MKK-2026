@@ -922,48 +922,64 @@ function renderTable() {
  if(!tbody || !printBody) return; tbody.innerHTML = ""; printBody.innerHTML = "";
  let runningHome = 0; let runningGuest = 0; let foundNextPlayable = false;
  mkkSchedule.forEach(m => {
-  const res = matchResults[m.id] || { heim: 0, gast: 0, checkerPos: "", assistantPos: "" };
-  const hasBeenPlayed = !!matchResults[m.id];
-  if (hasBeenPlayed) { runningHome += res.heim; runningGuest += res.gast; }
-  const c1 = m.pos[0] || ""; const c2 = m.pos[1] || ""; const c3 = m.pos[2] || ""; const c4 = m.pos[3] || "";
-  const isSub1 = substitutions.some(s => s.outPos === c1 && m.id >= s.matchId);
-  const isSub2 = substitutions.some(s => s.outPos === c2 && m.id >= s.matchId);
-  const isSub3 = c3 ? substitutions.some(s => s.outPos === c3 && m.id >= s.matchId) : false;
-  const isSub4 = c4 ? substitutions.some(s => s.outPos === c4 && m.id >= s.matchId) : false;
-  const p1 = resolvePlayerName(c1, m.id); const p2 = resolvePlayerName(c2, m.id); const p3 = c3 ? resolvePlayerName(c3, m.id) : ""; const p4 = c4 ? resolvePlayerName(c4, m.id) : "";
-  
-  // FIX: Bestimmt, ob die Namen für ein bereits gespieltes Match ausgegraut werden sollen (opacity: 0.4)
-  const nameOpacity = hasBeenPlayed ? "opacity: 0.4;" : "opacity: 1;";
-  const style1 = `style="${nameOpacity} color:${isSub1 ? '#ff3333' : '#fff'}; font-weight:${isSub1 ? 'bold' : 'normal'};"`;
-  const style2 = `style="${nameOpacity} color:${isSub2 ? '#ff3333' : '#fff'}; font-weight:${isSub2 ? 'bold' : 'normal'};"`;
-  const style3 = `style="${nameOpacity} color:${isSub3 ? '#ff3333' : '#fff'}; font-weight:${isSub3 ? 'bold' : 'normal'};"`;
-  const style4 = `style="${nameOpacity} color:${isSub4 ? '#ff3333' : '#fff'}; font-weight:${isSub4 ? 'bold' : 'normal'};"`;
-  
-  let statusClass = "row-upcoming";
-  if (!isMatchPlayable) { statusClass = "row-disabled"; }
-  else if (hasBeenPlayed) { statusClass = "row-played"; }
-  else if (!foundNextPlayable) { statusClass = "row-current-next"; foundNextPlayable = true; }
-  const tr = document.createElement("tr"); tr.className = `clickable-row ${statusClass}`;
-  if(isMatchPlayable) tr.onclick = () => openLivePopup(m.id);
-  const liveDisplayHome = hasBeenPlayed ? runningHome : ""; const liveDisplayGuest = hasBeenPlayed ? runningGuest : "";
-  
-  // FIX: Die 'styleX'-Variablen steuern jetzt exakt NUR die 4 Namenszellen an. Die äußeren Spalten bleiben unberührt hell!
-  tr.innerHTML = `<td><b>${m.id}</b></td><td><b>${m.type}</b></td><td ${style1}>${p1?p1:"-"}</td><td ${style2}>${p2?p2:"-"}</td><td ${style3}>${p3?p3:"-"}</td><td ${style4}>${p4?p4:"-"}</td><td style="color:#00cc66; font-weight:bold; font-size:16px;">${liveDisplayHome}</td><td style="color:#ff3333; font-weight:bold; font-size:16px;">${liveDisplayGuest}</td>`;
-  tbody.appendChild(tr);
-  const isHomeWinner = (hasBeenPlayed && res.heim === 1); const isGuestWinner = (hasBeenPlayed && res.gast === 1);
-  const f1 = (c1.startsWith("H") && isHomeWinner) || (c1.startsWith("G") && isGuestWinner) ? "font-weight:900; font-size:10px;" : "";
-  const f2 = (c2.startsWith("H") && isHomeWinner) || (c2.startsWith("G") && isGuestWinner) ? "font-weight:900; font-size:10px;" : "";
-  const f3 = c3 && ((c3.startsWith("H") && isHomeWinner) || (c3.startsWith("G") && isGuestWinner)) ? "font-weight:900; font-size:10px;" : "";
-  const f4 = c4 && ((c4.startsWith("H") && isHomeWinner) || (c4.startsWith("G") && isGuestWinner)) ? "font-weight:900; font-size:10px;" : "";
-  const mark1 = res.checkerPos === c1 ? "X" : (res.assistantPos === c1 ? "/" : ""); const mark2 = res.checkerPos === c2 ? "X" : (res.assistantPos === c2 ? "/" : "");
-  const mark3 = c3 ? (res.checkerPos === c3 ? "X" : (res.assistantPos === c3 ? "/" : "")) : ""; const mark4 = c4 ? (res.checkerPos === c4 ? "X" : (res.assistantPos === c4 ? "/" : "")) : "";
-  const scoreDisplayHome = hasBeenPlayed ? runningHome : ""; const scoreDisplayGuest = hasBeenPlayed ? runningGuest : "";
-  const trP = document.createElement("tr");
-  trP.innerHTML = `<td><b>${m.id}</b></td><td>${m.type}</td><td class="pos-cell" style="${f1}">${c1}</td><td class="gray-indicator-cell">${mark1}</td><td class="pos-cell" style="${f2}">${c2}</td><td class="gray-indicator-cell">${mark2}</td><td class="pos-cell" style="${f3}">${c3||""}</td><td class="gray-indicator-cell">${mark3}</td><td class="pos-cell" style="${f4}">${c4||""}</td><td class="gray-indicator-cell">${mark4}</td><td><b>${scoreDisplayHome}</b></td><td><b>${scoreDisplayGuest}</b></td>`;
-  printBody.appendChild(trP);
+ const res = matchResults[m.id] || { heim: 0, gast: 0, checkerPos: "", assistantPos: "" };
+ const hasBeenPlayed = !!matchResults[m.id];
+ if (hasBeenPlayed) { runningHome += res.heim; runningGuest += res.gast; }
+ 
+ // KORREKTUR: Die Positionen werden wieder exakt aus dem m.pos Array gelesen
+ const c1 = m.pos[0] || ""; const c2 = m.pos[1] || ""; const c3 = m.pos[2] || ""; const c4 = m.pos[3] || "";
+ 
+ const isSub1 = substitutions.some(s => s.outPos === c1 && m.id >= s.matchId);
+ const isSub2 = substitutions.some(s => s.outPos === c2 && m.id >= s.matchId);
+ const isSub3 = c3 ? substitutions.some(s => s.outPos === c3 && m.id >= s.matchId) : false;
+ const isSub4 = c4 ? substitutions.some(s => s.outPos === c4 && m.id >= s.matchId) : false;
+ 
+ let p1 = resolvePlayerName(c1, m.id); let p2 = resolvePlayerName(c2, m.id);
+ let p3 = c3 ? resolvePlayerName(c3, m.id) : ""; let p4 = c4 ? resolvePlayerName(c4, m.id) : "";
+ 
+ const nameOpacity = hasBeenPlayed ? "0.4" : "1";
+ 
+ // KORREKTUR: Zuweisung der Styles direkt auf Tabellenzellen-Ebene
+ const cellStyle = (pos, isSub) => {
+     if (hasBeenPlayed && res.checkerPos === pos) {
+         return `style="opacity: 1 !important; color: #ffffff !important; font-weight: bold !important;"`;
+     }
+     return `style="opacity: ${nameOpacity}; color: ${isSub ? '#ff3333' : '#fff'}; font-weight: ${isSub ? 'bold' : 'normal'};"`;
+ };
+ 
+ const style1 = cellStyle(c1, isSub1);
+ const style2 = cellStyle(c2, isSub2);
+ const style3 = cellStyle(c3, isSub3);
+ const style4 = cellStyle(c4, isSub4);
+ 
+ let statusClass = "row-upcoming"; if (!isMatchPlayable) { statusClass = "row-disabled"; } else if (hasBeenPlayed) { statusClass = "row-played"; } else if (!foundNextPlayable) { statusClass = "row-current-next"; foundNextPlayable = true; }
+ const tr = document.createElement("tr"); tr.className = `clickable-row ${statusClass}`;
+ if(isMatchPlayable) tr.onclick = () => openLivePopup(m.id);
+ const liveDisplayHome = hasBeenPlayed ? runningHome : ""; const liveDisplayGuest = hasBeenPlayed ? runningGuest : "";
+ 
+ tr.innerHTML = `<td><b>${m.id}</b></td><td><b>${m.type}</b></td><td ${style1}>${p1?p1:"-"}</td><td ${style2}>${p2?p2:"-"}</td><td ${style3}>${p3?p3:"-"}</td><td ${style4}>${p4?p4:"-"}</td><td style="color:#00cc66; font-weight:bold; font-size:16px;">${liveDisplayHome}</td><td style="color:#ff3333; font-weight:bold; font-size:16px;">${liveDisplayGuest}</td>`;
+ tbody.appendChild(tr);
+ const isHomeWinner = (hasBeenPlayed && res.heim === 1); const isGuestWinner = (hasBeenPlayed && res.gast === 1);
+ const f1 = (c1.startsWith("H") && isHomeWinner) || (c1.startsWith("G") && isGuestWinner) ? "font-weight:900; font-size:10px;" : "";
+ const f2 = (c2.startsWith("H") && isHomeWinner) || (c2.startsWith("G") && isGuestWinner) ? "font-weight:900; font-size:10px;" : "";
+ const f3 = c3 && ((c3.startsWith("H") && isHomeWinner) || (c3.startsWith("G") && isGuestWinner)) ? "font-weight:900; font-size:10px;" : "";
+ const f4 = c4 && ((c4.startsWith("H") && isHomeWinner) || (c4.startsWith("G") && isGuestWinner)) ? "font-weight:900; font-size:10px;" : "";
+ const mark1 = res.checkerPos === c1 ? "X" : (res.assistantPos === c1 ? "/" : ""); const mark2 = res.checkerPos === c2 ? "X" : (res.assistantPos === c2 ? "/" : "");
+ const mark3 = c3 ? (res.checkerPos === c3 ? "X" : (res.assistantPos === c3 ? "/" : "")) : ""; const mark4 = c4 ? (res.checkerPos === c4 ? "X" : (res.assistantPos === c4 ? "/" : "")) : "";
+ const scoreDisplayHome = hasBeenPlayed ? runningHome : ""; const scoreDisplayGuest = hasBeenPlayed ? runningGuest : "";
+ const trP = document.createElement("tr");
+ trP.innerHTML = `<td><b>${m.id}</b></td><td>${m.type}</td><td class="pos-cell" style="${f1}">${c1}</td><td class="gray-indicator-cell">${mark1}</td><td class="pos-cell" style="${f2}">${c2}</td><td class="gray-indicator-cell">${mark2}</td><td class="pos-cell" style="${f3}">${c3||""}</td><td class="gray-indicator-cell">${mark3}</td><td class="pos-cell" style="${f4}">${c4||""}</td><td class="gray-indicator-cell">${mark4}</td><td><b>${scoreDisplayHome}</b></td><td><b>${scoreDisplayGuest}</b></td>`;
+ printBody.appendChild(trP);
  });
  document.getElementById("lbl_res_total").innerText = `${runningHome} : ${runningGuest}`; updateStats();
 }
+
+
+
+
+
+
+
 function openLivePopup(matchId) {
  activePopupMatchId = Number(matchId); const m = mkkSchedule.find(x => x.id === activePopupMatchId);
  if(!m) return;
@@ -1046,76 +1062,81 @@ function navigatePopupMatch(direction) { const targetId = activePopupMatchId + d
 
 function unlockCurrentMatchForFix() {
  if(matchResults[activePopupMatchId]) {
-  delete matchResults[activePopupMatchId];
-  const tempResults = {...matchResults}; matchResults = {}; playerScores = {};
-  Object.keys(tempResults).forEach(id => {
-   const r = tempResults[id]; matchResults[id] = r;
-   if(!playerScores[r.checkerPos]) playerScores[r.checkerPos] = { check: 0, assist: 0 };
-   playerScores[r.checkerPos].check += 2; // Berechnet 2 Punkte für Gewinner neu
-   if(r.assistantPos) { 
-    if(!playerScores[r.assistantPos]) playerScores[r.assistantPos] = { check: 0, assist: 0 }; 
-    playerScores[r.assistantPos].assist += 1; // Berechnet 1 Punkt für Mitgewinner neu
-   }
-  });
-  renderTable(); saveMatchdayToLocalStorage(); openLivePopup(activePopupMatchId);
-  alert("Spielwertung zurückgesetzt!");
+ delete matchResults[activePopupMatchId];
+ const tempResults = {...matchResults}; matchResults = {}; playerScores = {};
+ Object.keys(tempResults).forEach(id => {
+ const r = tempResults[id]; matchResults[id] = r;
+ if(!playerScores[r.checkerPos]) playerScores[r.checkerPos] = { check: 0, assist: 0 };
+ playerScores[r.checkerPos].check += 1; // KORREKTUR: Erhöht den Check-Zähler nur um 1
+ if(r.assistantPos) { 
+ if(!playerScores[r.assistantPos]) playerScores[r.assistantPos] = { check: 0, assist: 0 }; 
+ playerScores[r.assistantPos].assist += 1; // Erhöht den Assist-Zähler um 1
+ }
+ });
+ renderTable(); saveMatchdayToLocalStorage(); 
+ openLivePopup(activePopupMatchId);
+ alert("Spielwertung zurückgesetzt!");
  }
 }
 
-
-function registerWinner(checkerName, checkerPos, side, assistantName = null, assistantPos = null) {
+function registerWinner(ignoredName, checkerPos, side, ignoredAssName = null, assistantPos = null) {
  matchResults[activePopupMatchId] = { heim: side === 'H' ? 1 : 0, gast: side === 'G' ? 1 : 0, checkerPos: checkerPos, assistantPos: assistantPos };
  
- // Hauptgewinner (Checker) erhält 2 Check-Punkte
+ // 1. Echten Namen für den Hauptgewinner (Checker) über die Position holen
+ const checkerName = resolvePlayerName(checkerPos, activePopupMatchId);
+ if (checkerName) {
  if (!playerScores[checkerName]) playerScores[checkerName] = { check: 0, assist: 0 }; 
- playerScores[checkerName].check += 2;
- 
- // Mitgewinner / Teampartner (Assistant) erhält exakt 1 Punkt
- if (assistantName) { 
-  if (!playerScores[assistantName]) playerScores[assistantName] = { check: 0, assist: 0 }; 
-  playerScores[assistantName].assist += 1; 
+ playerScores[checkerName].check += 1; // Registriert 1 Check
  }
  
+ // 2. Echten Namen für den Teampartner (Assistant) über die Position holen
+ if (assistantPos) { 
+ const assistantName = resolvePlayerName(assistantPos, activePopupMatchId);
+ if (assistantName) {
+ if (!playerScores[assistantName]) playerScores[assistantName] = { check: 0, assist: 0 }; 
+ playerScores[assistantName].assist += 1; // Registriert 1 Assist
+ }
+ }
  renderTable(); 
  saveMatchdayToLocalStorage();
  setTimeout(() => { 
-  if(activePopupMatchId < 34) { openLivePopup(activePopupMatchId + 1); } 
-  else { alert("Alle 34 Spiele erfasst! Der Spielberichtsbogen ist fertig."); closeLivePopup(); } 
+ if(activePopupMatchId < 34) { openLivePopup(activePopupMatchId + 1); } 
+ else { alert("Alle 34 Spiele erfasst! Der Spielberichtsbogen ist fertig."); closeLivePopup(); } 
  }, 300);
 }
-
 function updateStats() {
  const hLive = document.getElementById("live_stats_H_body"); const gLive = document.getElementById("live_stats_G_body");
  const hB = document.getElementById("print_stats_H"); const gB = document.getElementById("print_stats_G");
  if(!hLive || !gLive || !hB || !gB) return; hB.innerHTML = ""; gB.innerHTML = ""; hLive.innerHTML = ""; gLive.innerHTML = "";
  const posHome = ["H1", "H2", "H3", "H4", "HE1", "HE2", "HE3", "HE4"]; const posGuest = ["G1", "G2", "G3", "G4", "GE1", "GE2", "GE3", "GE4"];
  
- // Befüllung Heimteam mit mathematisch korrekter Punkteberechnung
+ // Befüllung Heimteam
  posHome.forEach(p => { 
-  const el = document.getElementById("p_" + p); 
-  if (el && el.value) { 
-   const s = playerScores[el.value] || { check: 0, assist: 0 };
-   // FIX: Hier rechnen wir nun (Checks * 2) + (Assists * 1)
-   const punkteGesamt = (s.check * 2) + (s.assist * 1);
-   const rowHtml = `<tr><td>${el.value}</td><td>${s.check}</td><td>${s.assist}</td><td><b>${punkteGesamt}</b></td></tr>`; 
-   hB.innerHTML += rowHtml; 
-   hLive.innerHTML += rowHtml; 
-  } 
+ const el = document.getElementById("p_" + p); 
+ if (el && el.value) { 
+ const s = playerScores[el.value] || { check: 0, assist: 0 };
+ // Jedes gewonnene Spiel (Check) zählt 2 Punkte, jeder Assist zählt 1 Punkt
+ const punkteGesamt = (s.check * 2) + (s.assist * 1);
+ const rowHtml = `<tr><td>${el.value}</td><td>${s.check}</td><td>${s.assist}</td><td style="color:#ffcc00; font-weight:bold;">${punkteGesamt}</td></tr>`; 
+ hB.innerHTML += rowHtml; 
+ hLive.innerHTML += rowHtml; 
+ } 
  });
  
- // Befüllung Gastteam mit mathematisch korrekter Punkteberechnung
+ // Befüllung Gastteam
  posGuest.forEach(p => { 
-  const el = document.getElementById("p_" + p); 
-  if (el && el.value) { 
-   const s = playerScores[el.value] || { check: 0, assist: 0 };
-   // FIX: Hier rechnen wir nun (Checks * 2) + (Assists * 1)
-   const punkteGesamt = (s.check * 2) + (s.assist * 1);
-   const rowHtml = `<tr><td>${el.value}</td><td>${s.check}</td><td>${s.assist}</td><td><b>${punkteGesamt}</b></td></tr>`; 
-   gB.innerHTML += rowHtml; 
-   gLive.innerHTML += rowHtml; 
-  } 
+ const el = document.getElementById("p_" + p); 
+ if (el && el.value) { 
+ const s = playerScores[el.value] || { check: 0, assist: 0 };
+ // Jedes gewonnene Spiel (Check) zählt 2 Punkte, jeder Assist zählt 1 Punkt
+ const punkteGesamt = (s.check * 2) + (s.assist * 1);
+ const rowHtml = `<tr><td>${el.value}</td><td>${s.check}</td><td>${s.assist}</td><td style="color:#ffcc00; font-weight:bold;">${punkteGesamt}</td></tr>`; 
+ gB.innerHTML += rowHtml; 
+ gLive.innerHTML += rowHtml; 
+ } 
  });
 }
+
 
 
 function syncMetaToLabels() {
