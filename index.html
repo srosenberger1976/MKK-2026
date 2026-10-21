@@ -230,85 +230,55 @@
     letter-spacing: 0.8px;
 }
 
-/* DIE SPIELER-KARTE: Macht jede Zeile zu einer sichtbaren App-Card */
+/* Kompaktes, übersichtliches Karten-Layout */
 .setup-popup-content .row-flex {
-    background: #1e1e1e !important; /* Deutlich sichtbares, helleres Anthrazit */
+    background: #1e1e1e !important;
     border: 1px solid #333 !important;
-    border-left: 4px solid #ffcc00 !important; /* Gelber Design-Akzentstreifen links */
+    border-left: 4px solid #ffcc00 !important;
     border-radius: 8px !important;
-    padding: 16px !important;
-    margin-bottom: 16px !important;
-    display: flex !important;
-    flex-direction: column !important; /* Untereinander auf Handys für maximalen Platz */
-    gap: 12px !important;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+    padding: 12px !important;
+    margin-bottom: 12px !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important; /* Auf kleinen Handys untereinander */
+    gap: 8px !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* Jedes Label innerhalb einer Spieler-Karte */
-.setup-popup-content .row-flex label {
-    color: #ffffff !important;
+/* Tablet & PC: Name und Passnummer schick nebeneinander */
+@media (min-width: 480px) {
+    .setup-popup-content .row-flex {
+        grid-template-columns: 2fr 1fr !important; /* Links Name (breit), rechts Pass (schmal) */
+    }
+    .setup-popup-content .row-flex .card-title {
+        grid-column: span 2 !important;
+    }
+}
+
+/* Die Haupt-Überschrift auf der Karte (z.B. H1 Stammspieler) */
+.setup-popup-content .row-flex .card-title {
+    color: #ffcc00 !important;
     font-size: 14px !important;
-    font-weight: 700 !important;
+    font-weight: bold !important;
     margin: 0 0 2px 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
 }
 
-/* Eingabefelder im edlen App-Look */
+/* Die kleinen, verwirrenden Zwischen-Labels entfernen */
+.setup-popup-content .row-flex label:not(.card-title) {
+    display: none !important;
+}
+
+/* Eingabefelder kompakt halten */
 .setup-popup-content select,
 .setup-popup-content input[type="text"] {
     width: 100% !important;
-    background: #262626 !important; /* Kontrastreicher Feld-Hintergrund */
+    background: #262626 !important;
     border: 1px solid #444 !important;
     color: #fff !important;
-    padding: 12px 14px !important;
-    font-size: 15px !important;
+    padding: 8px 12px !important;
+    font-size: 14px !important;
     border-radius: 6px !important;
-    height: 46px !important; /* Perfekte Daumen-Bedienung */
+    height: 40px !important;
     box-sizing: border-box !important;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-/* Fokus-Effekt beim Antippen */
-.setup-popup-content select:focus,
-.setup-popup-content input[type="text"]:focus {
-    border-color: #ffcc00 !important;
-    box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.2) !important;
-    outline: none !important;
-}
-
-/* Teamauswahl-Block (Ganz oben auf der Karte) */
-.setup-popup-content > .panel > label {
-    color: #aaa;
-    font-size: 13px;
-    font-weight: bold;
-    margin-top: 15px;
-    margin-bottom: 5px;
-}
-
-/* Fixierter, fetter Button ganz unten */
-.setup-popup-content .close-btn {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    margin: 0 !important;
-    border-radius: 0 !important;
-    padding: 18px !important;
-    font-size: 16px !important;
-    font-weight: 800 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 1px !important;
-    background: #00cc66 !important;
-    color: #000 !important; /* Schwarze Schrift auf hellem Grün für besten Kontrast */
-    z-index: 10001 !important;
-    border: none !important;
-    box-shadow: 0 -6px 20px rgba(0,0,0,0.6) !important;
-    cursor: pointer !important;
-}
-.setup-popup-content .close-btn:hover {
-    background: #00ff88 !important;
 }
 
 
@@ -433,23 +403,60 @@
              
              <h4 style="margin: 15px 0 5px 0; color: #ffcc00; border-bottom: 1px solid #555;">Stamm- & Ersatzspieler (Name / Passnummer):</h4>
              
-             <div class="row-flex"><label>H1 Stammspieler</label><label>Passnummer</label></div>
-             <div class="row-flex"><select id="p_H1" class="p-select-H"></select><input type="text" id="pass_H1"></div>
-             
-             <div class="row-flex"><label>H2 Stammspieler</label><label>Passnummer</label></div>
-             <div class="row-flex"><select id="p_H2" class="p-select-H"></select><input type="text" id="pass_H2"></div>
-             
-             <div class="row-flex"><label>H3 Stammspieler</label><label>Passnummer</label></div>
-             <div class="row-flex"><select id="p_H3" class="p-select-H"></select><input type="text" id="pass_H3"></div>
-             
-             <div class="row-flex"><label>H4 Stammspieler</label><label>Passnummer</label></div>
-             <div class="row-flex"><select id="p_H4" class="p-select-H"></select><input type="text" id="pass_H4"></div>
-             
-             <label style="margin-top:10px; color:#aaa;">Auswechselspieler Heim (HE1 🔄 - HE4):</label>
-             <div class="row-flex"><select id="p_HE1" class="p-select-H"></select><input type="text" id="pass_HE1"></div>
-             <div class="row-flex"><select id="p_HE2" class="p-select-H"></select><input type="text" id="pass_HE2"></div>
-             <div class="row-flex"><select id="p_HE3" class="p-select-H"></select><input type="text" id="pass_HE3"></div>
-             <div class="row-flex"><select id="p_HE4" class="p-select-H"></select><input type="text" id="pass_HE4"></div>
+            
+
+
+
+             <!-- AB HIER ERSETZEN: HEIMTEAM SPIELER-KARTEN -->
+             <div class="row-flex">
+                 <div class="card-title">👕 H1 Stammspieler</div>
+                 <select id="p_H1" class="p-select-H"></select>
+                 <input type="text" id="pass_H1" placeholder="Passnummer eintragen...">
+             </div>
+
+             <div class="row-flex">
+                 <div class="card-title">👕 H2 Stammspieler</div>
+                 <select id="p_H2" class="p-select-H"></select>
+                 <input type="text" id="pass_H2" placeholder="Passnummer eintragen...">
+             </div>
+
+             <div class="row-flex">
+                 <div class="card-title">👕 H3 Stammspieler</div>
+                 <select id="p_H3" class="p-select-H"></select>
+                 <input type="text" id="pass_H3" placeholder="Passnummer eintragen...">
+             </div>
+
+             <div class="row-flex">
+                 <div class="card-title">👕 H4 Stammspieler</div>
+                 <select id="p_H4" class="p-select-H"></select>
+                 <input type="text" id="pass_H4" placeholder="Passnummer eintragen...">
+             </div>
+
+             <h4 style="margin: 20px 0 10px 0; color: #ffcc00; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">Auswechselspieler Heim:</h4>
+
+             <div class="row-flex">
+                 <div class="card-title">🔄 HE1 Ersatzspieler</div>
+                 <select id="p_HE1" class="p-select-H"></select>
+                 <input type="text" id="pass_HE1" placeholder="Passnummer eintragen...">
+             </div>
+
+             <div class="row-flex">
+                 <div class="card-title">🔄 HE2 Ersatzspieler</div>
+                 <select id="p_HE2" class="p-select-H"></select>
+                 <input type="text" id="pass_HE2" placeholder="Passnummer eintragen...">
+             </div>
+
+             <div class="row-flex">
+                 <div class="card-title">🔄 HE3 Ersatzspieler</div>
+                 <select id="p_HE3" class="p-select-H"></select>
+                 <input type="text" id="pass_HE3" placeholder="Passnummer eintragen...">
+             </div>
+
+             <div class="row-flex">
+                 <div class="card-title">🔄 HE4 Ersatzspieler</div>
+                 <select id="p_HE4" class="p-select-H"></select>
+                 <input type="text" id="pass_HE4" placeholder="Passnummer eintragen...">
+             </div>
          </div>
          <button class="close-btn" onclick="closeSetupPopup('H')">Speichern & Fenster schließen</button>
      </div>
@@ -469,31 +476,67 @@
              <label style="color:#ffcc00; font-weight:bold;">Gast TC 👑 (Kapitän):</label>
              <select id="captain_guest"></select>
              
-             <h4 style="margin: 15px 0 5px 0; color: #ffcc00; border-bottom: 1px solid #555;">Stamm- & Ersatzspieler (Name / Passnummer):</h4>
+             <h4 style="margin: 15px 0 5px 0; color: #ffcc00; border-bottom: 1px solid #555;">Stamm- & Ersatzspieler:</h4>
              
-             <div class="row-flex"><label>G1 Stammspieler</label><label>Passnummer</label></div>
-             <div class="row-flex"><select id="p_G1" class="p-select-G"></select><input type="text" id="pass_G1"></div>
-             
-             <div class="row-flex"><label>G2 Stammspieler</label><label>Passnummer</label></div>
-             <div class="row-flex"><select id="p_G2" class="p-select-G"></select><input type="text" id="pass_G2"></div>
-             
-             <div class="row-flex"><label>G3 Stammspieler</label><label>Passnummer</label></div>
-             <div class="row-flex"><select id="p_G3" class="p-select-G"></select><input type="text" id="pass_G3"></div>
-             
-             <div class="row-flex"><label>G4 Stammspieler</label><label>Passnummer</label></div>
-             <div class="row-flex"><select id="p_G4" class="p-select-G"></select><input type="text" id="pass_G4"></div>
-             
-             <label style="margin-top:10px; color:#aaa;">Auswechselspieler Gast (GE1 🔄 - GE4):</label>
-             <div class="row-flex"><select id="p_GE1" class="p-select-G"></select><input type="text" id="pass_GE1"></div>
-             <div class="row-flex"><select id="p_GE2" class="p-select-G"></select><input type="text" id="pass_GE2"></div>
-             <div class="row-flex"><select id="p_GE3" class="p-select-G"></select><input type="text" id="pass_GE3"></div>
-             <div class="row-flex"><select id="p_GE4" class="p-select-G"></select><input type="text" id="pass_GE4"></div>
+             <!-- AB HIER: GASTTEAM SPIELER-KARTEN -->
+             <div class="row-flex">
+                 <div class="card-title">👕 G1 Stammspieler</div>
+                 <select id="p_G1" class="p-select-G"></select>
+                 <input type="text" id="pass_G1" placeholder="Passnummer eintragen...">
+             </div>
+
+             <div class="row-flex">
+                 <div class="card-title">👕 G2 Stammspieler</div>
+                 <select id="p_G2" class="p-select-G"></select>
+                 <input type="text" id="pass_G2" placeholder="Passnummer eintragen...">
+             </div>
+
+             <div class="row-flex">
+                 <div class="card-title">👕 G3 Stammspieler</div>
+                 <select id="p_G3" class="p-select-G"></select>
+                 <input type="text" id="pass_G3" placeholder="Passnummer eintragen...">
+             </div>
+
+             <div class="row-flex">
+                 <div class="card-title">👕 G4 Stammspieler</div>
+                 <select id="p_G4" class="p-select-G"></select>
+                 <input type="text" id="pass_G4" placeholder="Passnummer eintragen...">
+             </div>
+
+             <h4 style="margin: 20px 0 10px 0; color: #ffcc00; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">Auswechselspieler Gast:</h4>
+
+             <div class="row-flex">
+                 <div class="card-title">🔄 GE1 Ersatzspieler</div>
+                 <select id="p_GE1" class="p-select-G"></select>
+                 <input type="text" id="pass_GE1" placeholder="Passnummer eintragen...">
+             </div>
+
+             <div class="row-flex">
+                 <div class="card-title">🔄 GE2 Ersatzspieler</div>
+                 <select id="p_GE2" class="p-select-G"></select>
+                 <input type="text" id="pass_GE2" placeholder="Passnummer eintragen...">
+             </div>
+
+             <div class="row-flex">
+                 <div class="card-title">🔄 GE3 Ersatzspieler</div>
+                 <select id="p_GE3" class="p-select-G"></select>
+                 <input type="text" id="pass_GE3" placeholder="Passnummer eintragen...">
+             </div>
+
+             <div class="row-flex">
+                 <div class="card-title">🔄 GE4 Ersatzspieler</div>
+                 <select id="p_GE4" class="p-select-G"></select>
+                 <input type="text" id="pass_GE4" placeholder="Passnummer eintragen...">
+             </div>
          </div>
          <button class="close-btn" onclick="closeSetupPopup('G')">Speichern & Fenster schließen</button>
      </div>
  </div>
 
- </div>
+ </div> <!-- HIER ENDET TAB_SETUP VOLLSTÄNDIG -->
+
+
+
 
 
  <div id="tab_game" class="tab-content">
