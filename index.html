@@ -5,11 +5,14 @@
 
 
  <link rel="manifest" href="/MKK-2026/manifest.json">
-
  <meta name="apple-mobile-web-app-capable" content="yes">
  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
  <meta name="apple-mobile-web-app-title" content="MKK Dart">
+ 
+ <!-- HIER SIND JETZT DIE ECHTEN BILDER HINTERLEGT -->
  <link rel="apple-touch-icon" href="https://icons8.com">
+ <link rel="icon" type="image/png" href="https://icons8.com">
+
  <meta charset="UTF-8">
  <title>American Dart - Liga MKK Live-Bogen</title>
  
@@ -397,17 +400,22 @@ flex-end; height: 45px; border-bottom: 1.2px solid #000 !important; font-size:
  .flex-buttons { display: flex !important; flex-direction: column !important; gap: 10px !important; }
 }
 
-
-
-
-
-
-
-
-
-
- </style>
+</style>
+<script>
+// Die Funktion wird hier oben sofort beim Laden für den Browser bereitgestellt
+function aktiviereVollbild() {
+  const docEl = document.documentElement;
+  if (docEl.requestFullscreen) { docEl.requestFullscreen(); } 
+  else if (docEl.webkitRequestFullscreen) { docEl.webkitRequestFullscreen(); } 
+  else if (docEl.mozRequestFullScreen) { docEl.mozRequestFullScreen(); }
+}
+</script>
 </head>
+
+
+
+
+
 <body onclick="if(window.aktiviereVollbild) aktiviereVollbild();">
 
 <div class="container">
@@ -1733,19 +1741,8 @@ function starteSpezialDruck() {
   }, 1000);
 }
 
-function aktiviereVollbild() {
-  const docEl = document.documentElement;
-  // Prüft, welcher Browser genutzt wird und startet den Vollbildmodus
-  if (docEl.requestFullscreen) {
-    docEl.requestFullscreen();
-  } else if (docEl.mozRequestFullScreen) { /* Firefox */
-    docEl.mozRequestFullScreen();
-  } else if (docEl.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
-    docEl.webkitRequestFullscreen();
-  } else if (docEl.msRequestFullscreen) { /* IE/Edge */
-    docEl.msRequestFullscreen();
-  }
-}
+
+
 
 
 </script>
