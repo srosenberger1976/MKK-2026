@@ -413,7 +413,8 @@ flex-end; height: 45px; border-bottom: 1.2px solid #000 !important; font-size:
  <h1> American Dart - Liga MKK Live-Bogen</h1> 🎯
  <div class="tab-navigation">
   <button id="btn_tab_setup" class="tab-btn active" onclick="switchTab('setup')">1. Aufstellung & Setup</button>
-  <button id="btn_tab_game" class="tab-btn" onclick="switchTab('game')">2. Live-Spielplan & Statistik</button>
+  <button id="btn_tab_game" class="tab-btn" onclick="switchTab('game'); aktiviereVollbild();">2. Live-Spielplan & Statistik</button>
+
  </div>
 
 
@@ -1731,6 +1732,19 @@ function starteSpezialDruck() {
   }, 1000);
 }
 
+function aktiviereVollbild() {
+  const docEl = document.documentElement;
+  // Prüft, welcher Browser genutzt wird und startet den Vollbildmodus
+  if (docEl.requestFullscreen) {
+    docEl.requestFullscreen();
+  } else if (docEl.mozRequestFullScreen) { /* Firefox */
+    docEl.mozRequestFullScreen();
+  } else if (docEl.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+    docEl.webkitRequestFullscreen();
+  } else if (docEl.msRequestFullscreen) { /* IE/Edge */
+    docEl.msRequestFullscreen();
+  }
+}
 
 
 </script>
