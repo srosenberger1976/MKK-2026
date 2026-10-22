@@ -280,6 +280,11 @@ solid #444; font-weight: bold; cursor: pointer; border-radius: 5px; font-size:
  text-transform: uppercase;
  letter-spacing: 0.8px;
 }
+
+
+
+
+/* Hauptbox für jeden Spieler */
 .setup-popup-content .row-flex {
  background: #1e1e1e !important;
  border: 1px solid #333 !important;
@@ -287,27 +292,44 @@ solid #444; font-weight: bold; cursor: pointer; border-radius: 5px; font-size:
  border-radius: 8px !important;
  padding: 12px !important;
  margin-bottom: 12px !important;
- display: grid !important;
- grid-template-columns: 2fr 1fr !important; /* Zwingt Name und Passnummer in EINE Zeile */
- gap: 10px !important;
- align-items: center !important; /* Richtet beide Felder mittig zueinander aus */
+ display: flex !important;
+ flex-direction: column !important; /* Stapelt Titel und Eingabefelder untereinander */
+ gap: 8px !important;
  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4) !important;
 }
 
-@media (min-width: 480px) {
- .setup-popup-content .row-flex {
- grid-template-columns: 2fr 1fr !important;
- }
- .setup-popup-content .row-flex .card-title {
- grid-column: span 2 !important;
- }
-}
+/* Die gelbe Überschrift (z.B. H1 Stammspieler) */
 .setup-popup-content .row-flex .card-title {
  color: #ffcc00 !important;
  font-size: 14px !important;
  font-weight: bold !important;
- margin: 0 0 2px 0 !important;
+ margin: 0 0 4px 0 !important;
+ display: block !important;
+ width: 100% !important;
 }
+
+/* Hilfs-Container, der Name und Passnummer auf Handys PERFEKT nebeneinander zwingt */
+.setup-popup-content .row-flex select,
+.setup-popup-content .row-flex input[type="text"] {
+ margin: 0 !important;
+ display: inline-block !important;
+ box-sizing: border-box !important;
+ height: 40px !important;
+}
+
+/* Das Dropdown-Feld für den Namen bekommt 68% Breite */
+.setup-popup-content .row-flex select {
+ width: 68% !important;
+ float: left !important;
+}
+
+/* Das Textfeld für die Passnummer bekommt 28% Breite (4% Abstand dazwischen) */
+.setup-popup-content .row-flex input[type="text"] {
+ width: 28% !important;
+ float: right !important;
+ text-align: center !important; /* Zentriert die Passnummer für bessere Optik */
+}
+
 .setup-popup-content .row-flex label:not(.card-title) {
  display: none !important;
 }
@@ -390,6 +412,14 @@ flex-end; height: 45px; border-bottom: 1.2px solid #000 !important; font-size:
  .panel { padding: 12px !important; width: 100% !important; box-sizing: border-box !important; }
  input, select { font-size: 15px !important; padding: 10px !important; }
  .click-box { font-size: 15px !important; padding: 12px !important; }
+
+
+
+
+
+
+
+
  
 /* Verhindert das Aufbrechen der Spielerkarten auf Smartphones */
 .setup-popup-content .row-flex {
