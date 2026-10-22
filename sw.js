@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mkk-dart-v6'; // Erhöht auf v6, damit das Pixel 8a sofort den neuen Code erzwingt
+const CACHE_NAME = 'mkk-dart-v7'; // Erhöht auf v7, damit alle Geräte das Update erzwingen
 const ASSETS = [
   '/MKK-2026/',
   '/MKK-2026/index.html',
@@ -36,7 +36,8 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   // WICHTIG: Wenn nach der spieler.txt gefragt wird, GEHE IMMER DIREKT INS INTERNET!
   if (event.request.url.includes('spieler.txt')) {
-    return; // Ignoriert den Cache komplett für diese Datei
+    event.respondWith(fetch(event.request));
+    return; // Beendet die Funktion hier, damit kein Cache genutzt wird
   }
 
   event.respondWith(
