@@ -284,8 +284,7 @@ solid #444; font-weight: bold; cursor: pointer; border-radius: 5px; font-size:
 
 
 
-/* Hauptbox für jeden Spieler */
-/* Hauptbox für jeden Spieler */
+/* ERSETZE diesen bestehenden Block in deinem CSS: */
 .setup-popup-content .row-flex {
  background: #1e1e1e !important;
  border: 1px solid #333 !important;
@@ -294,23 +293,26 @@ solid #444; font-weight: bold; cursor: pointer; border-radius: 5px; font-size:
  padding: 12px !important;
  margin-bottom: 12px !important;
  display: grid !important;
- /* Definiert 3 Spalten: 1. Das Trikot/Icon, 2. Der Name (groß), 3. Die Passnummer */
- grid-template-columns: auto 1fr 80px !important;
+ /* GEÄNDERT: Von 80px auf 110px erhöht für mehr Platz! */
+ grid-template-columns: auto 1fr 110px !important;
  gap: 8px !important;
  align-items: center !important;
  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* Zwingt die gelbe Überschrift, sich über die gesamte Breite der Box zu strecken */
-.setup-popup-content .row-flex .card-title {
- color: #ffcc00 !important;
- font-size: 14px !important;
- font-weight: bold !important;
- margin: 0 0 2px 0 !important;
- grid-column: 1 / -1 !important; /* Nimmt die komplette erste Zeile ein */
- display: block !important;
+/* Passe auch die Schriftgröße für das Eingabefeld an (unterhalb in derselben Region): */
+.setup-popup-content .row-flex input {
  width: 100% !important;
+ height: 40px !important;
+ text-align: center !important;
+ background: #262626 !important;
+ color: #fff !important;
+ border: 1px solid #444 !important;
+ border-radius: 6px !important;
+ font-size: 15px !important; /* Sorgt für gute Lesbarkeit auf Handys */
+ padding: 4px !important;
 }
+
 
 /* Verhindert, dass die Eingabefelder das Layout sprengen */
 .setup-popup-content .row-flex select {
@@ -1777,8 +1779,8 @@ let sigContexts = { H: null, G: null };
 let lastX = 0;
 let lastY = 0;
 
-// Variable, um zu speichern, ob wir uns im automatischen Neustart-Prozess befinden
-let isRelaunchingSig = false;
+// WICHTIG: Diese Variable muss direkt ÜBER der Funktion stehen!
+let autoRelaunchActive = false;
 
 function openSignaturePopup(side) {
     const btn = document.getElementById("btn_sig_" + side);
@@ -1788,6 +1790,29 @@ function openSignaturePopup(side) {
     }
     
     const overlay = document.getElementById("popup_sig_" + side);
+    
+    // UNSICHTBARER TRICK-DOOPELSTART:
+    // Wenn wir NICHT im Neustart-Prozess sind, erzwingen wir das Auf-Zu-Auf
+    if (!autoRelaunchActive) {
+        autoRelaunchActive = true; // Sperre setzen
+        
+        // 1. Erstes Mal öffnen
+        overlay.style.display = "flex";
+        
+        // 2. Sofort im nächsten Moment wieder schließen
+        requestAnimationFrame(() => {
+            overlay.style.display = "none";
+            
+            // 3. Nach nur 30 Millisekunden das zweite Mal öffnen!
+            setTimeout(() => {
+                openSignaturePopup(side);
+            }, 300); // 300ms gibt dem Handy genug Zeit, das Fenster im Cache zu verankern
+        });
+        return; // Bricht den ersten, blockierten Durchlauf sofort ab
+    }
+    
+    // AB HIER LÄUFT DER ZWEITE START (Jetzt ist das Canvas startklar!)
+    autoRelaunchActive = false; // Status für die nächste Unterschrift zurücksetzen
     overlay.style.display = "flex";
     document.body.style.overflow = "hidden";
     
@@ -1796,37 +1821,29 @@ function openSignaturePopup(side) {
     const ctx = canvas.getContext("2d");
     sigContexts[side] = ctx;
     
-    // GIB DEM BROWSER ZEIT: Wir warten, bis das CSS-Popup komplett ausgefaltet ist
-    setTimeout(() => {
-        // Hol dir die echten Maße des weißen Innenbereichs
-        let exactWidth = canvas.parentElement.clientWidth;
-        let exactHeight = canvas.parentElement.clientHeight;
-        
-        // Bombenfester Fallback, falls das Smartphone immer noch 0 meldet:
-        if (exactWidth <= 0) exactWidth = window.innerWidth - 32;
-        if (exactHeight <= 0) exactHeight = window.innerHeight - 160;
+    // Sichere Maße direkt aus dem Bildschirm ziehen, damit es beim 2. Mal perfekt passt
+    let exactWidth = canvas.parentElement.clientWidth;
+    let exactHeight = canvas.parentElement.clientHeight;
+    
+    if (!exactWidth || exactWidth <= 0) exactWidth = window.innerWidth - 32;
+    if (!exactHeight || exactHeight <= 0) exactHeight = window.innerHeight - 160;
 
-        // Setze die Anzeige-Größe im CSS fest
-        canvas.style.width = exactWidth + "px";
-        canvas.style.height = exactHeight + "px";
+    canvas.style.width = exactWidth + "px";
+    canvas.style.height = exactHeight + "px";
 
-        // Interne Auflösung für gestochen scharfen Druck verdreifachen
-        const pixelRatio = 3; 
-        canvas.width = exactWidth * pixelRatio;
-        canvas.height = exactHeight * pixelRatio;
-        
-        ctx.scale(pixelRatio, pixelRatio);
-        
-        // Kuli-Einstellungen zurücksetzen
-        ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 3.5; 
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        
-        setupCanvasEvents(side);
-    }, 250); // 250ms Verzögerung bricht die Render-Blockade des Smartphones
+    const pixelRatio = 3; 
+    canvas.width = exactWidth * pixelRatio;
+    canvas.height = exactHeight * pixelRatio;
+    
+    ctx.scale(pixelRatio, pixelRatio);
+    
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 3.5; 
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    
+    setupCanvasEvents(side);
 }
-
 
 
 
@@ -1940,25 +1957,49 @@ function clearSignature(side) {
 
 
 function saveSignature(side) {
-  const canvas = sigCanvases[side];
-  if(!canvas) return;
-  
-  const dataUrl = canvas.toDataURL("image/png");
-  localStorage.setItem("mkk_sig_data_" + side, dataUrl);
-  
-  const img = document.getElementById("img_print_sig_" + side);
-  if(img) {
-    img.src = dataUrl;
-    img.style.display = "block";
-  }
-  
-  document.getElementById("btn_sig_" + side).innerText = "✓ Unterschrift erfasst";
-  document.getElementById("popup_sig_" + side).style.display = "none";
-  document.body.style.overflow = "auto";
+    const canvas = sigCanvases[side];
+    if (!canvas) return;
 
-  // FIX: Die Tabellenberechnung steht jetzt ganz am Ende, wenn das Popup schon zu ist!
-  renderTable(); 
+    // Prüfen, ob überhaupt gezeichnet wurde
+    const ctx = canvas.getContext("2d");
+    
+    // Die Unterschrift als Bild-Daten extrahieren
+    const dataURL = canvas.toDataURL("image/png");
+    
+    // Im lokalen Speicher des Browsers sichern
+    localStorage.setItem("mkk_sig_data_" + side, dataURL);
+    
+    // Für die Druck-Vorschau im PDF bereitstellen
+    const img = document.getElementById("img_print_sig_" + side);
+    if (img) {
+        img.src = dataURL;
+        img.style.display = "block";
+        
+        // FIX FÜR QUERFORMAT: Erzwingt eine saubere Platzierung im PDF-Druckfeld,
+        // ohne dass die Unterschrift nach oben ausreißt.
+        img.style.position = "absolute";
+        img.style.bottom = "2px";
+        img.style.left = "50%";
+        img.style.transform = "translateX(-50%)";
+        img.style.objectFit = "contain";
+        img.style.width = "90%";
+        img.style.height = "42px";
+    }
+
+    // Button-Text aktualisieren
+    const btn = document.getElementById("btn_sig_" + side);
+    if (btn) btn.innerText = " Unterschrift ✓ erfasst";
+
+    // Popup schließen
+    const overlay = document.getElementById("popup_sig_" + side);
+    if (overlay) overlay.style.display = "none";
+    document.body.style.overflow = "auto";
+
+    // Tabelle neu rendern, um Druck-Buttons freizuschalten
+    renderTable();
+    alert("Unterschrift erfolgreich gespeichert!");
 }
+
 
 
 
