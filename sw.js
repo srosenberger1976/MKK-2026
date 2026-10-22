@@ -1,15 +1,15 @@
-
-const CACHE_NAME = 'mkk-dart-v5'; // Erhöht auf v5, damit alle Browser den alten Speicher löschen
+const CACHE_NAME = 'mkk-dart-v6'; // Erhöht auf v6, damit das Pixel 8a sofort den neuen Code erzwingt
 const ASSETS = [
-  '/MKK-Spielbericht/',
-  '/MKK-Spielbericht/index.html',
-  '/MKK-Spielbericht/manifest.json'
+  '/MKK-2026/',
+  '/MKK-2026/index.html',
+  '/MKK-2026/manifest.json'
 ];
 
 // Installieren und Assets in den Cache laden
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
+      console.log('Dateien werden für MKK-2026 gecacht...');
       return cache.addAll(ASSETS);
     })
   );
