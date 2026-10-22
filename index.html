@@ -283,7 +283,6 @@ solid #444; font-weight: bold; cursor: pointer; border-radius: 5px; font-size:
 
 
 
-
 /* Hauptbox für jeden Spieler */
 .setup-popup-content .row-flex {
  background: #1e1e1e !important;
@@ -293,7 +292,7 @@ solid #444; font-weight: bold; cursor: pointer; border-radius: 5px; font-size:
  padding: 12px !important;
  margin-bottom: 12px !important;
  display: flex !important;
- flex-direction: column !important; /* Stapelt Zeile 1 (Titel) und Zeile 2 (Eingabe) */
+ flex-direction: column !important; /* Stapelt Zeile 1 (Titel) über Zeile 2 (Eingabefelder) */
  gap: 8px !important;
  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4) !important;
 }
@@ -303,50 +302,73 @@ solid #444; font-weight: bold; cursor: pointer; border-radius: 5px; font-size:
  color: #ffcc00 !important;
  font-size: 14px !important;
  font-weight: bold !important;
- margin: 0 0 4px 0 !important;
+ margin: 0 !important;
  display: block !important;
  width: 100% !important;
+ order: 1 !important; /* Erzwingt, dass das Label ganz oben steht */
 }
 
-/* Zeile 2: Zwingt Name und Passnummer IMMER nebeneinander in eine Zeile */
-.setup-popup-content .row-flex select,
-.setup-popup-content .row-flex input {
- height: 40px !important;
- box-sizing: border-box !important;
+/* Der nackte Text (das Trikot-Emoji) wird unsichtbar gemacht oder ignoriert, damit es das Layout nicht stört */
+.setup-popup-content .row-flex {
+ color: transparent !important;
+}
+.setup-popup-content .row-flex * {
+ color: #fff; /* Macht den Text in den Feldern wieder weiß */
+}
+
+/* Zeile 2: Zwingt Name und Passnummer IMMER nebeneinander in eine Zeile unter dem Titel */
+.setup-popup-content .row-flex select {
+ display: inline-block !important;
+ width: 68% !important; /* Große Breite für das Namensfeld */
+ height: 42px !important;
  margin: 0 !important;
-}
-
-/* Das Dropdown für den Namen bekommt den Hauptplatz (ca. 70% Breite) */
-.setup-popup-content .row-flex select {
- width: 70% !important;
- display: inline-block !important;
+ order: 2 !important; /* Steht links in der zweiten Zeile */
+ background: #262626 !important;
+ border: 1px solid #444 !important;
+ border-radius: 6px !important;
  float: left !important;
 }
 
-/* Das Eingabefeld für die Passnummer steht rechts daneben (ca. 26% Breite) */
-.setup-popup-content .row-flex input {
- width: 26% !important;
- display: inline-block !important;
- float: right !important;
- text-align: center !important;
- padding: 4px !important;
- font-size: 14px !important;
-}
-
-
-
-/* Das Dropdown-Feld für den Namen bekommt 68% Breite */
-.setup-popup-content .row-flex select {
- width: 68% !important;
- float: left !important;
-}
-
-/* Das Textfeld für die Passnummer bekommt 28% Breite (4% Abstand dazwischen) */
 .setup-popup-content .row-flex input[type="text"] {
- width: 28% !important;
+ display: inline-block !important;
+ width: 28% !important; /* Kompakte Breite für die Passnummer rechts */
+ height: 42px !important;
+ margin: 0 !important;
+ order: 3 !important; /* Steht rechts neben dem Namen */
+ text-align: center !important;
+ font-size: 15px !important;
+ font-weight: bold !important;
+ background: #262626 !important;
+ border: 1px solid #444 !important;
+ border-radius: 6px !important;
  float: right !important;
- text-align: center !important; /* Zentriert die Passnummer für bessere Optik */
 }
+
+/* Schafft einen sauberen visuellen Abschluss für die Floats */
+.setup-popup-content .row-flex::after {
+ content: "" !important;
+ display: table !important;
+ clear: both !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .setup-popup-content .row-flex label:not(.card-title) {
  display: none !important;
