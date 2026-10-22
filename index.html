@@ -419,7 +419,11 @@ function aktiviereVollbild() {
 <body onclick="if(window.aktiviereVollbild) aktiviereVollbild();">
 
 <div class="container">
- <h1> American Dart - Liga MKK Live-Bogen</h1> 🎯
+ <h1 style="text-align: center; color: #ffcc00; margin-top: 0; margin-bottom: 10px; line-height: 1.2; border-bottom: 2px solid #ffcc00; padding-bottom: 10px;">
+   MKK Bullshooter Liga 2026<br>
+   <span style="font-size: 18px; color: #fff; font-weight: normal; font-style: italic;">Spielberichtsbogen</span> 🎯
+ </h1>
+
  <div class="tab-navigation">
   <button id="btn_tab_setup" class="tab-btn active" onclick="switchTab('setup')">1. Aufstellung & Setup</button>
   <button id="btn_tab_game" class="tab-btn" onclick="switchTab('game'); aktiviereVollbild();">2. Live-Spielplan & Statistik</button>
@@ -635,7 +639,7 @@ function aktiviereVollbild() {
 </div> <!-- HIER ENDET TAB_SETUP VOLLSTÄNDIG -->
 
  <div id="tab_game" class="tab-content">
-  <button class="print-btn" onclick="window.print()"> PDF im 🖨 Schwarz-Weiß drucken</button>
+ 
   <div class="panel" style="overflow-x: auto;">
    <h3>Spielplan (Klicken zum Erfassen)</h3> 📅
    <table>
@@ -1133,22 +1137,52 @@ function renderTable() {
  const btnPrint = document.getElementById("btn_print_pdf");
  const infoText = document.getElementById("sig_info_text");
 
- if (gespielteSpieleAnzahl === gesamtSpieleAnzahl && gesamtSpieleAnzahl > 0) {
-   // Spielende: Unterschriften UND Drucken freischalten
-   if(btnH) btnH.classList.remove("row-disabled");
-   if(btnG) btnG.classList.remove("row-disabled");
-   if(btnPrint) btnPrint.classList.remove("row-disabled");
-   if(infoText) infoText.style.display = "none";
- } else {
-   // Noch Spiele offen: Alles sperren
+ // Prüfen, ob die Unterschriften bereits im Browser-Speicher existieren
+ const hatUnterschriftH = localStorage.getItem("mkk_sig_data_H") !== null;
+ const hatUnterschriftG = localStorage.getItem("mkk_sig_data_G") !== null;
+
+ if (gespielteSpieleAnzahl < gesamtSpieleAnzahl) {
+   // FALL 1: Das Spiel läuft noch
    if(btnH) btnH.classList.add("row-disabled");
    if(btnG) btnG.classList.add("row-disabled");
    if(btnPrint) btnPrint.classList.add("row-disabled");
    if(infoText) {
      infoText.style.display = "block";
-     infoText.innerText = "⚠ Unterschriftenfelder & Druck erst ausfüllbar nach Spielende!";
+     infoText.style.color = "#ff3333";
+     infoText.innerText = `⚠ Spiel läuft noch: Es müssen noch ${gesamtSpieleAnzahl - gespielteSpieleAnzahl} von ${gesamtSpieleAnzahl} Spielen erfasst werden!`;
+   }
+ } else {
+   // Das Spiel ist vorbei (Alle Matches eingetragen) -> Unterschriften freischalten
+   if(btnH) btnH.classList.remove("row-disabled");
+   if(btnG) btnG.classList.remove("row-disabled");
+
+   if (!hatUnterschriftH || !hatUnterschriftG) {
+     // FALL 2: Spiel vorbei, aber es fehlen noch Unterschriften
+     if(btnPrint) btnPrint.classList.add("row-disabled"); // Druckbutton bleibt ZU!
+     if(infoText) {
+       infoText.style.display = "block";
+       infoText.style.color = "#ffcc00"; // Gelber Warnhinweis
+       
+       // Dynamischer Hinweistext, wer noch unterschreiben muss
+       if (!hatUnterschriftH && !hatUnterschriftG) {
+         infoText.innerText = "📝 Alle Spiele erfasst! Bitte jetzt Unterschrift von HEIM und GAST leisten.";
+       } else if (!hatUnterschriftH) {
+         infoText.innerText = "📝 Es fehlt noch die Unterschrift vom HEIM-Kapitän.";
+       } else if (!hatUnterschriftG) {
+         infoText.innerText = "📝 Es fehlt noch die Unterschrift vom GAST-Kapitän.";
+       }
+     }
+   } else {
+     // FALL 3: Alles erledigt! Spiele vollzählig und beide TCs haben unterschrieben
+     if(btnPrint) btnPrint.classList.remove("row-disabled"); // Druckbutton wird GRÜN!
+     if(infoText) {
+       infoText.style.display = "block";
+       infoText.style.color = "#00cc66"; // Grüner Erfolgshinweis
+       infoText.innerText = "🟢 Spielbericht vollständig! Der PDF-Druck ist jetzt freigegeben.";
+     }
    }
  }
+
 
 
  updateStats();
@@ -1179,28 +1213,84 @@ const c1 = m.pos[0] || ""; const c2 = m.pos[1] || ""; const c3 = m.pos[2] || "";
  for(let i = 1; i <= activePopupMatchId; i++) { if(matchResults[i]) { curH += matchResults[i].heim; curG += matchResults[i].gast; } }
  area.innerHTML += `<div style="text-align:center; font-size:15px; font-weight:bold; color:#ffcc00; margin: 0 0 12px 0; background:rgba(0,0,0,0.3); padding:4px; border-radius:3px;">Spielstand: ${curH} : ${curG}</div>`;
  const disabledAttr = isPlayed ? "click-box-disabled" : "";
+ 
+
+
+
+
+
  if (m.type === "E") {
-  const side1 = c1.startsWith("H") ? "H" : "G"; const side2 = c2.startsWith("H") ? "H" : "G";
-  const btnClass1 = side1 === "H" ? "click-box-home" : "click-box-guest"; const btnClass2 = side2 === "H" ? "click-box-home" : "click-box-guest";
-  area.innerHTML += `<div class="click-box ${btnClass1} ${disabledAttr}" onclick="registerWinner('${p1}', '${c1}', '${side1}')">${p1} (${side1==='H'?'Heim':'Gast'}) </div>`;
-  area.innerHTML += `<div class="click-box ${btnClass2} ${disabledAttr}" onclick="registerWinner('${p2}', '${c2}', '${side2}')">${p2} (${side2==='H'?'Heim':'Gast'}) </div>`;
+   const side1 = c1.startsWith("H") ? "H" : "G"; 
+   const side2 = c2.startsWith("H") ? "H" : "G";
+   
+   // Hintergrundfarben vollflächig ausfüllen: Sattes Grün für Heim, sattes Rot für Gast
+   const btnClass1 = side1 === "H" ? "click-box-home" : "click-box-guest"; 
+   const btnClass2 = side2 === "H" ? "click-box-home" : "click-box-guest";
+   
+   let einzelPlayers = [
+     { name: p1, pos: c1, side: side1, scoreNum: 1 },
+     { name: p2, pos: c2, side: side2, scoreNum: 2 }
+   ];
+   einzelPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
+
+   einzelPlayers.forEach(p => {
+     // Bestimmt das lustige Symbol und den Text links
+     const sideBadge = p.side === 'H' ? '🏠 Heim' : '🚀 Gast';
+     const btnStyle = p.side === 'H' 
+       ? 'background:#00cc66 !important; color:#000 !important; font-weight:bold; padding:12px; margin:6px 0; border:none; display:block;' 
+       : 'background:#cc3333 !important; color:#fff !important; font-weight:bold; padding:12px; margin:6px 0; border:none; display:block;';
+
+     area.innerHTML += `<div class="click-box" style="${btnStyle}" onclick="registerWinner('${p.name}', '${p.pos}', '${p.side}')">
+       <div style="display:grid; grid-template-columns: 85px 75px 25px 1fr; align-items:center; text-align:left; width:100%;">
+         <span style="font-size:12px; opacity:0.9;">${sideBadge}</span>
+         <span style="background:rgba(0,0,0,0.2); padding:2px 6px; border-radius:4px; font-size:11px; text-align:center;">Score ${p.scoreNum}</span>
+         <span style="text-align:center; font-size:14px;">🎯</span>
+         <span style="font-size:15px; padding-left:5px;">${p.name}</span>
+       </div>
+     </div>`;
+   });
  } else {
-  const hPlayers = [], gPlayers = [];
-  if(c1.startsWith("H")) hPlayers.push({name: p1, pos: c1}); else gPlayers.push({name: p1, pos: c1});
-  if(c2.startsWith("H")) hPlayers.push({name: p2, pos: c2}); else gPlayers.push({name: p2, pos: c2});
-  if(c3) { if(c3.startsWith("H")) hPlayers.push({name: p3, pos: c3}); else gPlayers.push({name: p3, pos: c3}); }
-  if(c4) { if(c4.startsWith("H")) hPlayers.push({name: p4, pos: c4}); else gPlayers.push({name: p4, pos: c4}); }
-  area.innerHTML += `<div style="color:#00cc66; font-size:12px; margin-bottom:3px; font-weight:bold; text-align:left;"> 🏠 HEIMGEWINN:</div>`;
-  hPlayers.forEach(p => {
-   const partner = hPlayers.find(x => x.pos !== p.pos) || {name: null, pos: null};
-   area.innerHTML += `<div class="click-box click-box-home ${disabledAttr}" style="padding:10px; font-size:14px; margin:4px 0;" onclick="registerWinner('${p.name}', '${p.pos}', 'H', '${partner.name}', '${partner.pos}')">Sieger: ${p.name}</div>`;
-  });
-  area.innerHTML += `<div style="color:#ff3333; font-size:12px; margin:8px 0 3px 0; font-weight:bold; text-align:left;"> 🚀 GASTGEWINN:</div>`;
-  gPlayers.forEach(p => {
-   const partner = gPlayers.find(x => x.pos !== p.pos) || {name: null, pos: null};
-   area.innerHTML += `<div class="click-box click-box-guest ${disabledAttr}" style="padding:10px; font-size:14px; margin:4px 0;" onclick="registerWinner('${p.name}', '${p.pos}', 'G', '${partner.name}', '${partner.pos}')">Sieger: ${p.name}</div>`;
-  });
+   const hPlayers = [], gPlayers = [];
+   if(c1.startsWith("H")) hPlayers.push({name: p1, pos: c1, scoreNum: 1}); else gPlayers.push({name: p1, pos: c1, scoreNum: 1});
+   if(c2.startsWith("H")) hPlayers.push({name: p2, pos: c2, scoreNum: 2}); else gPlayers.push({name: p2, pos: c2, scoreNum: 2});
+   if(c3) { if(c3.startsWith("H")) hPlayers.push({name: p3, pos: c3, scoreNum: 3}); else gPlayers.push({name: p3, pos: c3, scoreNum: 3}); }
+   if(c4) { if(c4.startsWith("H")) hPlayers.push({name: p4, pos: c4, scoreNum: 4}); else gPlayers.push({name: p4, pos: c4, scoreNum: 4}); }
+   
+   hPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
+   gPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
+
+   area.innerHTML += `<div style="color:#00cc66; font-size:13px; margin-bottom:5px; font-weight:bold; text-align:left; letter-spacing:0.5px;">🏠 HEIMGEWINN:</div>`;
+   hPlayers.forEach(p => {
+     const partner = hPlayers.find(x => x.pos !== p.pos) || {name: null, pos: null};
+     area.innerHTML += `<div class="click-box" style="background:#00cc66 !important; color:#000 !important; font-weight:bold; padding:12px; margin:5px 0; border:none; display:block;" onclick="registerWinner('${p.name}', '${p.pos}', 'H', '${partner.name}', '${partner.pos}')">
+       <div style="display:grid; grid-template-columns: 85px 75px 25px 1fr; align-items:center; text-align:left; width:100%;">
+         <span style="font-size:12px; opacity:0.9;">Heim</span>
+         <span style="background:rgba(0,0,0,0.15); padding:2px 6px; border-radius:4px; font-size:11px; text-align:center;">Score ${p.scoreNum}</span>
+         <span style="text-align:center; font-size:14px;">🎯</span>
+         <span style="font-size:15px; padding-left:5px;">${p.name}</span>
+       </div>
+     </div>`;
+   });
+   
+   area.innerHTML += `<div style="color:#ff3333; font-size:13px; margin:12px 0 5px 0; font-weight:bold; text-align:left; letter-spacing:0.5px;">🚀 GASTGEWINN:</div>`;
+   gPlayers.forEach(p => {
+     const partner = gPlayers.find(x => x.pos !== p.pos) || {name: null, pos: null};
+     area.innerHTML += `<div class="click-box" style="background:#cc3333 !important; color:#fff !important; font-weight:bold; padding:12px; margin:5px 0; border:none; display:block;" onclick="registerWinner('${p.name}', '${p.pos}', 'G', '${partner.name}', '${partner.pos}')">
+       <div style="display:grid; grid-template-columns: 85px 75px 25px 1fr; align-items:center; text-align:left; width:100%;">
+         <span style="font-size:12px; opacity:0.9;">Gast</span>
+         <span style="background:rgba(0,0,0,0.2); padding:2px 6px; border-radius:4px; font-size:11px; text-align:center;">Score ${p.scoreNum}</span>
+         <span style="text-align:center; font-size:14px;">🎯</span>
+         <span style="font-size:15px; padding-left:5px;">${p.name}</span>
+       </div>
+     </div>`;
+   });
  }
+
+
+
+
+
+
  const activeSubs = substitutions.filter(s => s.matchId <= activePopupMatchId);
  if(activeSubs.length > 0) {
   let subsHtml = `<div style="margin-top:10px; background:rgba(255,255,255,0.05); padding:6px; border-radius:4px; border:1px solid #444; font-size:11px; text-align:left; color:#bbb;"><b style="color:#ffcc00;"> Aktive Wechsel bis Spiel 📢 ${activePopupMatchId}:</b><br>`;
@@ -1687,9 +1777,24 @@ function setupCanvasEvents(side) {
 
 function clearSignature(side) {
   if (sigContexts[side] && sigCanvases[side]) {
+    // 1. Zeichnung auf dem Display leeren
     sigContexts[side].clearRect(0, 0, sigCanvases[side].width, sigCanvases[side].height);
+    
+    // 2. Gespeicherte Bilddaten aus dem Browser-Gedächtnis löschen
+    localStorage.removeItem("mkk_sig_data_" + side);
+    
+    // 3. Das Vorschaubild im PDF-Drucklayout wieder ausblenden
+    const img = document.getElementById("img_print_sig_" + side);
+    if(img) { img.style.display = "none"; }
+    
+    // 4. Den Button-Text wieder auf den Startwert zurücksetzen
+    document.getElementById("btn_sig_" + side).innerText = `✍ ${side === 'H' ? 'Heim' : 'Gast'}-Kapitän unterschreiben`;
+    
+    // 5. Sicherheitsprüfung neu starten (sperrt den Druck-Button sofort wieder)
+    renderTable();
   }
 }
+
 
 function saveSignature(side) {
   const canvas = sigCanvases[side];
@@ -1703,10 +1808,15 @@ function saveSignature(side) {
     img.src = dataUrl;
     img.style.display = "block";
   }
+  
   document.getElementById("btn_sig_" + side).innerText = "✓ Unterschrift erfasst";
   document.getElementById("popup_sig_" + side).style.display = "none";
   document.body.style.overflow = "auto";
+
+  // FIX: Die Tabellenberechnung steht jetzt ganz am Ende, wenn das Popup schon zu ist!
+  renderTable(); 
 }
+
 
 
 function starteSpezialDruck() {
