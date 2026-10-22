@@ -1,11 +1,19 @@
 {
+  "id": "/MKK-2026/",
   "short_name": "MKK Dart",
   "name": "American Dart - Liga MKK Live-Bogen",
   "icons": [
     {
-      "src": "https://github.com",
+      "src": "https://r2.dev",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "https://r2.dev",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": "/MKK-2026/index.html",
