@@ -901,6 +901,14 @@ function fuehreKombiUpdateAus() {
         // 3. Button-Text anhand der ersten Zeile aktualisieren
         aktualisiereKombiButtonText();
         
+        // 4. AUTOMATISCHER SCHLIESS-TRICK: Klappt das Textfeld-Menü von alleine zu
+        const panel = document.getElementById("accordion_panel");
+        const arrow = document.getElementById("accordion_arrow");
+        if (panel) {
+          panel.style.display = "none"; // Schließt das Menü visuell
+          if (arrow) arrow.innerText = "▼"; // Dreht den Pfeil wieder nach unten
+        }
+        
         alert("Spielerliste erfolgreich frisch geladen und dauerhaft gespeichert! 🎯");
       } else {
         alert("Die Datei auf GitHub scheint leer zu sein.");
@@ -913,6 +921,7 @@ function fuehreKombiUpdateAus() {
       ZustandKombiButtonZuruecksetzen();
     });
 }
+
 
 function importTeamsFromTxt() {
   const text = document.getElementById("txt_import_area").value;
