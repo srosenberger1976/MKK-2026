@@ -14,6 +14,7 @@
     }
   ],
   "start_url": "/MKK-2026/index.html",
+  "scope": "/MKK-2026/",
   "background_color": "#1a1a1a",
   "theme_color": "#ffcc00",
   "display": "standalone",
