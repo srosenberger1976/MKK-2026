@@ -284,7 +284,7 @@ solid #444; font-weight: bold; cursor: pointer; border-radius: 5px; font-size:
 
 
 
-/* ERSETZE diesen bestehenden Block in deinem CSS: */
+/* Hauptbox für jeden Spieler */
 .setup-popup-content .row-flex {
  background: #1e1e1e !important;
  border: 1px solid #333 !important;
@@ -292,47 +292,47 @@ solid #444; font-weight: bold; cursor: pointer; border-radius: 5px; font-size:
  border-radius: 8px !important;
  padding: 12px !important;
  margin-bottom: 12px !important;
- display: grid !important;
- /* GEÄNDERT: Von 80px auf 110px erhöht für mehr Platz! */
- grid-template-columns: auto 1fr 110px !important;
+ display: flex !important;
+ flex-direction: column !important; /* Stapelt Zeile 1 (Titel) und Zeile 2 (Eingabe) */
  gap: 8px !important;
- align-items: center !important;
  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* Passe auch die Schriftgröße für das Eingabefeld an (unterhalb in derselben Region): */
-.setup-popup-content .row-flex input {
+/* Zeile 1: Die gelbe Überschrift steht ganz oben auf voller Breite */
+.setup-popup-content .row-flex .card-title {
+ color: #ffcc00 !important;
+ font-size: 14px !important;
+ font-weight: bold !important;
+ margin: 0 0 4px 0 !important;
+ display: block !important;
  width: 100% !important;
- height: 40px !important;
- text-align: center !important;
- background: #262626 !important;
- color: #fff !important;
- border: 1px solid #444 !important;
- border-radius: 6px !important;
- font-size: 15px !important; /* Sorgt für gute Lesbarkeit auf Handys */
- padding: 4px !important;
 }
 
+/* Zeile 2: Zwingt Name und Passnummer IMMER nebeneinander in eine Zeile */
+.setup-popup-content .row-flex select,
+.setup-popup-content .row-flex input {
+ height: 40px !important;
+ box-sizing: border-box !important;
+ margin: 0 !important;
+}
 
-/* Verhindert, dass die Eingabefelder das Layout sprengen */
+/* Das Dropdown für den Namen bekommt den Hauptplatz (ca. 70% Breite) */
 .setup-popup-content .row-flex select {
- width: 100% !important;
- height: 40px !important;
- background: #262626 !important;
- color: #fff !important;
- border: 1px solid #444 !important;
- border-radius: 6px !important;
+ width: 70% !important;
+ display: inline-block !important;
+ float: left !important;
 }
 
+/* Das Eingabefeld für die Passnummer steht rechts daneben (ca. 26% Breite) */
 .setup-popup-content .row-flex input {
- width: 100% !important;
- height: 40px !important;
+ width: 26% !important;
+ display: inline-block !important;
+ float: right !important;
  text-align: center !important;
- background: #262626 !important;
- color: #fff !important;
- border: 1px solid #444 !important;
- border-radius: 6px !important;
+ padding: 4px !important;
+ font-size: 14px !important;
 }
+
 
 
 /* Das Dropdown-Feld für den Namen bekommt 68% Breite */
