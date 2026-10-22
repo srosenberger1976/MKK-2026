@@ -11,7 +11,7 @@
  <meta name="apple-mobile-web-app-title" content="MKK Dart">
  <link rel="apple-touch-icon" href="https://icons8.com">
  <meta charset="UTF-8">
- <title>American Dart - Liga MKK Live-Bogen</title>
+ <title>American Dart - MKK Spielberichtsbogen</title>
  
 
 
@@ -151,6 +151,58 @@ solid #444; font-weight: bold; cursor: pointer; border-radius: 5px; font-size:
  color: #1a1a1a !important;
  transform: scale(1.01);
 }
+
+/* STYLING FÜR DIE VOLLBILD-UNTERSCHRIFTEN-POPUPS */
+.sig-popup-overlay {
+ display: none;
+ position: fixed;
+ top: 0; left: 0;
+ width: 100%; height: 100%;
+ background: #121212;
+ z-index: 20000;
+ box-sizing: border-box;
+ flex-direction: column;
+}
+.sig-canvas-container {
+ flex: 1;
+ display: flex;
+ background: #ffffff;
+ margin: 70px 16px 85px 16px;
+ border-radius: 8px;
+ border: 2px solid #ffcc00;
+ position: relative;
+}
+.sig-canvas-container canvas {
+ width: 100%;
+ height: 100%;
+ touch-action: none;
+ cursor: crosshair;
+}
+.sig-btn-row {
+ position: fixed;
+ bottom: 0; left: 0;
+ width: 100%;
+ height: 75px;
+ background: #1e1e1e;
+ display: flex;
+ gap: 15px;
+ padding: 12px 16px;
+ box-sizing: border-box;
+ border-top: 1px solid #333;
+}
+.sig-btn {
+ flex: 1;
+ height: 100%;
+ border: none;
+ font-weight: bold;
+ font-size: 15px;
+ border-radius: 6px;
+ cursor: pointer;
+}
+.sig-btn-clear { background: #444; color: #fff; }
+.sig-btn-save { background: #00cc66; color: #fff; }
+
+
 @media (min-width: 600px) {
  .flex-buttons {
  grid-template-columns: 1fr 1fr;
@@ -318,9 +370,11 @@ padding: 4px 15px; font-size: 13px; font-weight: bold; background: #e0e0e0
  .print-signature-wrapper { display: flex; justify-content: space-between; 
 width: 100%; gap: 30px; margin-top: 4px; }
  .print-signature-box { display: flex; flex-direction: column; justify-content:
-flex-end; height: 22px; border-bottom: 1.2px solid #000 !important; font-size: 
-9px; width: 45%; padding-bottom: 1px; color: #000 !important; }
+flex-end; height: 45px; border-bottom: 1.2px solid #000 !important; font-size: 
+9px; width: 45%; padding-bottom: 1px; color: #000 !important; position: relative; }
+ .print-sig-img { position: absolute; max-height: 35px; max-width: 90%; bottom: 12px; left: 5%; object-fit: contain; }
  }
+
 
 /* ISOLIERTE SMARTPHONE-KORREKTUR NUR FÜR DEN MITTLEREN METADATEN-BLOCK */
 @media (max-width: 768px) {
@@ -566,11 +620,7 @@ flex-end; height: 22px; border-bottom: 1.2px solid #000 !important; font-size:
      </div>
  </div>
 
- </div> <!-- HIER ENDET TAB_SETUP VOLLSTÄNDIG -->
-
-
-
-
+</div> <!-- HIER ENDET TAB_SETUP VOLLSTÄNDIG -->
 
  <div id="tab_game" class="tab-content">
   <button class="print-btn" onclick="window.print()"> PDF im 🖨 Schwarz-Weiß drucken</button>
@@ -581,16 +631,39 @@ flex-end; height: 22px; border-bottom: 1.2px solid #000 !important; font-size:
     <tbody id="matchTableBody"></tbody>
    </table>
   </div>
+  
   <h3 style="margin-top: 25px; color: #ffcc00; border-bottom: 2px solid #ffcc00; padding-bottom: 5px;">Live-Punktekonto</h3> 📊
   <div class="main-grid">
    <div class="panel"><h4>Punkte Heimteam</h4><table><thead><tr><th>Spieler</th><th>Check</th><th>Assist</th><th>Gesamt</th></tr></thead><tbody id="live_stats_H_body"></tbody></table></div>
+
    <div class="panel"><h4>Punkte Gastteam</h4><table><thead><tr><th>Spieler</th><th>Check</th><th>Assist</th><th>Gesamt</th></tr></thead><tbody id="live_stats_G_body"></tbody></table></div>
   </div>
+
+  <h3 style="margin-top: 25px; color: #ffcc00; border-bottom: 2px solid #ffcc00; padding-bottom: 5px;">Match-Abschluss & Unterschriften</h3> 📝
+  <div id="sig_info_text" style="color: #ff3333; font-weight: bold; text-align: center; margin-bottom: 10px; font-size: 14px;">
+   ⚠ Unterschriftenfelder erst ausfüllbar nach Spielende!
+  </div>
+  <div class="main-grid" style="margin-bottom: 20px;">
+   <div class="panel">
+     <h4>Unterschrift Heimteam</h4>
+     <div id="btn_sig_H" class="click-box click-box-home row-disabled" onclick="openSignaturePopup('H')">✍ Heim-Kapitän unterschreiben</div>
+   </div>
+   <div class="panel">
+     <h4>Unterschrift Gastteam</h4>
+     <div id="btn_sig_G" class="click-box click-box-guest row-disabled" onclick="openSignaturePopup('G')">✍ Gast-Kapitän unterschreiben</div>
+   </div>
+  </div>
+
+  <button id="btn_print_pdf" class="print-btn row-disabled" style="margin-top: 15px;" onclick="starteSpezialDruck()">
+    PDF im 🖨 Schwarz-Weiß drucken & speichern
+  </button>
  </div>
 </div>
 
+
 <div id="print-layout-root">
  <div class="print-page">
+
   <div class="print-header-title" style="font-family: 'Times New Roman', serif; font-size: 26px; font-style: italic;">American Dart - Liga MKK</div>
   <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px;">
    <tr>
@@ -668,10 +741,17 @@ flex-end; height: 22px; border-bottom: 1.2px solid #000 !important; font-size:
     <table class="print-stats-table"><thead><tr><th>Spieler Name</th><th style="width:14%">Check</th><th style="width:14%">Assist</th><th style="width:16%">Ges.</th></tr></thead><tbody id="print_stats_G"></tbody></table>
     <div class="print-footer-summary">
      <div class="print-result-box">Gesamt: &nbsp;<span id="lbl_res_total">0 : 0</span></div>
-     <div class="print-signature-wrapper">
-      <div class="print-signature-box">Unterschrift HeimTeam:</div>
-      <div class="print-signature-box">Unterschrift GastTeam:</div>
-     </div>
+    <div class="print-signature-wrapper">
+    <div class="print-signature-box" id="print_sig_container_H">
+      <img id="img_print_sig_H" class="print-sig-img" style="display:none;" alt="">
+      Unterschrift HeimTeam:
+    </div>
+    <div class="print-signature-box" id="print_sig_container_G">
+      <img id="img_print_sig_G" class="print-sig-img" style="display:none;" alt="">
+      Unterschrift GastTeam:
+    </div>
+  </div>
+
     </div>
    </div>
   </div>
@@ -709,6 +789,26 @@ flex-end; height: 22px; border-bottom: 1.2px solid #000 !important; font-size:
   <button class="close-btn" onclick="closeLivePopup()" style="margin-top:15px; padding:8px;">Schließen / Abbrechen</button>
  </div>
 </div>
+
+<div id="popup_sig_H" class="sig-popup-overlay">
+  <div class="setup-popup-header"><span>Digitale Unterschrift: Heimteam</span></div>
+  <div class="sig-canvas-container"><canvas id="canvas_sig_H"></canvas></div>
+  <div class="sig-btn-row">
+    <button class="sig-btn sig-btn-clear" onclick="clearSignature('H')">Löschen</button>
+    <button class="sig-btn sig-btn-save" onclick="saveSignature('H')">Speichern & Schließen</button>
+  </div>
+</div>
+<div id="popup_sig_G" class="sig-popup-overlay">
+  <div class="setup-popup-header"><span>Digitale Unterschrift: Gastteam</span></div>
+  <div class="sig-canvas-container"><canvas id="canvas_sig_G"></canvas></div>
+  <div class="sig-btn-row">
+    <button class="sig-btn sig-btn-clear" onclick="clearSignature('G')">Löschen</button>
+    <button class="sig-btn sig-btn-save" onclick="saveSignature('G')">Speichern & Schließen</button>
+  </div>
+</div>
+
+
+
 <div id="pwaInstallPopup" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2a2a2a; border: 2px solid #ffcc00; padding: 15px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); z-index: 99999; width: 90%; max-width: 400px; box-sizing: border-box; font-family: Arial, sans-serif;">
  <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
   <div style="width: 35px; height: 35px; min-width: 35px;">
@@ -1004,8 +1104,42 @@ function renderTable() {
  trP.innerHTML = `<td><b>${m.id}</b></td><td>${m.type}</td><td class="pos-cell" style="${f1}">${c1}</td><td class="gray-indicator-cell">${mark1}</td><td class="pos-cell" style="${f2}">${c2}</td><td class="gray-indicator-cell">${mark2}</td><td class="pos-cell" style="${f3}">${c3||""}</td><td class="gray-indicator-cell">${mark3}</td><td class="pos-cell" style="${f4}">${c4||""}</td><td class="gray-indicator-cell">${mark4}</td><td><b>${scoreDisplayHome}</b></td><td><b>${scoreDisplayGuest}</b></td>`;
  printBody.appendChild(trP);
  });
- document.getElementById("lbl_res_total").innerText = `${runningHome} : ${runningGuest}`; updateStats();
+  document.getElementById("lbl_res_total").innerText = `${runningHome} : ${runningGuest}`; 
+ 
+ // Prüfen, ob alle Spiele des aktuellen Spielplans gespielt wurden
+ const gesamtSpieleAnzahl = mkkSchedule.length;
+ let gespielteSpieleAnzahl = 0;
+ mkkSchedule.forEach(m => {
+   if (matchResults[m.id]) { gespielteSpieleAnzahl++; }
+ });
+
+ const btnH = document.getElementById("btn_sig_H");
+ const btnG = document.getElementById("btn_sig_G");
+ const btnPrint = document.getElementById("btn_print_pdf");
+ const infoText = document.getElementById("sig_info_text");
+
+ if (gespielteSpieleAnzahl === gesamtSpieleAnzahl && gesamtSpieleAnzahl > 0) {
+   // Spielende: Unterschriften UND Drucken freischalten
+   if(btnH) btnH.classList.remove("row-disabled");
+   if(btnG) btnG.classList.remove("row-disabled");
+   if(btnPrint) btnPrint.classList.remove("row-disabled");
+   if(infoText) infoText.style.display = "none";
+ } else {
+   // Noch Spiele offen: Alles sperren
+   if(btnH) btnH.classList.add("row-disabled");
+   if(btnG) btnG.classList.add("row-disabled");
+   if(btnPrint) btnPrint.classList.add("row-disabled");
+   if(infoText) {
+     infoText.style.display = "block";
+     infoText.innerText = "⚠ Unterschriftenfelder & Druck erst ausfüllbar nach Spielende!";
+   }
+ }
+
+
+ updateStats();
 }
+
+
 
 
 
@@ -1241,15 +1375,6 @@ function switchTab(tabName) {
 
 
 
-
-
-
-
-
-
-
-
-
 document.addEventListener("DOMContentLoaded", () => {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/MKK-Spielbericht/sw.js')
@@ -1302,6 +1427,25 @@ document.addEventListener("DOMContentLoaded", () => {
   if(loadSubs) { substitutions = JSON.parse(loadSubs); updatePrintSubstitutions(); }
   const loadScores = localStorage.getItem("mkk_live_player_scores"); 
   if(loadScores) playerScores = JSON.parse(loadScores);
+
+
+
+ // Gespeicherte Unterschriften wiederherstellen
+ ['H', 'G'].forEach(side => {
+   const savedSig = localStorage.getItem("mkk_sig_data_" + side);
+   if(savedSig) {
+     const img = document.getElementById("img_print_sig_" + side);
+     if(img) { img.src = savedSig; img.style.display = "block"; }
+     document.getElementById("btn_sig_" + side).innerText = "✓ Unterschrift erfasst";
+   }
+ });
+
+
+
+
+
+
+
 
   const dateInput = document.getElementById("meta_date");
   if (dateInput && !dateInput.value) {
@@ -1383,8 +1527,126 @@ function closeSetupPopup(side) {
 
 
 
+// Global steuernde Canvas-Variablen
+let sigDrawing = false;
+let sigCanvases = { H: null, G: null };
+let sigContexts = { H: null, G: null };
+
+function openSignaturePopup(side) {
+  // Sicherheitscheck: Abbrechen, wenn der Button noch gesperrt ist
+  const btn = document.getElementById("btn_sig_" + side);
+  if (btn && btn.classList.contains("row-disabled")) {
+    alert("Hinweis: Du kannst erst unterschreiben, wenn alle Spiele des Spielplans erfasst wurden!");
+    return;
+  }
+
+  const overlay = document.getElementById("popup_sig_" + side);
+
+  overlay.style.display = "flex";
+  document.body.style.overflow = "hidden";
+  
+  const canvas = document.getElementById("canvas_sig_" + side);
+  sigCanvases[side] = canvas;
+  const ctx = canvas.getContext("2d");
+  sigContexts[side] = ctx;
+  
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  
+  setupCanvasEvents(side);
+}
+
+function setupCanvasEvents(side) {
+  const canvas = sigCanvases[side];
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches.clientX : e.clientX;
+    const clientY = e.touches ? e.touches.clientY : e.clientY;
+    return { x: clientX - rect.left, y: clientY - rect.top };
+  }
+  
+  canvas.onmousedown = canvas.ontouchstart = function(e) {
+    sigDrawing = true;
+    const pos = getPos(e);
+    sigContexts[side].beginPath();
+    sigContexts[side].moveTo(pos.x, pos.y);
+    if(e.cancelable) e.preventDefault();
+  };
+  
+  canvas.onmousemove = canvas.ontouchmove = function(e) {
+    if(!sigDrawing) return;
+    const pos = getPos(e);
+    sigContexts[side].lineTo(pos.x, pos.y);
+    sigContexts[side].stroke();
+    if(e.cancelable) e.preventDefault();
+  };
+  
+  canvas.onmouseup = canvas.onmouseleave = canvas.ontouchend = function(e) {
+    sigDrawing = false;
+  };
+}
+
+function clearSignature(side) {
+  if (sigContexts[side] && sigCanvases[side]) {
+    sigContexts[side].clearRect(0, 0, sigCanvases[side].width, sigCanvases[side].height);
+  }
+}
+
+function saveSignature(side) {
+  const canvas = sigCanvases[side];
+  if(!canvas) return;
+  
+  const dataUrl = canvas.toDataURL("image/png");
+  localStorage.setItem("mkk_sig_data_" + side, dataUrl);
+  
+  const img = document.getElementById("img_print_sig_" + side);
+  if(img) {
+    img.src = dataUrl;
+    img.style.display = "block";
+  }
+  document.getElementById("btn_sig_" + side).innerText = "✓ Unterschrift erfasst";
+  document.getElementById("popup_sig_" + side).style.display = "none";
+  document.body.style.overflow = "auto";
+}
 
 
+function starteSpezialDruck() {
+  // Sicherheitscheck
+  const btn = document.getElementById("btn_print_pdf");
+  if (btn && btn.classList.contains("row-disabled")) {
+    alert("Hinweis: Der Ausdruck ist erst nach Erfassung aller Spiele möglich!");
+    return;
+  }
+
+  // 1. Daten für den Dateinamen einsammeln
+  const speicherDatum = document.getElementById("meta_date").value || "Datum";
+  const heimTeam = document.getElementById("team_home").value || "Heimteam";
+  const gastTeam = document.getElementById("team_guest").value || "Gastteam";
+  const ergebnisText = document.getElementById("lbl_res_total").innerText || "0 : 0";
+  
+  // Formatieren des Ergebnisses von "18 : 14" zu "18 zu 14" (vermeidet verbotene Doppelpunkte im Dateinamen)
+  const sauberesErgebnis = ergebnisText.replace(":", "zu").trim();
+
+  // 2. Den alten Titel sichern
+  const alterTitel = document.title;
+
+  // 3. Den Seitentitel exakt auf das Wunschformat setzen
+  document.title = `${speicherDatum} - ${heimTeam} gegen ${gastTeam} - ${sauberesErgebnis}`;
+
+  // 4. Den Druckdialog des Browsers öffnen
+  window.print();
+
+  // 5. Nach dem Schließen des Druckfensters den Titel für die Web-App wiederherstellen
+  setTimeout(() => {
+    document.title = alterTitel;
+  }, 1000);
+}
 
 
 
