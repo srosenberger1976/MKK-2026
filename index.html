@@ -450,13 +450,10 @@ function aktiviereVollbild() {
          </label>
          <textarea id="txt_import_area" placeholder="Füge hier deine komplette Liste mit allen Mannschaften ein..." style="width:100%; height:120px; background:#222; color:#fff; border:1px solid #555; padding:8px; border-radius:4px; box-sizing:border-box;"></textarea>
          
-         <button onclick="ladeSpielerVonGitHub()" style="margin-top:8px; margin-bottom:5px; padding: 12px; background: #00cc66; color: #fff; border: none; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; font-size: 14px;">
-             Spielerliste frisch von GitHub laden 🔄
-         </button>
-         
-         <button onclick="importTeamsFromTxt()" style="margin-top:5px; padding: 12px; background: #ffcc00; color: #000; border: none; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; font-size: 14px;">
-             Mannschaften dauerhaft im Browser-Gedächtnis speichern / überschreiben 💾
-         </button>
+ <button id="btn_kombi_import" onclick="fuehreKombiUpdateAus()" style="margin-top:8px; padding: 14px; background: #00cc66; color: #000; border: 2px solid #fff; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; font-size: 14px; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+   Spielerliste frisch laden & dauerhaft speichern 💾
+ </button>
+
      </div>
  </div>
 
@@ -865,51 +862,69 @@ let matchResults = {}; let substitutions = []; let playerScores = {}; let active
 let isMatchPlayable = false; let importedTeams = {};
 
 
-function ladeSpielerVonGitHub() {
-  // Der direkte, echte Pfad zu deiner Datei auf GitHub
+
+
+
+
+
+
+
+
+
+
+
+
+function fuehreKombiUpdateAus() {
+  const kombiBtn = document.getElementById("btn_kombi_import");
+  if(kombiBtn) { 
+    kombiBtn.innerText = "🔄 Daten werden geladen & verarbeitet..."; 
+    kombiBtn.style.opacity = "0.6"; 
+  }
+
   const url = "/MKK-2026/spieler.txt";
   const spielerTextarea = document.getElementById("txt_import_area");
-  
   if (!spielerTextarea) return;
-
-  const btn = event ? event.target : null;
-  if(btn) { btn.innerText = "⏳ Läde Daten..."; btn.style.opacity = "0.6"; }
 
   fetch(url)
     .then(response => {
-      if (!response.ok) throw new Error("Datei konnte nicht abgerufen werden.");
+      if (!response.ok) throw new Error("Datei konnte nicht von GitHub abgerufen werden.");
       return response.text();
     })
     .then(daten => {
       if (daten && daten.trim().length > 0) {
+        // 1. Daten in die Textbox schreiben
         spielerTextarea.value = daten.trim();
+        
+        // 2. Mannschaften verarbeiten und im Browser-Gedächtnis sichern
         importTeamsFromTxt();
-        alert("Spieler erfolgreich frisch von GitHub geladen!");
+        
+        // 3. Button-Text anhand der ersten Zeile aktualisieren
+        aktualisiereKombiButtonText();
+        
+        alert("Spielerliste erfolgreich frisch geladen und dauerhaft gespeichert! 🎯");
       } else {
         alert("Die Datei auf GitHub scheint leer zu sein.");
+        ZustandKombiButtonZuruecksetzen();
       }
     })
     .catch(error => {
       console.error(error);
       alert("Fehler beim Abrufen! Bitte überprüfe deine Internetverbindung.");
-    })
-    .finally(() => {
-      if(btn) { btn.innerText = "🔄 Spielerliste frisch von GitHub laden"; btn.style.opacity = "1"; }
+      ZustandKombiButtonZuruecksetzen();
     });
 }
 
-
-
 function importTeamsFromTxt() {
   const text = document.getElementById("txt_import_area").value;
-  if(!text.trim()) { return; }
+  if(!text.trim()) return;
   
   importedTeams = {};
   const lines = text.split("\n");
   
   lines.forEach(line => {
     const trimmed = line.trim();
-    if(!trimmed || trimmed === "," || trimmed.replace(/,/g, "").trim() === "") return;
+    // Ignoriert leere Zeilen, Kommas ODER deine neue Info-Textzeile (enthält kein Komma)
+    if(!trimmed || trimmed === "," || !trimmed.includes(",")) return;
     
     try {
       const parts = trimmed.split(",").map(item => item.trim());
@@ -920,28 +935,51 @@ function importTeamsFromTxt() {
       const vorname = parts[2] || "";
       const passNum = parts[3] || "";
       
-      // Falls Pflichtfelder leer sind oder als Platzhalter dienen, Zeile überspringen
       if (!teamName || !nachname || nachname === "") return;
-      
       let fullName = vorname ? vorname + " " + nachname : nachname;
       if (!fullName.trim()) return;
       
-      if(!importedTeams[teamName]) { 
-        importedTeams[teamName] = []; 
-      }
-      
+      if(!importedTeams[teamName]) { importedTeams[teamName] = []; }
       if(!importedTeams[teamName].some(p => p.name === fullName)) { 
         importedTeams[teamName].push({ name: fullName, pass: passNum }); 
       }
-    } catch (e) {
-      console.log("Zeile ignoriert:", trimmed);
-    }
+    } catch (e) { console.log("Zeile ignoriert:", trimmed); }
   });
   
   localStorage.setItem("mkk_dart_teams", JSON.stringify(importedTeams));
   localStorage.setItem("mkk_dart_raw_text", text);
   initTeamDropdowns();
 }
+
+function aktualisiereKombiButtonText() {
+  const spielerTextarea = document.getElementById("txt_import_area");
+  const kombiBtn = document.getElementById("btn_kombi_import");
+  if (!spielerTextarea || !kombiBtn) return;
+
+  const lines = spielerTextarea.value.split("\n");
+  const ersteZeile = lines[0] ? lines[0].trim() : "";
+
+  // Wenn die erste Zeile deinen Info-Text enthält, nutzen wir ihn als Beschriftung
+  if (ersteZeile && !ersteZeile.includes(",")) {
+    kombiBtn.innerText = `✓ ${ersteZeile} 💾`;
+    kombiBtn.style.background = "#ffcc00"; // Wird gelb, wenn alles aktuell ist
+    kombiBtn.style.color = "#000";
+  } else {
+    kombiBtn.innerText = "Spielerliste frisch laden & dauerhaft speichern 💾";
+    kombiBtn.style.background = "#00cc66";
+    kombiBtn.style.color = "#000";
+  }
+  kombiBtn.style.opacity = "1";
+}
+
+function ZustandKombiButtonZuruecksetzen() {
+  const kombiBtn = document.getElementById("btn_kombi_import");
+  if(kombiBtn) {
+    kombiBtn.style.opacity = "1";
+    aktualisiereKombiButtonText();
+  }
+}
+
 
 function toggleAccordion() {
     const panel = document.getElementById("accordion_panel");
@@ -1497,6 +1535,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const savedRawText = localStorage.getItem("mkk_dart_raw_text");
   if (savedRawText && spielerTextarea) { spielerTextarea.value = savedRawText; }
   initTeamDropdowns();
+ aktualisiereKombiButtonText(); // Setzt den Button-Text direkt beim Starten der App richtig
 
   // 2. DANACH: Das frische Update von GitHub ziehen (Lokaler, sicherer Abruf)
  
