@@ -389,15 +389,14 @@ flex-end; height: 45px; border-bottom: 1.2px solid #000 !important; font-size:
  input, select { font-size: 15px !important; padding: 10px !important; }
  .click-box { font-size: 15px !important; padding: 12px !important; }
  
- /* Bricht die Quetsch-Zeile auf Mobilgeräten sauber untereinander auf */
- .panel[style*="grid-template-columns"] { 
-    display: flex !important; 
-    flex-direction: column !important; 
-    gap: 12px !important; 
- }
- .panel[style*="grid-template-columns"] > div { 
-    width: 100% !important; 
- }
+/* Verhindert das Aufbrechen der Spielerkarten auf Smartphones */
+.setup-popup-content .row-flex {
+ display: grid !important;
+ grid-template-columns: 2fr 1fr !important; /* Name bekommt 2 Teile, Passnummer 1 Teil */
+ gap: 10px !important;
+}
+
+
  .flex-buttons { display: flex !important; flex-direction: column !important; gap: 10px !important; }
 }
 
@@ -1741,28 +1740,6 @@ function openSignaturePopup(side) {
     }
     
     const overlay = document.getElementById("popup_sig_" + side);
-    
-    // TRICK: Wenn es der erste Klick ist, erzwingen wir sofort einen schnellen Doppel-Reflow
-    if (!isRelaunchingSig) {
-        isRelaunchingSig = true;
-        
-        // 1. Öffnen
-        overlay.style.display = "flex";
-        
-        // 2. Sofort im nächsten Browser-Frame wieder schließen und neu triggern
-        requestAnimationFrame(() => {
-            overlay.style.display = "none";
-            
-            // 3. Nach 50ms direkt das zweite Mal öffnen (Das bügelt den Browser-Bug aus)
-            setTimeout(() => {
-                openSignaturePopup(side);
-            }, 50);
-        });
-        return; // Bricht den aktuellen Durchlauf ab
-    }
-    
-    // Ab hier läuft der reguläre, zweite Öffnungsprozess
-    isRelaunchingSig = false; // Status wieder zurücksetzen
     overlay.style.display = "flex";
     document.body.style.overflow = "hidden";
     
@@ -1771,28 +1748,32 @@ function openSignaturePopup(side) {
     const ctx = canvas.getContext("2d");
     sigContexts[side] = ctx;
     
-    setTimeout(() => {
-        const rect = canvas.parentElement.getBoundingClientRect();
-        
-        // Nutzt die ermittelten Maße oder den Bildschirm-Fallback
-        const exactWidth = rect.width > 0 ? rect.width : (window.innerWidth - 32);
-        const exactHeight = rect.height > 0 ? rect.height : (window.innerHeight - 155);
+    // RADIKALER FIX: Wir fragen den Browser nicht mehr nach der Element-Größe!
+    // Wir nehmen direkt die echte Display-Größe des Handys und ziehen die Ränder ab.
+    // Margins links/rechts: je 16px (= 32px)
+    // Oben/Unten Freiraum für Buttons: ca. 160px
+    const exactWidth = window.innerWidth - 32;
+    const exactHeight = window.innerHeight - 160;
 
-        const pixelRatio = 3; 
-        canvas.width = exactWidth * pixelRatio;
-        canvas.height = exactHeight * pixelRatio;
-        
-        ctx.scale(pixelRatio, pixelRatio);
-        
-        ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 3.5; 
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        
-        setupCanvasEvents(side);
-    }, 200);
+    // Interne Auflösung für scharfen Druck verdreifachen
+    const pixelRatio = 3; 
+    canvas.width = exactWidth * pixelRatio;
+    canvas.height = exactHeight * pixelRatio;
+    
+    // Auf dem Bildschirm auf normale Größe skalieren
+    canvas.style.width = exactWidth + "px";
+    canvas.style.height = exactHeight + "px";
+    
+    ctx.scale(pixelRatio, pixelRatio);
+    
+    // Kuli-Einstellungen
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 3.5; 
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    
+    setupCanvasEvents(side);
 }
-
 
 
 
