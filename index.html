@@ -1659,25 +1659,28 @@ function openSignaturePopup(side) {
   const ctx = canvas.getContext("2d");
   sigContexts[side] = ctx;
   
-  const rect = canvas.parentElement.getBoundingClientRect();
-  
-  // FIX: Interne Auflösung für gestochen scharfen Druck verdreifachen (3x HD)
-  const pixelRatio = 3; 
-  canvas.width = rect.width * pixelRatio;
-  canvas.height = rect.height * pixelRatio;
-  
-  // Die Anzeige auf dem Bildschirm wieder auf die normale Größe skalieren
-  ctx.scale(pixelRatio, pixelRatio);
-  
-  // Kuli-Einstellungen: Strichstärke an die neue Auflösung anpassen
-  ctx.strokeStyle = "#000000";
-  ctx.lineWidth = 3.5; // Perfekte Kuli-Dicke bei hoher Auflösung
-
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  
-  setupCanvasEvents(side);
+  // FIX: Wir warten 200ms, bis das Popup komplett geöffnet ist, damit die Größe nicht 0 ist!
+  setTimeout(() => {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    
+    // Interne Auflösung für gestochen scharfen Druck verdreifachen (3x HD)
+    const pixelRatio = 3; 
+    canvas.width = rect.width * pixelRatio;
+    canvas.height = rect.height * pixelRatio;
+    
+    // Die Anzeige auf dem Bildschirm wieder auf die normale Größe skalieren
+    ctx.scale(pixelRatio, pixelRatio);
+    
+    // Kuli-Einstellungen: Strichstärke an die neue Auflösung anpassen
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 3.5; 
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    
+    setupCanvasEvents(side);
+  }, 200);
 }
+
 
 
 
