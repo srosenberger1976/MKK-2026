@@ -372,7 +372,7 @@ width: 100%; gap: 30px; margin-top: 4px; }
  .print-signature-box { display: flex; flex-direction: column; justify-content:
 flex-end; height: 45px; border-bottom: 1.2px solid #000 !important; font-size: 
 9px; width: 45%; padding-bottom: 1px; color: #000 !important; position: relative; }
- .print-sig-img { position: absolute; max-height: 42px; max-width: 95%; bottom: 4px; left: 10%; object-fit: contain; filter: contrast(200%) brightness(0.9); mix-blend-mode: multiply; }
+ .print-sig-img { position: absolute; max-height: 42px; max-width: 95%; bottom: 2px; left: 10%; object-fit: contain; filter: contrast(200%) brightness(0.9); mix-blend-mode: multiply; }
 
 
  }
@@ -853,7 +853,7 @@ let isMatchPlayable = false; let importedTeams = {};
 
 function ladeSpielerVonGitHub() {
   // Der direkte, echte Pfad zu deiner Datei auf GitHub
-  const url = "/MKK-Spielbericht/spieler.txt";
+  const url = "/MKK-2026/spieler.txt";
   const spielerTextarea = document.getElementById("txt_import_area");
   
   if (!spielerTextarea) return;
@@ -1382,7 +1382,8 @@ function switchTab(tabName) {
 
 document.addEventListener("DOMContentLoaded", () => {
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/MKK-Spielbericht/sw.js')
+   navigator.serviceWorker.register('/MKK-2026/sw.js')
+
     .then(reg => { console.log('Service Worker registriert!'); reg.update(); })
     .catch(err => console.error('Service Worker Fehler:', err));
   }
@@ -1578,19 +1579,75 @@ function openSignaturePopup(side) {
   setupCanvasEvents(side);
 }
 
+
+
+
+
+
+
+
+
+
 function setupCanvasEvents(side) {
   const canvas = sigCanvases[side];
   const ctx = sigContexts[side];
   
   function getPos(e) {
     const rect = canvas.getBoundingClientRect();
-    const clientX = e.touches && e.touches.length > 0 ? e.touches.clientX : e.clientX;
-    const clientY = e.touches && e.touches.length > 0 ? e.touches.clientY : e.clientY;
+    // Funktioniert sowohl für moderne Pointer, alte Maus- als auch Touch-Events
+    const clientX = e.touches && e.touches.length > 0 ? e.touches.clientX : (e.clientX || e.pageX);
+    const clientY = e.touches && e.touches.length > 0 ? e.touches.clientY : (e.clientY || e.pageY);
     return { x: clientX - rect.left, y: clientY - rect.top };
   }
   
-  // TOUCH-STEUERUNG (Smartphone/Tablet) mit Kurven-Glättung
+  // FIX FÜR PIXEL / ANDROID: CSS-Eigenschaft direkt im Code erzwingen, damit das Handy nicht scrollt
+  canvas.style.touchAction = 'none';
+
+  // MODERNE POINTER-EVENTS (Der absolute Fix für Google Pixel 8a & moderne Browser)
+  canvas.addEventListener('pointerdown', function(e) {
+    sigDrawing = true;
+    canvas.setPointerCapture(e.pointerId); // Bindet den Finger fest an das Zeichenfeld
+    const pos = getPos(e);
+    lastX = pos.x;
+    lastY = pos.y;
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    if(e.cancelable) e.preventDefault();
+  }, { passive: false });
+  
+  canvas.addEventListener('pointermove', function(e) {
+    if(!sigDrawing) return;
+    const pos = getPos(e);
+    
+    // Kuli-Glättungs-Effekt
+    const midX = (lastX + pos.x) / 2;
+    const midY = (lastY + pos.y) / 2;
+    
+    ctx.quadraticCurveTo(lastX, lastY, midX, midY);
+    ctx.stroke();
+    
+    lastX = pos.x;
+    lastY = pos.y;
+    if(e.cancelable) e.preventDefault();
+  }, { passive: false });
+  
+  canvas.addEventListener('pointerup', function(e) {
+    if(sigDrawing) {
+      canvas.releasePointerCapture(e.pointerId);
+      sigDrawing = false;
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('pointercancel', function(e) {
+    if(sigDrawing) {
+      canvas.releasePointerCapture(e.pointerId);
+      sigDrawing = false;
+    }
+  }, { passive: false });
+
+  // ABWÄRTSKOMPATIBILITÄT: Die alten Touch-Kanal-Listener bleiben für ältere Geräte zur Sicherheit aktiv
   canvas.addEventListener('touchstart', function(e) {
+    if(e.pointerType) return; // Überspringen, wenn es schon als Pointer erfasst wurde
     sigDrawing = true;
     const pos = getPos(e);
     lastX = pos.x;
@@ -1601,53 +1658,20 @@ function setupCanvasEvents(side) {
   }, { passive: false });
   
   canvas.addEventListener('touchmove', function(e) {
-    if(!sigDrawing) return;
+    if(e.pointerType || !sigDrawing) return;
     const pos = getPos(e);
-    
-    // Berechne den Mittelpunkt für eine seidenweiche Kurve (Kuli-Effekt)
     const midX = (lastX + pos.x) / 2;
     const midY = (lastY + pos.y) / 2;
-    
     ctx.quadraticCurveTo(lastX, lastY, midX, midY);
     ctx.stroke();
-    
     lastX = pos.x;
     lastY = pos.y;
     if(e.cancelable) e.preventDefault();
   }, { passive: false });
   
-  canvas.addEventListener('touchend', function() {
-    sigDrawing = false;
-  }, { passive: false });
-
-  // MAUS-STEUERUNG (Laptop/PC) mit Kurven-Glättung
-  canvas.onmousedown = function(e) {
-    sigDrawing = true;
-    const pos = getPos(e);
-    lastX = pos.x;
-    lastY = pos.y;
-    ctx.beginPath();
-    ctx.moveTo(lastX, lastY);
-  };
-  
-  canvas.onmousemove = function(e) {
-    if(!sigDrawing) return;
-    const pos = getPos(e);
-    
-    const midX = (lastX + pos.x) / 2;
-    const midY = (lastY + pos.y) / 2;
-    
-    ctx.quadraticCurveTo(lastX, lastY, midX, midY);
-    ctx.stroke();
-    
-    lastX = pos.x;
-    lastY = pos.y;
-  };
-  
-  canvas.onmouseup = canvas.onmouseleave = function() {
-    sigDrawing = false;
-  };
+  canvas.addEventListener('touchend', function() { sigDrawing = false; }, { passive: false });
 }
+
 
 
 
