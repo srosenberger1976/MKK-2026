@@ -4,7 +4,8 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 
- <link rel="manifest" href="/MKK-2026/manifest.json">
+ <link rel="manifest" href="/MKK-2026/manifest.json?v=2">
+
  <meta name="apple-mobile-web-app-capable" content="yes">
  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
  <meta name="apple-mobile-web-app-title" content="MKK Dart">
@@ -1729,13 +1730,39 @@ let sigContexts = { H: null, G: null };
 let lastX = 0;
 let lastY = 0;
 
+// Variable, um zu speichern, ob wir uns im automatischen Neustart-Prozess befinden
+let isRelaunchingSig = false;
+
 function openSignaturePopup(side) {
     const btn = document.getElementById("btn_sig_" + side);
     if (btn && btn.classList.contains("row-disabled")) {
         alert("Hinweis: Du kannst erst unterschreiben, wenn alle Spiele des Spielplans erfasst wurden!");
         return;
     }
+    
     const overlay = document.getElementById("popup_sig_" + side);
+    
+    // TRICK: Wenn es der erste Klick ist, erzwingen wir sofort einen schnellen Doppel-Reflow
+    if (!isRelaunchingSig) {
+        isRelaunchingSig = true;
+        
+        // 1. Öffnen
+        overlay.style.display = "flex";
+        
+        // 2. Sofort im nächsten Browser-Frame wieder schließen und neu triggern
+        requestAnimationFrame(() => {
+            overlay.style.display = "none";
+            
+            // 3. Nach 50ms direkt das zweite Mal öffnen (Das bügelt den Browser-Bug aus)
+            setTimeout(() => {
+                openSignaturePopup(side);
+            }, 50);
+        });
+        return; // Bricht den aktuellen Durchlauf ab
+    }
+    
+    // Ab hier läuft der reguläre, zweite Öffnungsprozess
+    isRelaunchingSig = false; // Status wieder zurücksetzen
     overlay.style.display = "flex";
     document.body.style.overflow = "hidden";
     
@@ -1747,32 +1774,24 @@ function openSignaturePopup(side) {
     setTimeout(() => {
         const rect = canvas.parentElement.getBoundingClientRect();
         
-        // ABSOLUTER FIX: Wenn der Browser beim 1. Mal 0 meldet, nutzen wir die echte Bildschirmgröße
-        // Abzug der CSS-Margins: links/rechts je 16px (=32px), oben 70px + unten 85px (=155px)
+        // Nutzt die ermittelten Maße oder den Bildschirm-Fallback
         const exactWidth = rect.width > 0 ? rect.width : (window.innerWidth - 32);
         const exactHeight = rect.height > 0 ? rect.height : (window.innerHeight - 155);
 
-        // Interne Auflösung für gestochen scharfen Druck verdreifachen (3x HD)
-        // Das sorgt dafür, dass die Unterschrift im PDF nicht verpixelt
         const pixelRatio = 3; 
         canvas.width = exactWidth * pixelRatio;
         canvas.height = exactHeight * pixelRatio;
         
-        // Die Anzeige auf dem Bildschirm wieder auf die normale Größe skalieren
         ctx.scale(pixelRatio, pixelRatio);
         
-        // Kuli-Einstellungen
         ctx.strokeStyle = "#000000";
         ctx.lineWidth = 3.5; 
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
         
         setupCanvasEvents(side);
-    }, 350);
+    }, 200);
 }
-
-
-
 
 
 
