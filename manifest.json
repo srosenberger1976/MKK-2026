@@ -3,12 +3,7 @@
   "name": "American Dart - Liga MKK Live-Bogen",
   "icons": [
     {
-      "src": "https://icons8.com",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "https://icons8.com",
+      "src": "https://github.com",
       "type": "image/png",
       "sizes": "512x512"
     }
