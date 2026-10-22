@@ -285,6 +285,7 @@ solid #444; font-weight: bold; cursor: pointer; border-radius: 5px; font-size:
 
 
 /* Hauptbox für jeden Spieler */
+/* Hauptbox für jeden Spieler */
 .setup-popup-content .row-flex {
  background: #1e1e1e !important;
  border: 1px solid #333 !important;
@@ -292,30 +293,45 @@ solid #444; font-weight: bold; cursor: pointer; border-radius: 5px; font-size:
  border-radius: 8px !important;
  padding: 12px !important;
  margin-bottom: 12px !important;
- display: flex !important;
- flex-direction: column !important; /* Stapelt Titel und Eingabefelder untereinander */
+ display: grid !important;
+ /* Definiert 3 Spalten: 1. Das Trikot/Icon, 2. Der Name (groß), 3. Die Passnummer */
+ grid-template-columns: auto 1fr 80px !important;
  gap: 8px !important;
+ align-items: center !important;
  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* Die gelbe Überschrift (z.B. H1 Stammspieler) */
+/* Zwingt die gelbe Überschrift, sich über die gesamte Breite der Box zu strecken */
 .setup-popup-content .row-flex .card-title {
  color: #ffcc00 !important;
  font-size: 14px !important;
  font-weight: bold !important;
- margin: 0 0 4px 0 !important;
+ margin: 0 0 2px 0 !important;
+ grid-column: 1 / -1 !important; /* Nimmt die komplette erste Zeile ein */
  display: block !important;
  width: 100% !important;
 }
 
-/* Hilfs-Container, der Name und Passnummer auf Handys PERFEKT nebeneinander zwingt */
-.setup-popup-content .row-flex select,
-.setup-popup-content .row-flex input[type="text"] {
- margin: 0 !important;
- display: inline-block !important;
- box-sizing: border-box !important;
+/* Verhindert, dass die Eingabefelder das Layout sprengen */
+.setup-popup-content .row-flex select {
+ width: 100% !important;
  height: 40px !important;
+ background: #262626 !important;
+ color: #fff !important;
+ border: 1px solid #444 !important;
+ border-radius: 6px !important;
 }
+
+.setup-popup-content .row-flex input {
+ width: 100% !important;
+ height: 40px !important;
+ text-align: center !important;
+ background: #262626 !important;
+ color: #fff !important;
+ border: 1px solid #444 !important;
+ border-radius: 6px !important;
+}
+
 
 /* Das Dropdown-Feld für den Namen bekommt 68% Breite */
 .setup-popup-content .row-flex select {
@@ -1780,33 +1796,36 @@ function openSignaturePopup(side) {
     const ctx = canvas.getContext("2d");
     sigContexts[side] = ctx;
     
-    // RADIKALER FIX: Wir fragen den Browser nicht mehr nach der Element-Größe!
-    // Wir nehmen direkt die echte Display-Größe des Handys und ziehen die Ränder ab.
-    // Margins links/rechts: je 16px (= 32px)
-    // Oben/Unten Freiraum für Buttons: ca. 160px
-    const exactWidth = window.innerWidth - 32;
-    const exactHeight = window.innerHeight - 160;
+    // GIB DEM BROWSER ZEIT: Wir warten, bis das CSS-Popup komplett ausgefaltet ist
+    setTimeout(() => {
+        // Hol dir die echten Maße des weißen Innenbereichs
+        let exactWidth = canvas.parentElement.clientWidth;
+        let exactHeight = canvas.parentElement.clientHeight;
+        
+        // Bombenfester Fallback, falls das Smartphone immer noch 0 meldet:
+        if (exactWidth <= 0) exactWidth = window.innerWidth - 32;
+        if (exactHeight <= 0) exactHeight = window.innerHeight - 160;
 
-    // Interne Auflösung für scharfen Druck verdreifachen
-    const pixelRatio = 3; 
-    canvas.width = exactWidth * pixelRatio;
-    canvas.height = exactHeight * pixelRatio;
-    
-    // Auf dem Bildschirm auf normale Größe skalieren
-    canvas.style.width = exactWidth + "px";
-    canvas.style.height = exactHeight + "px";
-    
-    ctx.scale(pixelRatio, pixelRatio);
-    
-    // Kuli-Einstellungen
-    ctx.strokeStyle = "#000000";
-    ctx.lineWidth = 3.5; 
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    
-    setupCanvasEvents(side);
+        // Setze die Anzeige-Größe im CSS fest
+        canvas.style.width = exactWidth + "px";
+        canvas.style.height = exactHeight + "px";
+
+        // Interne Auflösung für gestochen scharfen Druck verdreifachen
+        const pixelRatio = 3; 
+        canvas.width = exactWidth * pixelRatio;
+        canvas.height = exactHeight * pixelRatio;
+        
+        ctx.scale(pixelRatio, pixelRatio);
+        
+        // Kuli-Einstellungen zurücksetzen
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 3.5; 
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        
+        setupCanvasEvents(side);
+    }, 250); // 250ms Verzögerung bricht die Render-Blockade des Smartphones
 }
-
 
 
 
