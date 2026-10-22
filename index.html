@@ -1643,38 +1643,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 let deferredPrompt;
-const popup = document.getElementById('pwaInstallPopup');
 
-window.addEventListener('beforeinstallprompt', (e) => {
- e.preventDefault(); deferredPrompt = e;
- const isHidden = localStorage.getItem('pwa_popup_hidden_until');
- if (!isHidden || Date.now() > parseInt(isHidden)) {
-  setTimeout(() => { if(popup) popup.style.display = 'block'; }, 3000);
- }
+document.addEventListener("DOMContentLoaded", () => {
+    const popup = document.getElementById('pwaInstallPopup');
+    if (!popup) return;
+
+    // Prüfen, ob die App bereits als installierte App geöffnet ist
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (isStandalone) return; // Wenn schon App, dann kein Popup anzeigen
+
+    const isHidden = localStorage.getItem('pwa_popup_hidden_until');
+    const secureTimeout = (!isHidden || Date.now() > parseInt(isHidden));
+
+    // 1. REGEL FÜR ANDROID/CHROME
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (secureTimeout) {
+            setTimeout(() => { popup.style.display = 'block'; }, 3000);
+        }
+    });
+
+    // 2. REGEL FÜR IPHONE/SAFARI (Da 'beforeinstallprompt' hier nicht existiert)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS && secureTimeout) {
+        setTimeout(() => { popup.style.display = 'block'; }, 3000);
+    }
 });
 
 function triggerPwaInstallation() {
- if (popup) popup.style.display = 'none';
- if (deferredPrompt) {
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then((choiceResult) => { deferredPrompt = null; });
- } else {
-  alert("Auf dem iPhone/iPad klicke bitte unten im Safari-Browser auf das 'Teilen'-Symbol (Quadrat mit Pfeil nach oben) und wähle 'Zum Home-Bildschirm'.");
- }
+    const popup = document.getElementById('pwaInstallPopup');
+    if (popup) popup.style.display = 'none';
+    
+    if (deferredPrompt) {
+        // Android Installation starten
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+    } else {
+        // iOS Anleitung als schickes Info-Fenster ausgeben
+        alert("Anleitung für iPhone/iPad:\n\n1. Klicke unten im Safari-Browser auf das 'Teilen'-Symbol (Quadrat mit Pfeil nach oben).\n2. Scrolle etwas nach unten.\n3. Wähle 'Zum Home-Bildschirm'.\n\nSchon hast du den Dart-Bogen als echte App ohne Vollbild-Hinweise!");
+    }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-function closePwaPopup() { if (popup) popup.style.display = 'none'; const hideUntil = Date.now() + (7 * 24 * 60 * 60 * 1000); localStorage.setItem('pwa_popup_hidden_until', hideUntil); }
+function closePwaPopup() { 
+    const popup = document.getElementById('pwaInstallPopup');
+    if (popup) popup.style.display = 'none'; 
+    const hideUntil = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 Tage merken
+    localStorage.setItem('pwa_popup_hidden_until', hideUntil); 
+}
 
 
 
@@ -1714,43 +1730,46 @@ let lastX = 0;
 let lastY = 0;
 
 function openSignaturePopup(side) {
-  const btn = document.getElementById("btn_sig_" + side);
-  if (btn && btn.classList.contains("row-disabled")) {
-    alert("Hinweis: Du kannst erst unterschreiben, wenn alle Spiele des Spielplans erfasst wurden!");
-    return;
-  }
+    const btn = document.getElementById("btn_sig_" + side);
+    if (btn && btn.classList.contains("row-disabled")) {
+        alert("Hinweis: Du kannst erst unterschreiben, wenn alle Spiele des Spielplans erfasst wurden!");
+        return;
+    }
+    const overlay = document.getElementById("popup_sig_" + side);
+    overlay.style.display = "flex";
+    document.body.style.overflow = "hidden";
+    
+    const canvas = document.getElementById("canvas_sig_" + side);
+    sigCanvases[side] = canvas;
+    const ctx = canvas.getContext("2d");
+    sigContexts[side] = ctx;
+    
+    setTimeout(() => {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        
+        // ABSOLUTER FIX: Wenn der Browser beim 1. Mal 0 meldet, nutzen wir die echte Bildschirmgröße
+        // Abzug der CSS-Margins: links/rechts je 16px (=32px), oben 70px + unten 85px (=155px)
+        const exactWidth = rect.width > 0 ? rect.width : (window.innerWidth - 32);
+        const exactHeight = rect.height > 0 ? rect.height : (window.innerHeight - 155);
 
-  const overlay = document.getElementById("popup_sig_" + side);
-  overlay.style.display = "flex";
-  document.body.style.overflow = "hidden";
-  
-  const canvas = document.getElementById("canvas_sig_" + side);
-  sigCanvases[side] = canvas;
-  const ctx = canvas.getContext("2d");
-  sigContexts[side] = ctx;
-  
-  // FIX: Wir warten 200ms, bis das Popup komplett geöffnet ist, damit die Größe nicht 0 ist!
-  setTimeout(() => {
-    const rect = canvas.parentElement.getBoundingClientRect();
-    
-    // Interne Auflösung für gestochen scharfen Druck verdreifachen (3x HD)
-    const pixelRatio = 3; 
-    canvas.width = rect.width * pixelRatio;
-    canvas.height = rect.height * pixelRatio;
-    
-    // Die Anzeige auf dem Bildschirm wieder auf die normale Größe skalieren
-    ctx.scale(pixelRatio, pixelRatio);
-    
-    // Kuli-Einstellungen: Strichstärke an die neue Auflösung anpassen
-    ctx.strokeStyle = "#000000";
-    ctx.lineWidth = 3.5; 
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    
-    setupCanvasEvents(side);
-  }, 350);
+        // Interne Auflösung für gestochen scharfen Druck verdreifachen (3x HD)
+        // Das sorgt dafür, dass die Unterschrift im PDF nicht verpixelt
+        const pixelRatio = 3; 
+        canvas.width = exactWidth * pixelRatio;
+        canvas.height = exactHeight * pixelRatio;
+        
+        // Die Anzeige auf dem Bildschirm wieder auf die normale Größe skalieren
+        ctx.scale(pixelRatio, pixelRatio);
+        
+        // Kuli-Einstellungen
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 3.5; 
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        
+        setupCanvasEvents(side);
+    }, 350);
 }
-
 
 
 
