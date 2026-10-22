@@ -963,23 +963,34 @@ function importTeamsFromTxt() {
 function aktualisiereKombiButtonText() {
   const spielerTextarea = document.getElementById("txt_import_area");
   const kombiBtn = document.getElementById("btn_kombi_import");
+  // Findet den Text im Haupt-Menübalken oben
+  const headerSpan = document.querySelector(".accordion-header span");
   if (!spielerTextarea || !kombiBtn) return;
 
   const lines = spielerTextarea.value.split("\n");
   const ersteZeile = lines[0] ? lines[0].trim() : "";
 
-  // Wenn die erste Zeile deinen Info-Text enthält, nutzen wir ihn als Beschriftung
+  // Wenn die erste Zeile den Info-Text enthält (kein Komma)
   if (ersteZeile && !ersteZeile.includes(",")) {
     kombiBtn.innerText = `✓ ${ersteZeile} 💾`;
-    kombiBtn.style.background = "#ffcc00"; // Wird gelb, wenn alles aktuell ist
+    kombiBtn.style.background = "#ffcc00"; 
     kombiBtn.style.color = "#000";
+    
+    // Schreibt die Updateversion direkt oben in den dauerhaften Menübalken!
+    if (headerSpan) {
+      headerSpan.innerHTML = `Mannschaften und Spieler <span style="color:#ffcc00; font-size:13px; margin-left:8px; font-weight:normal;">(${ersteZeile})</span>`;
+    }
   } else {
     kombiBtn.innerText = "Spielerliste frisch laden & dauerhaft speichern 💾";
     kombiBtn.style.background = "#00cc66";
     kombiBtn.style.color = "#000";
+    if (headerSpan) {
+      headerSpan.innerHTML = "Mannschaften und Spieler";
+    }
   }
   kombiBtn.style.opacity = "1";
 }
+
 
 function ZustandKombiButtonZuruecksetzen() {
   const kombiBtn = document.getElementById("btn_kombi_import");
@@ -1306,31 +1317,31 @@ const c1 = m.pos[0] || ""; const c2 = m.pos[1] || ""; const c3 = m.pos[2] || "";
    hPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
    gPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
 
-   area.innerHTML += `<div style="color:#00cc66; font-size:13px; margin-bottom:5px; font-weight:bold; text-align:left; letter-spacing:0.5px;">🏠 HEIMGEWINN:</div>`;
-   hPlayers.forEach(p => {
-     const partner = hPlayers.find(x => x.pos !== p.pos) || {name: null, pos: null};
-     area.innerHTML += `<div class="click-box" style="background:#00cc66 !important; color:#000 !important; font-weight:bold; padding:12px; margin:5px 0; border:none; display:block;" onclick="registerWinner('${p.name}', '${p.pos}', 'H', '${partner.name}', '${partner.pos}')">
+   // Alle Spieler in eine einzige Liste werfen und strikt nach Score 1, 2, 3, 4 sortieren
+   let allPopupPlayers = [...hPlayers, ...gPlayers];
+   allPopupPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
+
+   allPopupPlayers.forEach(p => {
+     const isHome = p.pos.startsWith("H");
+     const sideBadge = isHome ? 'Heim' : 'Gast';
+     const partnerList = isHome ? hPlayers : gPlayers;
+     const partner = partnerList.find(x => x.pos !== p.pos) || {name: null, pos: null};
+     const currentSideCode = isHome ? 'H' : 'G';
+
+     const btnStyle = isHome 
+       ? 'background:#00cc66 !important; color:#000 !important; font-weight:bold; padding:12px; margin:5px 0; border:none; display:block;' 
+       : 'background:#cc3333 !important; color:#fff !important; font-weight:bold; padding:12px; margin:5px 0; border:none; display:block;';
+
+     area.innerHTML += `<div class="click-box" style="${btnStyle}" onclick="registerWinner('${p.name}', '${p.pos}', '${currentSideCode}', '${partner.name}', '${partner.pos}')">
        <div style="display:grid; grid-template-columns: 85px 75px 25px 1fr; align-items:center; text-align:left; width:100%;">
-         <span style="font-size:12px; opacity:0.9;">Heim</span>
-         <span style="background:rgba(0,0,0,0.15); padding:2px 6px; border-radius:4px; font-size:11px; text-align:center;">Score ${p.scoreNum}</span>
-         <span style="text-align:center; font-size:14px;">🎯</span>
-         <span style="font-size:15px; padding-left:5px;">${p.name}</span>
-       </div>
-     </div>`;
-   });
-   
-   area.innerHTML += `<div style="color:#ff3333; font-size:13px; margin:12px 0 5px 0; font-weight:bold; text-align:left; letter-spacing:0.5px;">🚀 GASTGEWINN:</div>`;
-   gPlayers.forEach(p => {
-     const partner = gPlayers.find(x => x.pos !== p.pos) || {name: null, pos: null};
-     area.innerHTML += `<div class="click-box" style="background:#cc3333 !important; color:#fff !important; font-weight:bold; padding:12px; margin:5px 0; border:none; display:block;" onclick="registerWinner('${p.name}', '${p.pos}', 'G', '${partner.name}', '${partner.pos}')">
-       <div style="display:grid; grid-template-columns: 85px 75px 25px 1fr; align-items:center; text-align:left; width:100%;">
-         <span style="font-size:12px; opacity:0.9;">Gast</span>
+         <span style="font-size:12px; opacity:0.9;">${sideBadge}</span>
          <span style="background:rgba(0,0,0,0.2); padding:2px 6px; border-radius:4px; font-size:11px; text-align:center;">Score ${p.scoreNum}</span>
          <span style="text-align:center; font-size:14px;">🎯</span>
          <span style="font-size:15px; padding-left:5px;">${p.name}</span>
        </div>
      </div>`;
    });
+
  }
 
 
@@ -1652,6 +1663,17 @@ function triggerPwaInstallation() {
  }
 }
 
+
+
+
+
+
+
+
+
+
+
+
 function closePwaPopup() { if (popup) popup.style.display = 'none'; const hideUntil = Date.now() + (7 * 24 * 60 * 60 * 1000); localStorage.setItem('pwa_popup_hidden_until', hideUntil); }
 
 
@@ -1726,7 +1748,7 @@ function openSignaturePopup(side) {
     ctx.lineJoin = "round";
     
     setupCanvasEvents(side);
-  }, 200);
+  }, 350);
 }
 
 
@@ -1905,6 +1927,21 @@ function starteSpezialDruck() {
 
 
 
+
+function openSetupPopup(side) {
+ document.getElementById("popup_setup_" + side).style.display = "block";
+ document.body.style.overflow = "hidden";
+}
+function closeSetupPopup(side) {
+ document.getElementById("popup_setup_" + side).style.display = "none";
+ document.body.style.overflow = "auto";
+ validateRosterAndSetup();
+ syncMetaToLabels();
+ saveActiveDropdowns();
+}
+
+// FIX: Erzwingt, dass die App beim allerersten Starten ganz oben anfängt
+window.scrollTo(0, 0);
 
 </script>
 </body>
