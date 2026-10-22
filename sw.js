@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mkk-dart-v7'; // Erhöht auf v7, damit alle Geräte das Update erzwingen
+const CACHE_NAME = 'mkk-dart-v8'; // Auf v8 erhöht für Android-Update-Zwang
 const ASSETS = [
   '/MKK-2026/',
   '/MKK-2026/index.html',
@@ -10,7 +10,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       console.log('Dateien werden für MKK-2026 gecacht...');
-      return cache.addAll(ASSETS);
+      return cache.addAll(ASSETS).catch(err => console.log("Cache-Fehler abgefangen:", err));
     })
   );
   self.skipWaiting();
@@ -37,7 +37,7 @@ self.addEventListener('fetch', event => {
   // WICHTIG: Wenn nach der spieler.txt gefragt wird, GEHE IMMER DIREKT INS INTERNET!
   if (event.request.url.includes('spieler.txt')) {
     event.respondWith(fetch(event.request));
-    return; // Beendet die Funktion hier, damit kein Cache genutzt wird
+    return; 
   }
 
   event.respondWith(
