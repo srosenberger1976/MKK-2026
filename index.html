@@ -11,7 +11,7 @@
  <meta name="apple-mobile-web-app-title" content="MKK Dart">
  <link rel="apple-touch-icon" href="https://icons8.com">
  <meta charset="UTF-8">
- <title>American Dart - MKK Spielberichtsbogen</title>
+ <title>American Dart - Liga MKK Live-Bogen</title>
  
 
 
@@ -372,7 +372,9 @@ width: 100%; gap: 30px; margin-top: 4px; }
  .print-signature-box { display: flex; flex-direction: column; justify-content:
 flex-end; height: 45px; border-bottom: 1.2px solid #000 !important; font-size: 
 9px; width: 45%; padding-bottom: 1px; color: #000 !important; position: relative; }
- .print-sig-img { position: absolute; max-height: 35px; max-width: 90%; bottom: 12px; left: 5%; object-fit: contain; }
+ .print-sig-img { position: absolute; max-height: 42px; max-width: 95%; bottom: 4px; left: 10%; object-fit: contain; filter: contrast(200%) brightness(0.9); mix-blend-mode: multiply; }
+
+
  }
 
 
@@ -741,16 +743,19 @@ flex-end; height: 45px; border-bottom: 1.2px solid #000 !important; font-size:
     <table class="print-stats-table"><thead><tr><th>Spieler Name</th><th style="width:14%">Check</th><th style="width:14%">Assist</th><th style="width:16%">Ges.</th></tr></thead><tbody id="print_stats_G"></tbody></table>
     <div class="print-footer-summary">
      <div class="print-result-box">Gesamt: &nbsp;<span id="lbl_res_total">0 : 0</span></div>
-    <div class="print-signature-wrapper">
+  <div class="print-signature-wrapper">
     <div class="print-signature-box" id="print_sig_container_H">
+      <!-- Die Unterschrift wird durch absolute Positionierung direkt ÜBER der Linie gehalten -->
       <img id="img_print_sig_H" class="print-sig-img" style="display:none;" alt="">
-      Unterschrift HeimTeam:
+      <!-- Der Text steht nun unter der Linie, außerhalb der Box -->
+      <div style="position: absolute; bottom: -14px; left: 0; width: 100%;">Unterschrift Heimteam:</div>
     </div>
     <div class="print-signature-box" id="print_sig_container_G">
       <img id="img_print_sig_G" class="print-sig-img" style="display:none;" alt="">
-      Unterschrift GastTeam:
+      <div style="position: absolute; bottom: -14px; left: 0; width: 100%;">Unterschrift Gastteam:</div>
     </div>
   </div>
+
 
     </div>
    </div>
@@ -1532,8 +1537,12 @@ let sigDrawing = false;
 let sigCanvases = { H: null, G: null };
 let sigContexts = { H: null, G: null };
 
+
+// Neue Variablen für die flüssige Kuli-Dämpfung
+let lastX = 0;
+let lastY = 0;
+
 function openSignaturePopup(side) {
-  // Sicherheitscheck: Abbrechen, wenn der Button noch gesperrt ist
   const btn = document.getElementById("btn_sig_" + side);
   if (btn && btn.classList.contains("row-disabled")) {
     alert("Hinweis: Du kannst erst unterschreiben, wenn alle Spiele des Spielplans erfasst wurden!");
@@ -1541,7 +1550,6 @@ function openSignaturePopup(side) {
   }
 
   const overlay = document.getElementById("popup_sig_" + side);
-
   overlay.style.display = "flex";
   document.body.style.overflow = "hidden";
   
@@ -1551,11 +1559,19 @@ function openSignaturePopup(side) {
   sigContexts[side] = ctx;
   
   const rect = canvas.parentElement.getBoundingClientRect();
-  canvas.width = rect.width;
-  canvas.height = rect.height;
   
+  // FIX: Interne Auflösung für gestochen scharfen Druck verdreifachen (3x HD)
+  const pixelRatio = 3; 
+  canvas.width = rect.width * pixelRatio;
+  canvas.height = rect.height * pixelRatio;
+  
+  // Die Anzeige auf dem Bildschirm wieder auf die normale Größe skalieren
+  ctx.scale(pixelRatio, pixelRatio);
+  
+  // Kuli-Einstellungen: Strichstärke an die neue Auflösung anpassen
   ctx.strokeStyle = "#000000";
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 3.5; // Perfekte Kuli-Dicke bei hoher Auflösung
+
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   
@@ -1564,33 +1580,76 @@ function openSignaturePopup(side) {
 
 function setupCanvasEvents(side) {
   const canvas = sigCanvases[side];
+  const ctx = sigContexts[side];
+  
   function getPos(e) {
     const rect = canvas.getBoundingClientRect();
-    const clientX = e.touches ? e.touches.clientX : e.clientX;
-    const clientY = e.touches ? e.touches.clientY : e.clientY;
+    const clientX = e.touches && e.touches.length > 0 ? e.touches.clientX : e.clientX;
+    const clientY = e.touches && e.touches.length > 0 ? e.touches.clientY : e.clientY;
     return { x: clientX - rect.left, y: clientY - rect.top };
   }
   
-  canvas.onmousedown = canvas.ontouchstart = function(e) {
+  // TOUCH-STEUERUNG (Smartphone/Tablet) mit Kurven-Glättung
+  canvas.addEventListener('touchstart', function(e) {
     sigDrawing = true;
     const pos = getPos(e);
-    sigContexts[side].beginPath();
-    sigContexts[side].moveTo(pos.x, pos.y);
+    lastX = pos.x;
+    lastY = pos.y;
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
     if(e.cancelable) e.preventDefault();
-  };
+  }, { passive: false });
   
-  canvas.onmousemove = canvas.ontouchmove = function(e) {
+  canvas.addEventListener('touchmove', function(e) {
     if(!sigDrawing) return;
     const pos = getPos(e);
-    sigContexts[side].lineTo(pos.x, pos.y);
-    sigContexts[side].stroke();
+    
+    // Berechne den Mittelpunkt für eine seidenweiche Kurve (Kuli-Effekt)
+    const midX = (lastX + pos.x) / 2;
+    const midY = (lastY + pos.y) / 2;
+    
+    ctx.quadraticCurveTo(lastX, lastY, midX, midY);
+    ctx.stroke();
+    
+    lastX = pos.x;
+    lastY = pos.y;
     if(e.cancelable) e.preventDefault();
+  }, { passive: false });
+  
+  canvas.addEventListener('touchend', function() {
+    sigDrawing = false;
+  }, { passive: false });
+
+  // MAUS-STEUERUNG (Laptop/PC) mit Kurven-Glättung
+  canvas.onmousedown = function(e) {
+    sigDrawing = true;
+    const pos = getPos(e);
+    lastX = pos.x;
+    lastY = pos.y;
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
   };
   
-  canvas.onmouseup = canvas.onmouseleave = canvas.ontouchend = function(e) {
+  canvas.onmousemove = function(e) {
+    if(!sigDrawing) return;
+    const pos = getPos(e);
+    
+    const midX = (lastX + pos.x) / 2;
+    const midY = (lastY + pos.y) / 2;
+    
+    ctx.quadraticCurveTo(lastX, lastY, midX, midY);
+    ctx.stroke();
+    
+    lastX = pos.x;
+    lastY = pos.y;
+  };
+  
+  canvas.onmouseup = canvas.onmouseleave = function() {
     sigDrawing = false;
   };
 }
+
+
 
 function clearSignature(side) {
   if (sigContexts[side] && sigCanvases[side]) {
