@@ -509,6 +509,47 @@ flex-end; height: 45px; border-bottom: 1.2px solid #000 !important; font-size:
  .flex-buttons { display: flex !important; flex-direction: column !important; gap: 10px !important; }
 }
 
+
+
+/* ÄNDERUNGEN FÜR DAS SPIELER-POPUP (NEU) */
+
+/* 1. Rote Gast-Hintergründe zu Gold ändern */
+.click-box-guest { 
+  background: #ffcc00 !important; 
+  border: 2px solid #ffa500 !important; 
+  color: #000000 !important; /* Schwarze Schrift auf Gold für bessere Lesbarkeit */
+}
+.click-box-guest:hover { 
+  background: #ffa500 !important; 
+  color: #000000 !important; 
+}
+
+/* 2. Dunkles Feld hinter "Score" entfernen (transparent machen) und Abstand nach rechts */
+.popup-score-badge {
+  background: transparent !important; /* Entfernt das dunkle Feld */
+  padding: 2px 6px; 
+  font-size: 12px; 
+  text-align: center;
+  margin-left: 25px !important; /* Schiebt den Score weiter nach rechts */
+  color: inherit !important; /* Übernimmt die Schriftfarbe des Balkens */
+}
+
+/* 3. Spielerschrift im Popup vergrößern */
+.popup-player-name {
+  font-size: 18px !important; /* Macht den Namen größer (vorher 15px) */
+  font-weight: bold !important;
+  padding-left: 10px;
+}
+
+
+
+
+
+
+
+
+
+
 </style>
 <script>
 // Die Funktion wird hier oben sofort beim Laden für den Browser bereitgestellt
@@ -1394,30 +1435,22 @@ const c1 = m.pos[0] || ""; const c2 = m.pos[1] || ""; const c3 = m.pos[2] || "";
  if (m.type === "E") {
    const side1 = c1.startsWith("H") ? "H" : "G"; 
    const side2 = c2.startsWith("H") ? "H" : "G";
-   
-   // Hintergrundfarben vollflächig ausfüllen: Sattes Grün für Heim, sattes Rot für Gast
-   const btnClass1 = side1 === "H" ? "click-box-home" : "click-box-guest"; 
-   const btnClass2 = side2 === "H" ? "click-box-home" : "click-box-guest";
-   
+ 
    let einzelPlayers = [
      { name: p1, pos: c1, side: side1, scoreNum: 1 },
      { name: p2, pos: c2, side: side2, scoreNum: 2 }
    ];
    einzelPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
-
    einzelPlayers.forEach(p => {
-     // Bestimmt das lustige Symbol und den Text links
-     const sideBadge = p.side === 'H' ? '🏠 Heim' : '🚀 Gast';
-     const btnStyle = p.side === 'H' 
-       ? 'background:#00cc66 !important; color:#000 !important; font-weight:bold; padding:12px; margin:6px 0; border:none; display:block;' 
-       : 'background:#cc3333 !important; color:#fff !important; font-weight:bold; padding:12px; margin:6px 0; border:none; display:block;';
-
-     area.innerHTML += `<div class="click-box" style="${btnStyle}" onclick="registerWinner('${p.name}', '${p.pos}', '${p.side}')">
-       <div style="display:grid; grid-template-columns: 85px 75px 25px 1fr; align-items:center; text-align:left; width:100%;">
-         <span style="font-size:12px; opacity:0.9;">${sideBadge}</span>
-         <span style="background:rgba(0,0,0,0.2); padding:2px 6px; border-radius:4px; font-size:11px; text-align:center;">Score ${p.scoreNum}</span>
+     const sideBadge = p.side === 'H' ? 'Heim' : 'Gast';
+     const btnClass = p.side === 'H' ? 'click-box-home' : 'click-box-guest';
+     
+     area.innerHTML += `<div class="click-box ${btnClass}" onclick="registerWinner('${p.name}', '${p.pos}', '${p.side}')" style="padding:12px; margin:6px 0; display:block;">
+       <div style="display:grid; grid-template-columns: 75px 95px 25px 1fr; align-items:center; text-align:left; width:100%;">
+         <span style="font-size:13px; opacity:0.85; font-weight:bold;">${sideBadge}</span>
+         <span class="popup-score-badge">Score ${p.scoreNum}</span>
          <span style="text-align:center; font-size:14px;">🎯</span>
-         <span style="font-size:15px; padding-left:5px;">${p.name}</span>
+         <span class="popup-player-name">${p.name}</span>
        </div>
      </div>`;
    });
@@ -1427,35 +1460,29 @@ const c1 = m.pos[0] || ""; const c2 = m.pos[1] || ""; const c3 = m.pos[2] || "";
    if(c2.startsWith("H")) hPlayers.push({name: p2, pos: c2, scoreNum: 2}); else gPlayers.push({name: p2, pos: c2, scoreNum: 2});
    if(c3) { if(c3.startsWith("H")) hPlayers.push({name: p3, pos: c3, scoreNum: 3}); else gPlayers.push({name: p3, pos: c3, scoreNum: 3}); }
    if(c4) { if(c4.startsWith("H")) hPlayers.push({name: p4, pos: c4, scoreNum: 4}); else gPlayers.push({name: p4, pos: c4, scoreNum: 4}); }
-   
+ 
    hPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
    gPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
-
-   // Alle Spieler in eine einzige Liste werfen und strikt nach Score 1, 2, 3, 4 sortieren
+   
    let allPopupPlayers = [...hPlayers, ...gPlayers];
    allPopupPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
-
    allPopupPlayers.forEach(p => {
      const isHome = p.pos.startsWith("H");
      const sideBadge = isHome ? 'Heim' : 'Gast';
+     const btnClass = isHome ? 'click-box-home' : 'click-box-guest';
      const partnerList = isHome ? hPlayers : gPlayers;
      const partner = partnerList.find(x => x.pos !== p.pos) || {name: null, pos: null};
      const currentSideCode = isHome ? 'H' : 'G';
-
-     const btnStyle = isHome 
-       ? 'background:#00cc66 !important; color:#000 !important; font-weight:bold; padding:12px; margin:5px 0; border:none; display:block;' 
-       : 'background:#cc3333 !important; color:#fff !important; font-weight:bold; padding:12px; margin:5px 0; border:none; display:block;';
-
-     area.innerHTML += `<div class="click-box" style="${btnStyle}" onclick="registerWinner('${p.name}', '${p.pos}', '${currentSideCode}', '${partner.name}', '${partner.pos}')">
-       <div style="display:grid; grid-template-columns: 85px 75px 25px 1fr; align-items:center; text-align:left; width:100%;">
-         <span style="font-size:12px; opacity:0.9;">${sideBadge}</span>
-         <span style="background:rgba(0,0,0,0.2); padding:2px 6px; border-radius:4px; font-size:11px; text-align:center;">Score ${p.scoreNum}</span>
+     
+     area.innerHTML += `<div class="click-box ${btnClass}" onclick="registerWinner('${p.name}', '${p.pos}', '${currentSideCode}', '${partner.name}', '${partner.pos}')" style="padding:12px; margin:5px 0; display:block;">
+       <div style="display:grid; grid-template-columns: 75px 95px 25px 1fr; align-items:center; text-align:left; width:100%;">
+         <span style="font-size:13px; opacity:0.85; font-weight:bold;">${sideBadge}</span>
+         <span class="popup-score-badge">Score ${p.scoreNum}</span>
          <span style="text-align:center; font-size:14px;">🎯</span>
-         <span style="font-size:15px; padding-left:5px;">${p.name}</span>
+         <span class="popup-player-name">${p.name}</span>
        </div>
      </div>`;
    });
-
  }
 
 
