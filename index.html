@@ -154,18 +154,21 @@ solid #444; font-weight: bold; cursor: pointer; border-radius: 5px; font-size:
 }
 
 /* KOMPAKTERES UNTERSCHRIFTEN-FENSTER (NEU) */
+/* KOMPAKTERES UNTERSCHRIFTEN-FENSTER (OPTIMIERT GEGEN ECKIGE STRICHE) */
 .sig-popup-overlay {
   display: none;
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(18, 18, 18, 0.95);
+  background: rgba(18, 18, 18, 0.97);
   z-index: 20000;
   box-sizing: border-box;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  touch-action: none !important; /* Verhindert das Scrollen des Fensters mit dem Finger */
 }
+
 .sig-canvas-container {
   width: 90%;
   max-width: 500px;
@@ -176,22 +179,28 @@ solid #444; font-weight: bold; cursor: pointer; border-radius: 5px; font-size:
   border: 2px solid #ffcc00;
   position: relative;
 }
-/* Hinweis zum Drehen des Handys (Optimiert) */
+/* Hinweis zum Drehen des Handys (Absolut erzwungen) */
 .rotate-hint {
   display: block !important;
+  visibility: visible !important;
   color: #ffcc00 !important;
-  font-size: 14px !important;
+  font-size: 15px !important;
   font-weight: bold !important;
   text-align: center !important;
-  margin: 5px auto 12px auto !important;
+  margin: 10px 0 !important;
+  width: 100% !important;
   animation: blink 1.5s infinite;
+  order: -1 !important; /* Zwingt den Text ganz nach oben im Popup-Layout */
 }
 /* Wenn das Handy bereits quer liegt, den Hinweis ausblenden */
-@media (orientation: landscape) {
+@media screen and (orientation: landscape) {
   .rotate-hint {
     display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
   }
 }
+
 
 @keyframes blink {
   0% { opacity: 0.3; }
@@ -925,6 +934,7 @@ function aktiviereVollbild() {
  <button class="sig-btn sig-btn-save" onclick="saveSignature('G')">Speichern & Schließen</button>
  </div>
 </div>
+
 
 
 
@@ -1829,10 +1839,6 @@ let sigCanvases = { H: null, G: null };
 let sigContexts = { H: null, G: null };
 
 
-// Neue Variablen für die flüssige Kuli-Dämpfung
-let lastX = 0;
-let lastY = 0;
-
 function openSignaturePopup(side) {
   const btn = document.getElementById("btn_sig_" + side);
   if (btn && btn.classList.contains("row-disabled")) {
@@ -1844,39 +1850,36 @@ function openSignaturePopup(side) {
   overlay.style.display = "flex";
   document.body.style.overflow = "hidden";
  
-  // Das doppelte Frame-Rendering zwingt iOS & Android, das Feld SOFORT beim 1. Klick schreibbereit zu machen
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      const canvas = document.getElementById("canvas_sig_" + side);
-      sigCanvases[side] = canvas;
-      const ctx = canvas.getContext("2d");
-      sigContexts[side] = ctx;
+  // Unmittelbare Zuweisung – Verhindert das Blockieren beim ersten Klick vollständig
+  const canvas = document.getElementById("canvas_sig_" + side);
+  sigCanvases[side] = canvas;
+  const ctx = canvas.getContext("2d");
+  sigContexts[side] = ctx;
  
-      let exactWidth = canvas.parentElement.getBoundingClientRect().width;
-      let exactHeight = canvas.parentElement.getBoundingClientRect().height;
+  // Verwendet feste, sichere Basis-Proportionen für mobile Endgeräte
+  let exactWidth = 450;
+  let exactHeight = 180;
  
-      if (!exactWidth || exactWidth <= 0) exactWidth = 320;
-      if (!exactHeight || exactHeight <= 0) exactHeight = 200;
+  // Falls das Display schmaler ist als 450px (z.B. im Hochformat), bündig anpassen
+  if (window.innerWidth < 500) {
+    exactWidth = window.innerWidth - 40;
+  }
  
-      canvas.style.width = exactWidth + "px";
-      canvas.style.height = exactHeight + "px";
+  canvas.style.width = exactWidth + "px";
+  canvas.style.height = exactHeight + "px";
  
-      const pixelRatio = window.devicePixelRatio || 2; 
-      canvas.width = exactWidth * pixelRatio;
-      canvas.height = exactHeight * pixelRatio;
-      ctx.scale(pixelRatio, pixelRatio);
+  const pixelRatio = window.devicePixelRatio || 2; 
+  canvas.width = exactWidth * pixelRatio;
+  canvas.height = exactHeight * pixelRatio;
+  ctx.scale(pixelRatio, pixelRatio);
  
-      ctx.strokeStyle = "#000000";
-      ctx.lineWidth = 3.5; 
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 3.5; 
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
  
-      setupCanvasEvents(side);
-    });
-  });
+  setupCanvasEvents(side);
 }
-
-
 
 function setupCanvasEvents(side) {
   const canvas = sigCanvases[side];
