@@ -192,18 +192,6 @@ solid #444; font-weight: bold; cursor: pointer; border-radius: 5px; font-size:
   animation: blink 1.5s infinite;
   order: -1 !important; /* Zwingt den Text ganz nach oben im Popup-Layout */
 }
-
-
-
-
-
-
-
-
-
-
-
-
 /* Wenn das Handy bereits quer liegt, den Hinweis ausblenden */
 @media screen and (orientation: landscape) {
   .rotate-hint {
@@ -554,27 +542,6 @@ flex-end; height: 45px; border-bottom: 1.2px solid #000 !important; font-size:
 }
 
 
-/* Wenn das Handy im Hochformat (Portrait) gehalten wird */
-@media screen and (orientation: portrait) {
-    /* Wir drehen den gesamten Container des Canvas */
-    .sig-canvas-container {
-        transform: rotate(90deg);
-        transform-origin: center;
-        
-        /* Wir passen die Breite und Höhe an, damit es quer ins Hochformat passt */
-        width: 80vh !important;  
-        height: 80vw !important; 
-        max-width: 450px !important;
-        margin: 40px auto !important;
-    }
-
-    /* Wir passen den Text oben an, da das Drehen nicht mehr nötig ist */
-    .rotate-hint {
-        animation: none !important;
-        color: #ffcc00 !important;
-        font-size: 14px !important;
-    }
-}
 
 
 
@@ -1900,44 +1867,46 @@ let sigContexts = { H: null, G: null };
 
 
 function openSignaturePopup(side) {
-    const btn = document.getElementById("btn_sig_" + side);
-    if (btn && btn.classList.contains("row-disabled")) {
-        alert("Hinweis: Du kannst erst unterschreiben, wenn alle Spiele des Spielplans erfasst wurden!");
-        return;
-    }
-
-    const overlay = document.getElementById("popup_sig_" + side);
-    const canvas = document.getElementById("canvas_sig_" + side);
-    
-    // Canvas-Größenberechnung (aus deinem Originalcode übernommen)
-    sigCanvases[side] = canvas;
-    sigContexts[side] = canvas.getContext("2d");
-    let exactWidth = 450;
-    let exactHeight = 180;
-    if (window.innerWidth < 500) {
-        exactWidth = window.innerWidth - 40;
-    }
-    canvas.style.width = exactWidth + "px";
-    canvas.style.height = exactHeight + "px";
-
-    // === AUTOMATISCHER ÖFFNEN-SCHLIESSEN-ÖFFNEN ABLAUF ===
-    
-    // 1. Fenster das erste Mal öffnen
-    overlay.style.display = "flex";
-    document.body.style.overflow = "hidden";
-
-    // 2. Nach 150 Millisekunden automatisch das erste Mal schließen
-    setTimeout(() => {
-        overlay.style.display = "none";
-        
-        // 3. Nach weiteren 150 Millisekunden Pause das zweite Mal dauerhaft öffnen
-        setTimeout(() => {
-            overlay.style.display = "flex";
-        }, 150);
-        
-    }, 150);
+  const btn = document.getElementById("btn_sig_" + side);
+  if (btn && btn.classList.contains("row-disabled")) {
+    alert("Hinweis: Du kannst erst unterschreiben, wenn alle Spiele des Spielplans erfasst wurden!");
+    return;
+  }
+ 
+  const overlay = document.getElementById("popup_sig_" + side);
+  overlay.style.display = "flex";
+  document.body.style.overflow = "hidden";
+ 
+  // Unmittelbare Zuweisung – Verhindert das Blockieren beim ersten Klick vollständig
+  const canvas = document.getElementById("canvas_sig_" + side);
+  sigCanvases[side] = canvas;
+  const ctx = canvas.getContext("2d");
+  sigContexts[side] = ctx;
+ 
+  // Verwendet feste, sichere Basis-Proportionen für mobile Endgeräte
+  let exactWidth = 450;
+  let exactHeight = 180;
+ 
+  // Falls das Display schmaler ist als 450px (z.B. im Hochformat), bündig anpassen
+  if (window.innerWidth < 500) {
+    exactWidth = window.innerWidth - 40;
+  }
+ 
+  canvas.style.width = exactWidth + "px";
+  canvas.style.height = exactHeight + "px";
+ 
+  const pixelRatio = window.devicePixelRatio || 2; 
+  canvas.width = exactWidth * pixelRatio;
+  canvas.height = exactHeight * pixelRatio;
+  ctx.scale(pixelRatio, pixelRatio);
+ 
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 3.5; 
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+ 
+  setupCanvasEvents(side);
 }
-
 
 function setupCanvasEvents(side) {
   const canvas = sigCanvases[side];
@@ -2024,42 +1993,6 @@ function setupCanvasEvents(side) {
 }
 
 
-// Aktiviert die Maus-Unterstützung für PCs, sobald die Seite geladen ist
-document.addEventListener("DOMContentLoaded", () => {
-    ['H', 'G'].forEach(side => {
-        const canvas = document.getElementById("canvas_sig_" + side);
-        if (!canvas) return;
-
-        // Startet das Zeichnen bei gedrückter Maustaste
-        canvas.addEventListener("mousedown", (e) => {
-            const ctx = canvas.getContext("2d");
-            sigDrawing = true;
-            ctx.beginPath();
-            
-            // Berechnet die exakte Mausposition auf dem Canvas
-            const rect = canvas.getBoundingClientRect();
-            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-        });
-
-        // Zeichnet die Linie, wenn die Maus bewegt wird
-        canvas.addEventListener("mousemove", (e) => {
-            if (!sigDrawing) return;
-            const ctx = canvas.getContext("2d");
-            const rect = canvas.getBoundingClientRect();
-            
-            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-            ctx.strokeStyle = "#000000"; // Schwarzer Stift für die Unterschrift
-            ctx.lineWidth = 3;            // Dicke der Linie
-            ctx.lineCap = "round";
-            ctx.stroke();
-        });
-
-        // Stoppt das Zeichnen, wenn die Maustaste losgelassen wird
-        window.addEventListener("mouseup", () => {
-            sigDrawing = false;
-        });
-    });
-});
 
 
 function clearSignature(side) {
@@ -2180,12 +2113,6 @@ function closeSetupPopup(side) {
 
 // FIX: Erzwingt, dass die App beim allerersten Starten ganz oben anfängt
 window.scrollTo(0, 0);
-
-
-
-
-
-
 
 </script>
 </body>
