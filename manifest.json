@@ -1,25 +1,30 @@
 {
-  "id": "/MKK-2026/",
   "short_name": "MKK Dart",
   "name": "American Dart - Liga MKK Live-Bogen",
   "icons": [
     {
-      "src": "https://r2.dev",
+      "src": "./icon-192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "https://r2.dev",
+      "src": "./icon-512.png",
       "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ],
-  "start_url": "/MKK-2026/index.html",
-  "scope": "/MKK-2026/",
+  "start_url": "./index.html",
   "background_color": "#1a1a1a",
   "theme_color": "#ffcc00",
   "display": "standalone",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "scope": "./"
 }
