@@ -1771,6 +1771,8 @@ document.addEventListener("DOMContentLoaded", () => {
   renderTable(); 
   syncMetaToLabels(); 
   validateRosterAndSetup();
+ aktiviereDirektesZeichnen();
+
 
   document.querySelectorAll("select, input").forEach(el => {
     el.addEventListener("change", () => {
@@ -2116,6 +2118,90 @@ function closeSetupPopup(side) {
  syncMetaToLabels();
  saveActiveDropdowns();
 }
+
+
+
+
+// --- NEUE UNIVERSELLE UNTERSCHRIFTEN-LOGIK (DIREKT AUF DER HAUPTSEITE) ---
+let istAmZeichnenMKK = false;
+
+function aktiviereDirektesZeichnen() {
+    ['H', 'G'].forEach(side => {
+        const canvas = document.getElementById("canvas_sig_" + side);
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext("2d");
+        
+        // Feste Auflösung für absolut präzise Maus- und Fingerpunkte
+        canvas.width = 450;
+        canvas.height = 150;
+
+        // POINTER-EVENTS: Steuert Maus, Touch-Finger und Stifte vollautomatisch gleich!
+        canvas.onpointerdown = function(e) {
+            istAmZeichnenMKK = true;
+            canvas.setPointerCapture(e.pointerId); // Blockiert ungewolltes Scrollen am Handy
+            ctx.beginPath();
+            
+            const rect = canvas.getBoundingClientRect();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+            e.preventDefault();
+        };
+        
+        canvas.onpointermove = function(e) {
+            if (!istAmZeichnenMKK) return;
+            const rect = canvas.getBoundingClientRect();
+            
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.strokeStyle = "#000000"; // Schwarze Tinte
+            ctx.lineWidth = 3;            // Gut lesbare Strichdicke
+            ctx.lineCap = "round";
+            ctx.stroke();
+            e.preventDefault();
+        };
+
+        // Beendet das Zeichnen sicher beim Loslassen oder Verlassen des Feldes
+        canvas.onpointerup = function(e) {
+            istAmZeichnenMKK = false;
+            canvas.releasePointerCapture(e.pointerId);
+        };
+        canvas.onpointercancel = function(e) {
+            istAmZeichnenMKK = false;
+            canvas.releasePointerCapture(e.pointerId);
+        };
+    });
+}
+
+// Funktionen für die Buttons zum Löschen und Speichern
+function clearDirectSignature(side) {
+    const canvas = document.getElementById("canvas_sig_" + side);
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function saveDirectSignature(side) {
+    const canvas = document.getElementById("canvas_sig_" + side);
+    if (!canvas) return;
+    
+    const sigData = canvas.toDataURL("image/png");
+    localStorage.setItem("mkk_sig_data_" + side, sigData);
+    
+    const img = document.getElementById("img_print_sig_" + side);
+    if (img) {
+        img.src = sigData;
+        img.style.display = "block";
+    }
+    
+    alert("Unterschrift erfolgreich gespeichert!");
+    if (typeof renderTable === "function") { renderTable(); }
+}
+
+
+
+
+
+
+
 
 // FIX: Erzwingt, dass die App beim allerersten Starten ganz oben anfängt
 window.scrollTo(0, 0);
