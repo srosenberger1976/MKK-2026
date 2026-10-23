@@ -192,6 +192,18 @@ solid #444; font-weight: bold; cursor: pointer; border-radius: 5px; font-size:
   animation: blink 1.5s infinite;
   order: -1 !important; /* Zwingt den Text ganz nach oben im Popup-Layout */
 }
+
+
+
+
+
+
+
+
+
+
+
+
 /* Wenn das Handy bereits quer liegt, den Hinweis ausblenden */
 @media screen and (orientation: landscape) {
   .rotate-hint {
@@ -542,6 +554,27 @@ flex-end; height: 45px; border-bottom: 1.2px solid #000 !important; font-size:
 }
 
 
+/* Wenn das Handy im Hochformat (Portrait) gehalten wird */
+@media screen and (orientation: portrait) {
+    /* Wir drehen den gesamten Container des Canvas */
+    .sig-canvas-container {
+        transform: rotate(90deg);
+        transform-origin: center;
+        
+        /* Wir passen die Breite und Höhe an, damit es quer ins Hochformat passt */
+        width: 80vh !important;  
+        height: 80vw !important; 
+        max-width: 450px !important;
+        margin: 40px auto !important;
+    }
+
+    /* Wir passen den Text oben an, da das Drehen nicht mehr nötig ist */
+    .rotate-hint {
+        animation: none !important;
+        color: #ffcc00 !important;
+        font-size: 14px !important;
+    }
+}
 
 
 
