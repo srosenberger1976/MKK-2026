@@ -114,10 +114,10 @@ Dartschützen Oberzell,Klabouch, Tobias,39
 Dartschützen Oberzell,Dorn, Julian,40
 Dartschützen Oberzell,Müller, Phillipp,41
 Dartschützen Oberzell,Herzog, Raphael,42
-Dartschützen Oberzell,,43
-Dartschützen Oberzell,,44
+Dartschützen Oberzell,Breitenbach, Nic,43
+Dartschützen Oberzell,Herzog, Jonas,44
 Dartschützen Oberzell,,45
-Dartschützen Oberzell,Fehl, Tim,46
+Dartschützen Oberzell,Häusler, Louis,46
 Dartschützen Oberzell,,47
 Dartschützen Oberzell,,48
 Dartschützen Oberzell,,
