@@ -773,24 +773,31 @@ Gastteam Aufstellung unvollständig
     Unterschriften erst nach dem letzten Live-Spiel freigeschaltet!
 </div>
 
-<!-- Feste Felder untereinander direkt auf der Seite -->
-<div style="display: flex; flex-direction: column; width: 100%;">
-    <!-- Box Heimteam -->
-    <div class="fixed-sig-panel row-disabled" id="panel_sig_fixed_H">
-        <h4>Unterschrift Heimteam (Gedreht von links nach rechts schreiben)</h4>
-        <div class="sig-rotate-wrapper">
-            <canvas id="fixed_canvas_H"></canvas>
-        </div>
-        <button class="sig-btn-clear-fixed" onclick="clearFixedSignature('H')">Löschen</button>
+<!-- Box Heimteam -->
+<div class="fixed-sig-panel row-disabled" id="panel_sig_fixed_H">
+    <h4>Unterschrift Heimteam (Ganzes weißes Feld nutzbar)</h4>
+    <div class="sig-rotate-wrapper" style="width: 100%; height: 200px; background: #fff; border: 2px solid #ffcc00; border-radius: 6px; overflow: hidden; position: relative;">
+        <canvas id="fixed_canvas_H" style="width: 100%; height: 100%; cursor: crosshair; touch-action: none; display: block;"></canvas>
     </div>
-    <!-- Box Gastteam -->
-    <div class="fixed-sig-panel row-disabled" id="panel_sig_fixed_G">
-        <h4>Unterschrift Gastteam (Gedreht von links nach rechts schreiben)</h4>
-        <div class="sig-rotate-wrapper">
-            <canvas id="fixed_canvas_G"></canvas>
-        </div>
-        <button class="sig-btn-clear-fixed" onclick="clearFixedSignature('G')">Löschen</button>
+    <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button id="btn_sig_save_H" style="flex: 1; background: #00cc66; color: black; border: none; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 13px;" onclick="speichereUnterschriftManuell('H')">Speichern</button>
+        <button id="btn_sig_edit_H" style="flex: 1; background: #ffcc00; color: black; border: none; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 13px; display: none;" onclick="bearbeiteUnterschriftManuell('H')">Bearbeiten</button>
+        <button style="flex: 1; background: #cc3333; color: white; border: none; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 13px;" onclick="clearFixedSignature('H')">Löschen</button>
     </div>
+</div>
+
+<!-- Box Gastteam -->
+<div class="fixed-sig-panel row-disabled" id="panel_sig_fixed_G">
+    <h4>Unterschrift Gastteam (Ganzes weißes Feld nutzbar)</h4>
+    <div class="sig-rotate-wrapper" style="width: 100%; height: 200px; background: #fff; border: 2px solid #ffcc00; border-radius: 6px; overflow: hidden; position: relative;">
+        <canvas id="fixed_canvas_G" style="width: 100%; height: 100%; cursor: crosshair; touch-action: none; display: block;"></canvas>
+    </div>
+    <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button id="btn_sig_save_G" style="flex: 1; background: #00cc66; color: black; border: none; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 13px;" onclick="speichereUnterschriftManuell('G')">Speichern</button>
+        <button id="btn_sig_edit_G" style="flex: 1; background: #ffcc00; color: black; border: none; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 13px; display: none;" onclick="bearbeiteUnterschriftManuell('G')">Bearbeiten</button>
+        <button style="flex: 1; background: #cc3333; color: white; border: none; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 13px;" onclick="clearFixedSignature('G')">Löschen</button>
+    </div>
+</div>
 
 
 
@@ -1871,22 +1878,24 @@ function openSetupPopup(side) {
 
 
 
-// Zwei völlig getrennte Speicherbereiche, damit kein Browser durcheinanderkommt
-let h_lastX = 0, h_lastY = 0, h_isDrawing = false;
-let g_lastX = 0, g_lastY = 0, g_isDrawing = false;
+
+
+
+
+
+
+
+
+let h_lastX = 0, h_lastY = 0, h_isDrawing = false, h_isLocked = false;
+let g_lastX = 0, g_lastY = 0, g_isDrawing = false, g_isLocked = false;
 
 function initFixedCanvasesWithoutPopup() {
-    // =========================================================================
-    // STEUERUNG FÜR DAS HEIMTEAM (Feld 1)
-    // =========================================================================
+    // === HEIMTEAM CANVAS ===
     const canvasH = document.getElementById("fixed_canvas_H");
     if (canvasH) {
-        const wrapperH = canvasH.parentElement;
-        canvasH.width = wrapperH.clientWidth * 2;
-        canvasH.height = wrapperH.clientHeight * 2;
-        canvasH.style.width = wrapperH.clientWidth + "px";
-        canvasH.style.height = wrapperH.clientHeight + "px";
-        
+        const rectBox = canvasH.getBoundingClientRect();
+        canvasH.width = canvasH.parentElement.clientWidth * 2;
+        canvasH.height = canvasH.parentElement.clientHeight * 2;
         const ctxH = canvasH.getContext("2d");
         ctxH.scale(2, 2);
         ctxH.strokeStyle = "#000000";
@@ -1894,44 +1903,37 @@ function initFixedCanvasesWithoutPopup() {
         ctxH.lineCap = "round";
         ctxH.lineJoin = "round";
 
-        const startH = (e) => {
-            if (document.getElementById("panel_sig_fixed_H")?.classList.contains("row-disabled")) return;
-            h_isDrawing = true;
+        const getPos = (e) => {
             const rect = canvasH.getBoundingClientRect();
-            const x = e.touches ? e.touches[0].clientX : e.clientX;
-            const y = e.touches ? e.touches[0].clientY : e.clientY;
-            h_lastX = x - rect.left;
-            h_lastY = y - rect.top;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            // WICHTIG: Das rechnet die exakte Position auf dem Canvas aus, egal wo gescrollt wurde!
+            return {
+                x: (clientX - rect.left) * (canvasH.width / rect.width) / 2,
+                y: (clientY - rect.top) * (canvasH.height / rect.height) / 2
+            };
+        };
+
+        const startH = (e) => {
+            if (h_isLocked || document.getElementById("panel_sig_fixed_H")?.classList.contains("row-disabled")) return;
+            h_isDrawing = true;
+            const pos = getPos(e);
+            h_lastX = pos.x; h_lastY = pos.y;
             ctxH.beginPath();
             ctxH.moveTo(h_lastX, h_lastY);
-            if(e.cancelable) e.preventDefault();
+            if (e.cancelable) e.preventDefault();
         };
 
         const moveH = (e) => {
-            if (!h_isDrawing) return;
-            const rect = canvasH.getBoundingClientRect();
-            const x = e.touches ? e.touches[0].clientX : e.clientX;
-            const y = e.touches ? e.touches[0].clientY : e.clientY;
-            const curX = x - rect.left;
-            const curY = y - rect.top;
-            
-            // Füller-Glättung für weiche Kurven
-            const midX = (h_lastX + curX) / 2;
-            const midY = (h_lastY + curY) / 2;
-            ctxH.quadraticCurveTo(h_lastX, h_lastY, midX, midY);
+            if (!h_isDrawing || h_isLocked) return;
+            const pos = getPos(e);
+            ctxH.lineTo(pos.x, pos.y);
             ctxH.stroke();
-            
-            h_lastX = curX;
-            h_lastY = curY;
-            if(e.cancelable) e.preventDefault();
+            h_lastX = pos.x; h_lastY = pos.y;
+            if (e.cancelable) e.preventDefault();
         };
 
-        const stopH = () => {
-            if (h_isDrawing) {
-                h_isDrawing = false;
-                saveFixedSignatureToPDF('H');
-            }
-        };
+        const stopH = () => { h_isDrawing = false; };
 
         canvasH.addEventListener('mousedown', startH);
         canvasH.addEventListener('mousemove', moveH);
@@ -1941,17 +1943,11 @@ function initFixedCanvasesWithoutPopup() {
         window.addEventListener('touchend', stopH);
     }
 
-    // =========================================================================
-    // STEUERUNG FÜR DAS GASTTEAM (Feld 2)
-    // =========================================================================
+    // === GASTTEAM CANVAS ===
     const canvasG = document.getElementById("fixed_canvas_G");
     if (canvasG) {
-        const wrapperG = canvasG.parentElement;
-        canvasG.width = wrapperG.clientWidth * 2;
-        canvasG.height = wrapperG.clientHeight * 2;
-        canvasG.style.width = wrapperG.clientWidth + "px";
-        canvasG.style.height = wrapperG.clientHeight + "px";
-        
+        canvasG.width = canvasG.parentElement.clientWidth * 2;
+        canvasG.height = canvasG.parentElement.clientHeight * 2;
         const ctxG = canvasG.getContext("2d");
         ctxG.scale(2, 2);
         ctxG.strokeStyle = "#000000";
@@ -1959,44 +1955,36 @@ function initFixedCanvasesWithoutPopup() {
         ctxG.lineCap = "round";
         ctxG.lineJoin = "round";
 
-        const startG = (e) => {
-            if (document.getElementById("panel_sig_fixed_G")?.classList.contains("row-disabled")) return;
-            g_isDrawing = true;
+        const getPos = (e) => {
             const rect = canvasG.getBoundingClientRect();
-            const x = e.touches ? e.touches[0].clientX : e.clientX;
-            const y = e.touches ? e.touches[0].clientY : e.clientY;
-            g_lastX = x - rect.left;
-            g_lastY = y - rect.top;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: (clientX - rect.left) * (canvasG.width / rect.width) / 2,
+                y: (clientY - rect.top) * (canvasG.height / rect.height) / 2
+            };
+        };
+
+        const startG = (e) => {
+            if (g_isLocked || document.getElementById("panel_sig_fixed_G")?.classList.contains("row-disabled")) return;
+            g_isDrawing = true;
+            const pos = getPos(e);
+            g_lastX = pos.x; g_lastY = pos.y;
             ctxG.beginPath();
             ctxG.moveTo(g_lastX, g_lastY);
-            if(e.cancelable) e.preventDefault();
+            if (e.cancelable) e.preventDefault();
         };
 
         const moveG = (e) => {
-            if (!g_isDrawing) return;
-            const rect = canvasG.getBoundingClientRect();
-            const x = e.touches ? e.touches[0].clientX : e.clientX;
-            const y = e.touches ? e.touches[0].clientY : e.clientY;
-            const curX = x - rect.left;
-            const curY = y - rect.top;
-            
-            // Füller-Glättung für weiche Kurven
-            const midX = (g_lastX + curX) / 2;
-            const midY = (g_lastY + curY) / 2;
-            ctxG.quadraticCurveTo(g_lastX, g_lastY, midX, midY);
+            if (!g_isDrawing || g_isLocked) return;
+            const pos = getPos(e);
+            ctxG.lineTo(pos.x, pos.y);
             ctxG.stroke();
-            
-            g_lastX = curX;
-            g_lastY = curY;
-            if(e.cancelable) e.preventDefault();
+            g_lastX = pos.x; g_lastY = pos.y;
+            if (e.cancelable) e.preventDefault();
         };
 
-        const stopG = () => {
-            if (g_isDrawing) {
-                g_isDrawing = false;
-                saveFixedSignatureToPDF('G');
-            }
-        };
+        const stopG = () => { g_isDrawing = false; };
 
         canvasG.addEventListener('mousedown', startG);
         canvasG.addEventListener('mousemove', moveG);
@@ -2005,46 +1993,78 @@ function initFixedCanvasesWithoutPopup() {
         canvasG.addEventListener('touchmove', moveG, { passive: false });
         window.addEventListener('touchend', stopG);
     }
+    
+    // Prüfen, ob bereits gespeicherte Unterschriften im Speicher liegen und Zustand setzen
+    if(localStorage.getItem("mkk_sig_data_H")) setzeSperrZustandVisual('H', true);
+    if(localStorage.getItem("mkk_sig_data_G")) setzeSperrZustandVisual('G', true);
 }
 
+// Hilfsfunktion für das Ausgrauen und Button-Umschalten
+function setzeSperrZustandVisual(side, sperren) {
+    const wrapper = document.getElementById("fixed_canvas_" + side).parentElement;
+    const btnSave = document.getElementById("btn_sig_save_" + side);
+    const btnEdit = document.getElementById("btn_sig_edit_" + side);
 
-function saveFixedSignatureToPDF(side) {
-    // Holt das richtige Zeichenfeld (Heim oder Gast)
+    if (side === 'H') h_isLocked = sperren;
+    if (side === 'G') g_isLocked = sperren;
+
+    if (sperren) {
+        wrapper.style.opacity = "0.35"; // Ausgrauen des Zeichenfeldes
+        wrapper.style.backgroundColor = "#e0e0e0";
+        if(btnSave) btnSave.style.display = "none";
+        if(btnEdit) btnEdit.style.display = "block"; // Bearbeiten-Button anzeigen
+    } else {
+        wrapper.style.opacity = "1.0"; // Wieder freigeben
+        wrapper.style.backgroundColor = "#ffffff";
+        if(btnSave) btnSave.style.display = "block";
+        if(btnEdit) btnEdit.style.display = "none";
+    }
+}
+
+// DER NEUE SPEICHER-BUTTON
+function speichereUnterschriftManuell(side) {
     const canvas = document.getElementById("fixed_canvas_" + side);
     if (!canvas) return;
     
-    // Liest die Unterschrift ohne langes Rechnen direkt aus
+    // Prüfen ob überhaupt gezeichnet wurde (optional, speichert einfach den aktuellen Stand)
     const finalSigData = canvas.toDataURL("image/png");
     localStorage.setItem("mkk_sig_data_" + side, finalSigData);
-    
-    // Setzt das Bild direkt in das A4-Drucklayout ein
+
+    // Bild ins Drucklayout schieben
     const img = document.getElementById("img_print_sig_" + side);
-    if (img) { 
-        img.src = finalSigData; 
-        img.style.display = "block"; 
+    if (img) {
+        img.src = finalSigData;
+        img.style.display = "block";
     }
+
+    // Visuell einfrieren/ausgrauen
+    setzeSperrZustandVisual(side, true);
     checkFixedSignaturesComplete();
+    alert("Unterschrift für " + (side === 'H' ? 'Heimteam' : 'Gastteam') + " erfolgreich gesichert und gesperrt!");
 }
 
+// DER NEUE BEARBEITEN-BUTTON
+function bearbeiteUnterschriftManuell(side) {
+    // Entsperrt das Feld visuell, behält die alte Zeichnung aber bei, falls man nur korrigieren will
+    setzeSperrZustandVisual(side, false);
+}
 
+// LÖSCHEN-LOGIK (angepasst)
 function clearFixedSignature(side) {
-    // Findet das passende Canvas
     const canvas = document.getElementById("fixed_canvas_" + side);
     if (canvas) {
         const ctx = canvas.getContext("2d");
-        // Wischt das Feld komplett sauber
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Löscht die alten Daten aus dem Gedächtnis
-        localStorage.removeItem("mkk_sig_data_" + side);
-        
-        // Blendet die Unterschrift im PDF-Layout wieder aus
-        const img = document.getElementById("img_print_sig_" + side);
-        if (img) { img.style.display = "none"; img.src = ""; }
-        
-        checkFixedSignaturesComplete();
     }
+    localStorage.removeItem("mkk_sig_data_" + side);
+    const img = document.getElementById("img_print_sig_" + side);
+    if (img) { img.style.display = "none"; img.src = ""; }
+    
+    // Feld wieder komplett in den Urzustand versetzen
+    setzeSperrZustandVisual(side, false);
+    checkFixedSignaturesComplete();
 }
+
 
 
 function checkFixedSignaturesComplete() {
