@@ -567,10 +567,18 @@ function aktiviereVollbild() {
  
 <!-- DIESER BLOCK ERSETZT DIE GEQUETSCHTEN FELDER FÜR SMARTPHONES -->
 <div class="panel" style="margin-bottom: 15px; display: flex; flex-direction: column; gap: 12px;">
- <div>
+<!-- ALT: <option value="Gruppe A">Gruppe A</option>... -->
+<div>
  <label>Gruppe:</label>
- <select id="meta_group" onchange="syncMetaToLabels()"><option value="">-- wählen --</option><option value="Gruppe A">Gruppe A</option><option value="Gruppe B">Gruppe B</option><option value="Gruppe C">Gruppe C</option></select>
- </div>
+ <select id="meta_group" onchange="syncMetaToLabels()">
+   <option value="">-- wählen --</option>
+   <option value="Gruppe A">A - Liga</option>
+   <option value="Gruppe B">B - Liga</option>
+   <option value="Gruppe C">C - Liga</option>
+ </select>
+</div>
+
+
  <div>
  <label>Spieltag:</label>
  <select id="meta_day" onchange="syncMetaToLabels()"><option value="">-- wählen --</option>
@@ -1568,11 +1576,17 @@ function updateStats() {
 
 function syncMetaToLabels() {
  const groupVal = document.getElementById("meta_group").value;
+ 
+ // Diese Abfragen prüfen weiterhin auf "Gruppe A/B/C", damit die Kreuze 
+ // im PDF-Druck-Layout an der richtigen Stelle landen:
  document.getElementById("lbl_group_A").innerText = (groupVal === "Gruppe A") ? "X" : "";
  document.getElementById("lbl_group_B").innerText = (groupVal === "Gruppe B") ? "X" : "";
  document.getElementById("lbl_group_C").innerText = (groupVal === "Gruppe C") ? "X" : "";
+ 
  document.getElementById("lbl_day").innerText = document.getElementById("meta_day").value;
  document.getElementById("lbl_date").innerText = document.getElementById("meta_date").value;
+ // ... Rest der Funktion bleibt unverändert ...
+
  document.getElementById("lbl_name_home").innerText = document.getElementById("team_home").value;
  document.getElementById("lbl_name_guest").innerText = document.getElementById("team_guest").value;
  document.getElementById("lbl_captain_home").innerText = document.getElementById("captain_home").value;
@@ -1811,55 +1825,46 @@ function openSignaturePopup(side) {
     
     const overlay = document.getElementById("popup_sig_" + side);
     const canvas = document.getElementById("canvas_sig_" + side);
-    const container = canvas.parentElement;
-
-    // 1. Das Fenster sofort sichtbar machen
+    
+    // Fenster sofort sichtbar machen und Hintergrund-Scrollen sperren
     overlay.style.display = "flex";
     document.body.style.overflow = "hidden";
 
-    // 2. Fehlerquelle beheben: Erst initialisieren, wenn der Container ECHTE Maße hat
-    const observer = new ResizeObserver((entries) => {
-        for (let entry of entries) {
-            // Hol die exakten gerenderten Maße vom Smartphone-Display
-            let exactWidth = entry.contentRect.width;
-            let exactHeight = entry.contentRect.height;
-
-            // Falls der Browser noch bockt, weiche auf die Fenstergröße aus
-            if (!exactWidth || exactWidth <= 0) exactWidth = window.innerWidth - 32;
-            if (!exactHeight || exactHeight <= 0) exactHeight = window.innerHeight - 160;
-
-            // Canvas-Größe im DOM setzen
-            canvas.style.width = exactWidth + "px";
-            canvas.style.height = exactHeight + "px";
-
-            // Interne Pixel-Auflösung (für scharfe Linien auf Retina/Smartphones)
-            const pixelRatio = 3; 
-            canvas.width = exactWidth * pixelRatio;
-            canvas.height = exactHeight * pixelRatio;
-
-            // Kontext holen und Stift einstellen
-            sigCanvases[side] = canvas;
-            const ctx = canvas.getContext("2d");
-            sigContexts[side] = ctx;
-
-            ctx.scale(pixelRatio, pixelRatio);
-            ctx.strokeStyle = "#000000";
-            ctx.lineWidth = 3.5; 
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
-
-            setupCanvasEvents(side);
-
-            // Observer wieder abschalten, da die Initialisierung fertig ist
-            observer.disconnect();
-        }
-    });
-
-    // Observer auf den Container ansetzen
-    observer.observe(container);
+    // Direktes Auslesen der Container-Größe für Smartphones/Tablets
+    const container = canvas.parentElement;
+    let exactWidth = container.clientWidth || container.getBoundingClientRect().width;
+    let exactHeight = container.clientHeight || container.getBoundingClientRect().height;
+    
+    // Harter Fallback auf die Display-Größe, falls der Browser noch blockiert
+    if (!exactWidth || exactWidth <= 0) exactWidth = window.innerWidth - 32;
+    if (!exactHeight || exactHeight <= 0) exactHeight = window.innerHeight - 160;
+    
+    // Canvas-Größe im Stylesheet verankern
+    canvas.style.width = exactWidth + "px";
+    canvas.style.height = exactHeight + "px";
+    
+    // Pixel-Verdreifachung für gestochen scharfe Linien (Retina/High-Res-Displays)
+    const pixelRatio = 3; 
+    canvas.width = exactWidth * pixelRatio;
+    canvas.height = exactHeight * pixelRatio;
+    
+    const ctx = canvas.getContext("2d");
+    sigCanvases[side] = canvas;
+    sigContexts[side] = ctx;
+    
+    ctx.scale(pixelRatio, pixelRatio);
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 3.5; 
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    
+    // Wichtig: Linien-Koordinaten zurücksetzen, falls noch Reste im Speicher liegen
+    lastX = 0;
+    lastY = 0;
+    sigDrawing = false;
+    
+    setupCanvasEvents(side);
 }
-
-
 
 
 
@@ -1975,53 +1980,54 @@ function clearSignature(side) {
 function saveSignature(side) {
     const canvas = document.getElementById("canvas_sig_" + side);
     if (!canvas) return;
-
-    // 1. Prüfen, ob der Nutzer im Querformat unterschrieben hat
+    
+    // Prüfen, ob der Kapitän das Handy/Tablet im Querformat gehalten hat
     const istQuerformat = canvas.width > canvas.height;
+    let finalSigData = "";
 
     if (istQuerformat) {
-        // Erstelle ein temporäres Canvas im Hintergrund für die Drehung
+        // Hilfs-Canvas im Hintergrund erstellen, um das Bild zurückzudrehen
         const tempCanvas = document.createElement("canvas");
         const tempCtx = tempCanvas.getContext("2d");
 
-        // Die neuen Maße tauschen (Breite wird Höhe, Höhe wird Breite)
+        // Maße für das Hochformat tauschen
         tempCanvas.width = canvas.height;
         tempCanvas.height = canvas.width;
 
-        // Verschiebe den Ursprung in die Mitte und rotiere um -90 Grad (oder 90)
+        // Zum Mittelpunkt springen, um 90 Grad gegen den Uhrzeigersinn drehen
         tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
-        tempCtx.rotate(-90 * Math.PI / 180); // Dreht es zurück ins Hochformat
-
-        // Zeichne das Original-Canvas gedreht auf das temporäre Canvas
+        tempCtx.rotate(-90 * Math.PI / 180);
+        
+        // Das Original-Bild gedreht einzeichnen
         tempCtx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
-
-        // Generiere die Bilddaten aus dem richtig gedrehten Hilfs-Canvas
-        const gedrehteSigData = tempCanvas.toDataURL("image/png");
-
-        // Speichern und im Druck-Layout anzeigen
-        localStorage.setItem("mkk_sig_data_" + side, gedrehteSigData);
-        const img = document.getElementById("img_print_sig_" + side);
-        if (img) { img.src = gedrehteSigData; img.style.display = "block"; }
+        finalSigData = tempCanvas.toDataURL("image/png");
     } else {
-        // Wenn ganz normal im Hochformat unterschrieben wurde, einfach direkt speichern
-        const normaleSigData = canvas.toDataURL("image/png");
-        localStorage.setItem("mkk_sig_data_" + side, normaleSigData);
-        const img = document.getElementById("img_print_sig_" + side);
-        if (img) { img.src = normaleSigData; img.style.display = "block"; }
+        // Wenn im normalen Hochformat unterschrieben wurde, Daten direkt nehmen
+        finalSigData = canvas.toDataURL("image/png");
     }
 
-    // UI aktualisieren (Button haken setzen) und Popup schließen
+    // Im Browser-Speicher ablegen
+    localStorage.setItem("mkk_sig_data_" + side, finalSigData);
+    
+    // Bild im Druck-Layout (A4-PDF) aktualisieren
+    const img = document.getElementById("img_print_sig_" + side);
+    if (img) { 
+        img.src = finalSigData; 
+        img.style.display = "block"; 
+    }
+    
+    // Button-Text auf dem Live-Bogen anpassen
     const btn = document.getElementById("btn_sig_" + side);
     if (btn) btn.innerText = "Unterschrift ✓ erfasst";
     
+    // Popup schließen und normales Scrollen wieder erlauben
     const overlay = document.getElementById("popup_sig_" + side);
     if (overlay) overlay.style.display = "none";
     document.body.style.overflow = "auto";
-
-    // Tabelle neu rendern, um den Druck-Button freizugeben, falls alles fertig ist
+    
+    // Tabelle und PDF-Druck-Freigabe aktualisieren
     if (typeof renderTable === "function") renderTable();
 }
-
 
 
 function starteSpezialDruck() {
