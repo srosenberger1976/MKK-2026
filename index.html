@@ -1834,19 +1834,26 @@ function openSignaturePopup(side) {
  }
  
  const overlay = document.getElementById("popup_sig_" + side);
+ const canvas = document.getElementById("canvas_sig_" + side);
  
- // 1. Das Fenster sofort sichtbar machen und Scrollen im Hintergrund sperren
+ // 1. Platzhalter/Hinweis anzeigen, solange das Fenster ausgerichtet wird
+ const alterText = btn ? btn.innerText : "";
+ if(btn) {
+ btn.innerText = "🔄 Fenster wird ausgerichtet...";
+ btn.style.opacity = "0.6";
+ }
+
+ // 2. Das Fenster sofort sichtbar machen und Scrollen sperren
  overlay.style.display = "flex";
  document.body.style.overflow = "hidden";
- 
- // 2. Nur 10 Millisekunden warten, damit das Smartphone-Display das Layout berechnen kann
+
+ // 3. Erhöhter Timeout (120ms) gibt Android & iOS genug Zeit für das Layout
  setTimeout(() => {
- const canvas = document.getElementById("canvas_sig_" + side);
  sigCanvases[side] = canvas;
  const ctx = canvas.getContext("2d");
  sigContexts[side] = ctx;
  
- // Da das Fenster jetzt zu 100% offen ist, stimmen diese Maße sofort beim ersten Mal!
+ // Präzise Maße abgreifen, nachdem das Element sicher gerendert ist
  let exactWidth = canvas.parentElement.clientWidth;
  let exactHeight = canvas.parentElement.clientHeight;
  
@@ -1859,7 +1866,6 @@ function openSignaturePopup(side) {
  const pixelRatio = 3; 
  canvas.width = exactWidth * pixelRatio;
  canvas.height = exactHeight * pixelRatio;
- 
  ctx.scale(pixelRatio, pixelRatio);
  
  ctx.strokeStyle = "#000000";
@@ -1868,8 +1874,15 @@ function openSignaturePopup(side) {
  ctx.lineJoin = "round";
  
  setupCanvasEvents(side);
- }, 10); // Dieser Mini-Timeout löst das Problem komplett ohne Auf-und-Zu-Wechsel
+ 
+ // Hinweis wieder zurücksetzen, da das Canvas nun einsatzbereit ist
+ if(btn) {
+ btn.innerText = alterText;
+ btn.style.opacity = "1";
+ }
+ }, 120); // Erhöht von 10ms auf 120ms für stabile Layoutberechnung beim 1. Mal
 }
+
 
 
 
