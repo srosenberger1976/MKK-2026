@@ -1802,86 +1802,63 @@ function openSetupPopup(side) {
     document.body.style.overflow = "hidden";
 }
 
-function closeSetupPopup(side) {
-    document.getElementById("popup_setup_" + side).style.display = "none";
-    // Aktiviert das normale Scrollen wieder
-    document.body.style.overflow = "auto";
-    
-    // Erzwingt eine Validierung und Speicherung beim Schließen
-    validateRosterAndSetup();
-    syncMetaToLabels();
-    saveActiveDropdowns();
-}
-
-
-
-
-// Global steuernde Canvas-Variablen
-let sigDrawing = false;
-let sigCanvases = { H: null, G: null };
-let sigContexts = { H: null, G: null };
-
-
-// Neue Variablen für die flüssige Kuli-Dämpfung
-let lastX = 0;
-let lastY = 0;
-
 function openSignaturePopup(side) {
- const btn = document.getElementById("btn_sig_" + side);
- if (btn && btn.classList.contains("row-disabled")) {
- alert("Hinweis: Du kannst erst unterschreiben, wenn alle Spiele des Spielplans erfasst wurden!");
- return;
- }
- 
- const overlay = document.getElementById("popup_sig_" + side);
- const canvas = document.getElementById("canvas_sig_" + side);
- 
- // 1. Platzhalter/Hinweis anzeigen, solange das Fenster ausgerichtet wird
- const alterText = btn ? btn.innerText : "";
- if(btn) {
- btn.innerText = "🔄 Fenster wird ausgerichtet...";
- btn.style.opacity = "0.6";
- }
+    const btn = document.getElementById("btn_sig_" + side);
+    if (btn && btn.classList.contains("row-disabled")) {
+        alert("Hinweis: Du kannst erst unterschreiben, wenn alle Spiele des Spielplans erfasst wurden!");
+        return;
+    }
+    
+    const overlay = document.getElementById("popup_sig_" + side);
+    const canvas = document.getElementById("canvas_sig_" + side);
+    const container = canvas.parentElement;
 
- // 2. Das Fenster sofort sichtbar machen und Scrollen sperren
- overlay.style.display = "flex";
- document.body.style.overflow = "hidden";
+    // 1. Das Fenster sofort sichtbar machen
+    overlay.style.display = "flex";
+    document.body.style.overflow = "hidden";
 
- // 3. Erhöhter Timeout (120ms) gibt Android & iOS genug Zeit für das Layout
- setTimeout(() => {
- sigCanvases[side] = canvas;
- const ctx = canvas.getContext("2d");
- sigContexts[side] = ctx;
- 
- // Präzise Maße abgreifen, nachdem das Element sicher gerendert ist
- let exactWidth = canvas.parentElement.clientWidth;
- let exactHeight = canvas.parentElement.clientHeight;
- 
- if (!exactWidth || exactWidth <= 0) exactWidth = window.innerWidth - 32;
- if (!exactHeight || exactHeight <= 0) exactHeight = window.innerHeight - 160;
- 
- canvas.style.width = exactWidth + "px";
- canvas.style.height = exactHeight + "px";
- 
- const pixelRatio = 3; 
- canvas.width = exactWidth * pixelRatio;
- canvas.height = exactHeight * pixelRatio;
- ctx.scale(pixelRatio, pixelRatio);
- 
- ctx.strokeStyle = "#000000";
- ctx.lineWidth = 3.5; 
- ctx.lineCap = "round";
- ctx.lineJoin = "round";
- 
- setupCanvasEvents(side);
- 
- // Hinweis wieder zurücksetzen, da das Canvas nun einsatzbereit ist
- if(btn) {
- btn.innerText = alterText;
- btn.style.opacity = "1";
- }
- }, 120); // Erhöht von 10ms auf 120ms für stabile Layoutberechnung beim 1. Mal
+    // 2. Fehlerquelle beheben: Erst initialisieren, wenn der Container ECHTE Maße hat
+    const observer = new ResizeObserver((entries) => {
+        for (let entry of entries) {
+            // Hol die exakten gerenderten Maße vom Smartphone-Display
+            let exactWidth = entry.contentRect.width;
+            let exactHeight = entry.contentRect.height;
+
+            // Falls der Browser noch bockt, weiche auf die Fenstergröße aus
+            if (!exactWidth || exactWidth <= 0) exactWidth = window.innerWidth - 32;
+            if (!exactHeight || exactHeight <= 0) exactHeight = window.innerHeight - 160;
+
+            // Canvas-Größe im DOM setzen
+            canvas.style.width = exactWidth + "px";
+            canvas.style.height = exactHeight + "px";
+
+            // Interne Pixel-Auflösung (für scharfe Linien auf Retina/Smartphones)
+            const pixelRatio = 3; 
+            canvas.width = exactWidth * pixelRatio;
+            canvas.height = exactHeight * pixelRatio;
+
+            // Kontext holen und Stift einstellen
+            sigCanvases[side] = canvas;
+            const ctx = canvas.getContext("2d");
+            sigContexts[side] = ctx;
+
+            ctx.scale(pixelRatio, pixelRatio);
+            ctx.strokeStyle = "#000000";
+            ctx.lineWidth = 3.5; 
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+
+            setupCanvasEvents(side);
+
+            // Observer wieder abschalten, da die Initialisierung fertig ist
+            observer.disconnect();
+        }
+    });
+
+    // Observer auf den Container ansetzen
+    observer.observe(container);
 }
+
 
 
 
@@ -1996,49 +1973,54 @@ function clearSignature(side) {
 
 
 function saveSignature(side) {
-    const canvas = sigCanvases[side];
+    const canvas = document.getElementById("canvas_sig_" + side);
     if (!canvas) return;
 
-    // Prüfen, ob überhaupt gezeichnet wurde
-    const ctx = canvas.getContext("2d");
-    
-    // Die Unterschrift als Bild-Daten extrahieren
-    const dataURL = canvas.toDataURL("image/png");
-    
-    // Im lokalen Speicher des Browsers sichern
-    localStorage.setItem("mkk_sig_data_" + side, dataURL);
-    
-    // Für die Druck-Vorschau im PDF bereitstellen
-    const img = document.getElementById("img_print_sig_" + side);
-    if (img) {
-        img.src = dataURL;
-        img.style.display = "block";
-        
-        // FIX FÜR QUERFORMAT: Erzwingt eine saubere Platzierung im PDF-Druckfeld,
-        // ohne dass die Unterschrift nach oben ausreißt.
-        img.style.position = "absolute";
-        img.style.bottom = "2px";
-        img.style.left = "50%";
-        img.style.transform = "translateX(-50%)";
-        img.style.objectFit = "contain";
-        img.style.width = "90%";
-        img.style.height = "42px";
+    // 1. Prüfen, ob der Nutzer im Querformat unterschrieben hat
+    const istQuerformat = canvas.width > canvas.height;
+
+    if (istQuerformat) {
+        // Erstelle ein temporäres Canvas im Hintergrund für die Drehung
+        const tempCanvas = document.createElement("canvas");
+        const tempCtx = tempCanvas.getContext("2d");
+
+        // Die neuen Maße tauschen (Breite wird Höhe, Höhe wird Breite)
+        tempCanvas.width = canvas.height;
+        tempCanvas.height = canvas.width;
+
+        // Verschiebe den Ursprung in die Mitte und rotiere um -90 Grad (oder 90)
+        tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
+        tempCtx.rotate(-90 * Math.PI / 180); // Dreht es zurück ins Hochformat
+
+        // Zeichne das Original-Canvas gedreht auf das temporäre Canvas
+        tempCtx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
+
+        // Generiere die Bilddaten aus dem richtig gedrehten Hilfs-Canvas
+        const gedrehteSigData = tempCanvas.toDataURL("image/png");
+
+        // Speichern und im Druck-Layout anzeigen
+        localStorage.setItem("mkk_sig_data_" + side, gedrehteSigData);
+        const img = document.getElementById("img_print_sig_" + side);
+        if (img) { img.src = gedrehteSigData; img.style.display = "block"; }
+    } else {
+        // Wenn ganz normal im Hochformat unterschrieben wurde, einfach direkt speichern
+        const normaleSigData = canvas.toDataURL("image/png");
+        localStorage.setItem("mkk_sig_data_" + side, normaleSigData);
+        const img = document.getElementById("img_print_sig_" + side);
+        if (img) { img.src = normaleSigData; img.style.display = "block"; }
     }
 
-    // Button-Text aktualisieren
+    // UI aktualisieren (Button haken setzen) und Popup schließen
     const btn = document.getElementById("btn_sig_" + side);
-    if (btn) btn.innerText = " Unterschrift ✓ erfasst";
-
-    // Popup schließen
+    if (btn) btn.innerText = "Unterschrift ✓ erfasst";
+    
     const overlay = document.getElementById("popup_sig_" + side);
     if (overlay) overlay.style.display = "none";
     document.body.style.overflow = "auto";
 
-    // Tabelle neu rendern, um Druck-Buttons freizuschalten
-    renderTable();
-    alert("Unterschrift erfolgreich gespeichert!");
+    // Tabelle neu rendern, um den Druck-Button freizugeben, falls alles fertig ist
+    if (typeof renderTable === "function") renderTable();
 }
-
 
 
 
