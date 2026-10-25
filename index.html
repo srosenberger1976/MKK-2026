@@ -76,6 +76,9 @@ border-radius: 4px; margin-bottom: 20px; font-size: 14px; }
  th { background: #444; color: #ffcc00; }
  .clickable-row { cursor: pointer; transition: 0.2s; }
  .clickable-row:hover { background: #444 !important; }
+.clickable-player-name { cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.clickable-player-name:hover { color: #ffcc00 !important; }
+
  .row-disabled { opacity: 0.4; cursor: not-allowed !important; }
  .print-btn { background: #00cc66; color: #fff; border: none; padding: 12px 
 20px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; 
@@ -504,11 +507,16 @@ function aktiviereVollbild() {
    <span style="font-size: 18px; color: #fff; font-weight: normal; font-style: italic;">Spielberichtsbogen</span> 🎯
  </h1>
 
- <div class="tab-navigation">
-  <button id="btn_tab_setup" class="tab-btn active" onclick="switchTab('setup')">1. Aufstellung & Setup</button>
-  <button id="btn_tab_game" class="tab-btn" onclick="switchTab('game'); aktiviereVollbild();">2. Live-Spielplan & Statistik</button>
+<div class="tab-navigation" style="display: flex; gap: 10px; align-items: center; width: 100%;">
+    <button id="btn_tab_setup" class="tab-btn active" onclick="switchTab('setup')" style="flex: 1;">1. Aufstellung & Setup</button>
+    <button id="btn_tab_game" class="tab-btn" onclick="switchTab('game'); aktiviereVollbild();" style="flex: 1;">2. Live-Spielplan & Statistik</button>
+    
+    <!-- NEU: Das Reset-Icon als kompakter, edler Button direkt rechts neben der Navigation -->
+    <button onclick="resetWholeMatchday()" style="background: #2a2a2a; border: 1px solid #cc3333; color: #cc3333; font-size: 16px; cursor: pointer; padding: 0; width: 44px; height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center; border-radius: 5px; transition: all 0.2s; box-sizing: border-box;" title="Gesamtes Spiel zurücksetzen & Daten leeren" onmouseover="this.style.background='#cc3333'; this.style.color='#fff'; this.style.transform='scale(1.05)';" onmouseout="this.style.background='#2a2a2a'; this.style.color='#cc3333'; this.style.transform='scale(1)';">
+        🗑️
+    </button>
+</div>
 
- </div>
 
 
 
@@ -520,10 +528,11 @@ function aktiviereVollbild() {
 
  <!-- NEUES SEPARATES MENÜ: MANNSCHAFTEN UND SPIELER -->
  <div class="accordion-menu">
-     <div class="accordion-header" onclick="toggleAccordion()">
-         <span>📋 Mannschaften und Spieler</span>
+         <div class="accordion-header" onclick="toggleAccordion()">
+         <span id="accordion_title">📋 Mannschaften und Spieler</span>
          <span id="accordion_arrow">▼</span>
      </div>
+
      <div id="accordion_panel" class="accordion-content">
          <label style="font-weight: bold; color: #ffcc00; display:block; margin-bottom:8px;">
              Spieler-TXT hier einfügen und speichern (Format: Team, Nachname, Vorname, Passnummer):
@@ -534,12 +543,51 @@ function aktiviereVollbild() {
    Spielerliste frisch laden & dauerhaft speichern 💾
  </button>
 
+
+         <!-- NEU: Manueller Offline-Eintrag für Spieler -->
+         <div style="margin-top: 22px; padding-top: 15px; border-top: 1px dashed #555; text-align: left;">
+             <label style="font-weight: bold; color: #ffcc00; display:block; margin-bottom:4px; font-size: 14px;">
+                 ➕ Spieler manuell hinzufügen (Offline-Direkteingabe)
+             </label>
+             <p style="font-size: 11px; color: #bbb; margin: 0 0 12px 0; line-height: 1.3;">
+                 Wähle eine geladene Mannschaft aus, gib den Namen (z.B. <i>Nachname, Vorname</i> oder einfach komplett) sowie die Passnummer ein. Der Spieler wird direkt in den lokalen Speicher und in das Textfeld oben eingetragen.
+             </p>
+             
+             <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px;">
+                 <div>
+                     <label style="font-size: 11px; color: #aaa; margin-bottom: 2px; display: block;">Mannschaft auswählen:</label>
+                     <select id="manual_team_select" style="width: 100%; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 4px; height: 38px;"></select>
+                 </div>
+                 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+                     <div>
+                         <label style="font-size: 11px; color: #aaa; margin-bottom: 2px; display: block;">Spielername:</label>
+                         <input type="text" id="manual_player_name" placeholder="z.B. Müller, Thomas" style="width: 100%; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 4px; height: 38px; box-sizing: border-box;">
+                     </div>
+                     <div>
+                         <label style="font-size: 11px; color: #aaa; margin-bottom: 2px; display: block;">Passnummer:</label>
+                         <input type="text" id="manual_player_pass" placeholder="z.B. 107" style="width: 100%; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 4px; height: 38px; box-sizing: border-box; text-align: center;">
+                     </div>
+                 </div>
+             </div>
+             
+             <!-- Button-Gruppe für Speichern und Abbrechen/Schließen -->
+             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 15px;">
+                 <button onclick="fuegeSpielerManuellHinzu()" style="padding: 12px; background: #00cc66; color: #000; border: 1px solid #fff; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 13px; text-transform: uppercase; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">
+                     Spieler Offline speichern 💾
+                 </button>
+                 <button onclick="toggleAccordion()" style="padding: 12px; background: #cc3333; color: #fff; border: 1px solid #ff5555; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 13px; text-transform: uppercase; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">
+                     Fenster schließen / Abbrechen ✖
+                 </button>
+             </div>
+         </div>
+
+
+
+
      </div>
  </div>
 
- <button onclick="resetWholeMatchday()" style="width: 100%; margin-bottom: 20px; padding: 10px; background: #cc3333; color: #fff; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; font-size: 12px;"> 
-     Neues Spiel starten (Daten leeren) ⚠
- </button>
+
  
 <!-- DIESER BLOCK ERSETZT DIE GEQUETSCHTEN FELDER FÜR SMARTPHONES -->
 <div class="panel" style="margin-bottom: 15px; display: flex; flex-direction: column; gap: 12px;">
@@ -574,33 +622,26 @@ for(let i=1; i<=30; i++) { document.write('<option value="' + i + '. Spieltag">'
 </div>
 
  
- <div id="validation_status_bar" class="status-bar status-locked">Spiel gesperrt: Bitte Teams wählen und mindestens 4 Hauptspieler (H1-H4 & G1-G4) besetzen!</div>
+<div id="validation_status_bar" class="status-bar status-locked" onclick="zeigeFehlendePflichtfelder()" style="cursor: pointer; transition: all 0.2s;" title="Klicken für Details zu den fehlenden Feldern">Spiel gesperrt: Bitte Teams wählen und mindestens 4 Hauptspieler (H1-H4 & G1-G4) besetzen!</div>
 
 
 
 
 
 
+
+
+
+<!-- Zusammengelegte Buttons für Heim- und Gastteam Aufstellung -->
 <div style="display: flex; gap: 15px; margin-top: 15px; width: 100%;">
-<div id="status_box_H" style="flex: 1; padding: 12px; text-align: center;
-font-weight: bold; border-radius: 6px; background: #333; color: #8883; border:
-1px solid #444; transition: all 0.3s ease;">
-Heimteam Aufstellung unvollständig企
-</div>
-<div id="status_box_G" style="flex: 1; padding: 12px; text-align: center;
-font-weight: bold; border-radius: 6px; background: #333; color: #8883; border:
-1px solid #444; transition: all 0.3s ease;">
-Gastteam Aufstellung unvollständig
-</div>
+    <button id="btn_setup_H" onclick="openSetupPopup('H')" style="flex: 1; padding: 14px; font-weight: bold; background: #333; color: #888; border: 1px solid #444; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px; transition: all 0.3s ease;">
+        🏠 Heimteam aufstellen (Unvollständig)
+    </button>
+    <button id="btn_setup_G" onclick="openSetupPopup('G')" style="flex: 1; padding: 14px; font-weight: bold; background: #333; color: #888; border: 1px solid #444; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px; transition: all 0.3s ease;">
+        🚀 Gastteam aufstellen (Unvollständig)
+    </button>
 </div>
 
-<!-- HIER DIE BEIDEN BEARBEITEN-BUTTONS EINFÜGEN -->
-<div style="display: flex; gap: 15px; margin-top: 15px; width: 100%;">
-    <button onclick="openSetupPopup('H')" style="flex: 1; padding: 12px; font-weight: bold; background: #00cc66; color: #000; border: none; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px;">🏠 Heimteam bearbeiten</button>
-    <button onclick="openSetupPopup('G')" style="flex: 1; padding: 12px; font-weight: bold; background: #ffcc00; color: #000; border: none; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px;">🚀 Gastteam bearbeiten</button>
-</div>
-
-<!-- FULL-SCREEN POPUP HEIMTEAM -->
 
 
 
@@ -939,10 +980,34 @@ Gastteam Aufstellung unvollständig
     </div>
    </div>
   </div>
-  <button class="close-btn" onclick="closeLivePopup()" style="margin-top:15px; padding:8px;">Schließen / Abbrechen</button>
- </div>
-</div>
+ 
 
+
+
+      <button class="close-btn" onclick="closeLivePopup()" style="margin-top:15px; padding:8px;">Schließen / Abbrechen</button>
+    </div>
+  </div>
+
+  <!-- GENAU HIER: Das neue Popup für die detaillierte Spieler-Kontrolle -->
+  <div id="statsDetailPopup" class="popup-overlay" style="display: none;">
+   <div class="popup-content" style="max-width: 600px; width: 95%;">
+    <div class="popup-header" id="statsDetailTitle" style="margin-bottom: 10px;">Spieler-Kontrolle</div>
+    <div style="max-height: 350px; overflow-y: auto; margin-bottom: 15px;">
+     <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+      <thead>
+       <tr>
+        <th style="width: 15%;">Spiel</th>
+        <th style="width: 20%;">Typ</th>
+        <th style="width: 30%;">Deine Rolle</th>
+        <th style="width: 35%;">Partner / Gegner</th>
+       </tr>
+      </thead>
+      <tbody id="statsDetailTableBody"></tbody>
+     </table>
+    </div>
+    <button class="close-btn" onclick="closeStatsDetailPopup()" style="background: #ffcc00; color: #000; margin-top: 5px;">Schließen</button>
+   </div>
+  </div>
 
 
 
@@ -1054,19 +1119,42 @@ function importTeamsFromTxt() {
   
   lines.forEach(line => {
     const trimmed = line.trim();
-    // Ignoriert leere Zeilen, Kommas ODER deine neue Info-Textzeile (enthält kein Komma)
     if(!trimmed || trimmed === "," || !trimmed.includes(",")) return;
     
     try {
-      const parts = trimmed.split(",").map(item => item.trim());
+      // 1. Zeile an den Kommas zerlegen und Leerzeichen entfernen
+      let parts = trimmed.split(",").map(item => item.trim());
       if (parts.length < 2) return;
       
       const teamName = parts[0];
-      const nachname = parts[1];
-      const vorname = parts[2] || "";
-      const passNum = parts[3] || "";
+      if (!teamName) return;
       
-      if (!teamName || !nachname || nachname === "") return;
+      let nachname = "";
+      let vorname = "";
+      let passNum = "";
+      
+      // 2. Prüfen, ob das allerletzte Element die Passnummer ist (auch bei ,, oder Tippfehlern)
+      let lastPart = parts[parts.length - 1];
+      
+      // Wenn das letzte Element eine Zahl ist oder wir mehr als 2 Teile haben,
+      // schneiden wir es als Passnummer ab.
+      if (parts.length >= 3 && (!isNaN(lastPart) || lastPart === "")) {
+        passNum = parts.pop(); // Holt das letzte Element als Passnummer
+      }
+      
+      // 3. Wenn nach dem Entfernen der Passnummer noch fehlerhafte Leer-Elemente am Ende stehen (z.B. durch ,,)
+      while (parts.length > 2 && parts[parts.length - 1] === "") {
+        parts.pop();
+      }
+      
+      // 4. Jetzt setzen wir den Namen aus den verbleibenden Teilen zusammen
+      nachname = parts[1] || "";
+      if (parts.length > 2) {
+        // Falls noch mehr Teile da sind (z.B. Vorname), fügen wir sie zusammen
+        vorname = parts.slice(2).join(" ");
+      }
+      
+      if (!nachname || nachname === "") return;
       let fullName = vorname ? vorname + " " + nachname : nachname;
       if (!fullName.trim()) return;
       
@@ -1074,7 +1162,7 @@ function importTeamsFromTxt() {
       if(!importedTeams[teamName].some(p => p.name === fullName)) { 
         importedTeams[teamName].push({ name: fullName, pass: passNum }); 
       }
-    } catch (e) { console.log("Zeile ignoriert:", trimmed); }
+    } catch (e) { console.log("Zeile ignoriert wegen Fehler:", trimmed, e); }
   });
   
   localStorage.setItem("mkk_dart_teams", JSON.stringify(importedTeams));
@@ -1082,32 +1170,88 @@ function importTeamsFromTxt() {
   initTeamDropdowns();
 }
 
+
+function fuegeSpielerManuellHinzu() {
+  const team = document.getElementById("manual_team_select").value;
+  let inputName = document.getElementById("manual_player_name").value.trim();
+  const pass = document.getElementById("manual_player_pass").value.trim();
+  
+  if (!team || team.includes("--")) { alert("Bitte wähle zuerst eine Mannschaft aus!"); return; }
+  if (!inputName) { alert("Bitte trage den Namen des Spielers ein!"); return; }
+  
+  // NEU: Info-Abfrage, falls die Passnummer fehlt
+  if (!pass) {
+    const weiter = confirm(`Hinweis: Du hast für "${inputName}" keine Passnummer eingegeben.\n\nMöchtest du den Spieler trotzdem ohne Passnummer speichern?`);
+    if (!weiter) return; // Bricht das Speichern ab, damit man die Passnummer nachtragen kann
+  }
+  
+  const textarea = document.getElementById("txt_import_area");
+  if (!textarea) return;
+  
+  let nachname = inputName;
+  let vorname = "";
+  
+  if (inputName.includes(",")) {
+    const nameParts = inputName.split(",").map(p => p.trim());
+    nachname = nameParts[1] ? nameParts[0] : inputName;
+    vorname = nameParts[1] || "";
+  } else if (inputName.includes(" ")) {
+    const nameParts = inputName.split(" ").map(p => p.trim());
+    nachname = nameParts.pop();
+    vorname = nameParts.join(" ");
+  }
+  
+  const currentText = textarea.value.trim();
+  const newLine = `${team}, ${nachname}, ${vorname}, ${pass}`;
+  
+  textarea.value = currentText ? currentText + "\n" + newLine : newLine;
+  
+  importTeamsFromTxt();
+  aktualisiereKombiButtonText();
+  
+  rebuildPlayerDropdowns('H', false);
+  rebuildPlayerDropdowns('G', false);
+  validateRosterAndSetup();
+  saveActiveDropdowns();
+  
+  document.getElementById("manual_player_name").value = "";
+  document.getElementById("manual_player_pass").value = "";
+  
+  alert(`Spieler "${vorname} ${nachname}" wurde erfolgreich hinzugefügt! 🎯`);
+}
+
+
 function aktualisiereKombiButtonText() {
   const spielerTextarea = document.getElementById("txt_import_area");
   const kombiBtn = document.getElementById("btn_kombi_import");
-  // Findet den Text im Haupt-Menübalken oben
-  const headerSpan = document.querySelector(".accordion-header span");
+  const headerSpan = document.getElementById("accordion_title");
   if (!spielerTextarea || !kombiBtn) return;
 
   const lines = spielerTextarea.value.split("\n");
   const ersteZeile = lines[0] ? lines[0].trim() : "";
 
-  // Wenn die erste Zeile den Info-Text enthält (kein Komma)
+  // Wenn die erste Zeile den Info-Text/Update-Stand enthält (kein Komma)
   if (ersteZeile && !ersteZeile.includes(",")) {
     kombiBtn.innerText = `✓ ${ersteZeile} 💾`;
     kombiBtn.style.background = "#ffcc00"; 
     kombiBtn.style.color = "#000";
     
-    // Schreibt die Updateversion direkt oben in den dauerhaften Menübalken!
+    // Schreibt die Updateversion UND das heutige Datum direkt oben in den dauerhaften Menübalken!
     if (headerSpan) {
-      headerSpan.innerHTML = `Mannschaften und Spieler <span style="color:#ffcc00; font-size:13px; margin-left:8px; font-weight:normal;">(${ersteZeile})</span>`;
+      const heute = new Date();
+      const dd = String(heute.getDate()).padStart(2, '0');
+      const mm = String(heute.getMonth() + 1).padStart(2, '0');
+      const yyyy = heute.getFullYear();
+      const aktuellesDatum = `${dd}.${mm}.${yyyy}`;
+      
+      headerSpan.innerHTML = `📋 Mannschaften und Spieler <span style="color:#ffcc00; font-size:13px; margin-left:8px; font-weight:normal;">(${ersteZeile} | Stand: ${aktuellesDatum})</span>`;
     }
   } else {
     kombiBtn.innerText = "Spielerliste frisch laden & dauerhaft speichern 💾";
     kombiBtn.style.background = "#00cc66";
     kombiBtn.style.color = "#000";
     if (headerSpan) {
-      headerSpan.innerHTML = "Mannschaften und Spieler";
+      headerSpan.innerHTML = "📋 Mannschaften und Spieler";
     }
   }
   kombiBtn.style.opacity = "1";
@@ -1135,19 +1279,27 @@ function toggleAccordion() {
     }
 }
 
-
 function initTeamDropdowns() {
  const sHome = document.getElementById("team_home"); const sGuest = document.getElementById("team_guest");
+ const sManual = document.getElementById("manual_team_select"); // NEU
  const currentHome = sHome.value; const currentGuest = sGuest.value;
+ const currentManual = sManual ? sManual.value : ""; // NEU
+ 
  sHome.innerHTML = '<option value="">-- Team wählen --</option>';
  sGuest.innerHTML = '<option value="">-- Team wählen --</option>';
+ if(sManual) sManual.innerHTML = '<option value="">-- Team wählen --</option>'; // NEU
+ 
  Object.keys(importedTeams).forEach(team => {
   sHome.innerHTML += `<option value="${team}">${team}</option>`;
   sGuest.innerHTML += `<option value="${team}">${team}</option>`;
+  if(sManual) sManual.innerHTML += `<option value="${team}">${team}</option>`; // NEU
  });
+ 
  if(currentHome && importedTeams[currentHome]) sHome.value = currentHome;
  if(currentGuest && importedTeams[currentGuest]) sGuest.value = currentGuest;
+ if(sManual && currentManual && importedTeams[currentManual]) sManual.value = currentManual; // NEU
 }
+
 function handleTeamSelection(side) {
  document.querySelectorAll(".p-select-" + side).forEach(sel => {
   sel.innerHTML = '<option value="">-- wählen --</option>';
@@ -1198,7 +1350,6 @@ function rebuildPlayerDropdowns(side, isInitialTeamLoad = false) {
 }
 function validateRosterAndSetup() {
 const metaG = document.getElementById("meta_group").value;
-
 const metaD = document.getElementById("meta_day").value;
 const capH = document.getElementById("captain_home").value;
 const capG = document.getElementById("captain_guest").value;
@@ -1214,33 +1365,37 @@ const g3 = document.getElementById("p_G3").value;
 const g4 = document.getElementById("p_G4").value;
 const bar = document.getElementById("validation_status_bar");
 
-// --- START UNSERE NEUE AUTOMATISCHE BOXEN-STEUERUNG ---
-const boxH = document.getElementById("status_box_H");
-if (boxH) {
+// --- START NEUE ZUSAMMENGELEGTE BUTTON-STEUERUNG ---
+const btnH = document.getElementById("btn_setup_H");
+if (btnH) {
     if (h1 && h2 && h3 && h4) {
-        boxH.style.background = "#00cc66";
-        boxH.style.color = "#000";
-        boxH.innerText = "Spielerauswahl fertig! 🏠";
+        btnH.style.background = "#00cc66";
+        btnH.style.color = "#000";
+        btnH.style.border = "none";
+        btnH.innerText = "🏠 Heimteam: Auswahl fertig! ✓";
     } else {
-        boxH.style.background = "#333";
-        boxH.style.color = "#888";
-        boxH.innerText = "Heimteam Aufstellung unvollständig 🏠";
+        btnH.style.background = "#333";
+        btnH.style.color = "#888";
+        btnH.style.border = "1px solid #444";
+        btnH.innerText = "🏠 Heimteam bearbeiten (Unvollständig)";
     }
 }
 
-const boxG = document.getElementById("status_box_G");
-if (boxG) {
+const btnG = document.getElementById("btn_setup_G");
+if (btnG) {
     if (g1 && g2 && g3 && g4) {
-        boxG.style.background = "#00cc66";
-        boxG.style.color = "#000";
-        boxG.innerText = "Spielerauswahl fertig! 🚀";
+        btnG.style.background = "#00cc66"; // Wird ebenfalls ein schönes Dart-Grün bei Erfolg
+        btnG.style.color = "#000";
+        btnG.style.border = "none";
+        btnG.innerText = "🚀 Gastteam: Auswahl fertig! ✓";
     } else {
-        boxG.style.background = "#333";
-        boxG.style.color = "#888";
-        boxG.innerText = "Gastteam Aufstellung unvollständig 🚀";
+        btnG.style.background = "#333";
+        btnG.style.color = "#888";
+        btnG.style.border = "1px solid #444";
+        btnG.innerText = "🚀 Gastteam bearbeiten (Unvollständig)";
     }
 }
-// --- ENDE UNSERE NEUE AUTOMATISCHE BOXEN-STEUERUNG ---
+// --- ENDE NEUE ZUSAMMENGELEGTE BUTTON-STEUERUNG ---
 
 // Prüft, ob alle Mindest-Pflichtfelder ausgefüllt sind
 if(metaG && metaD && capH && capG && teamH && teamG && h1 && h2 && h3 && h4 && g1 && g2 && g3 && g4) {
@@ -1289,7 +1444,6 @@ function renderTable() {
  const hasBeenPlayed = !!matchResults[m.id];
  if (hasBeenPlayed) { runningHome += res.heim; runningGuest += res.gast; }
  
- // KORREKTUR: Die Positionen werden wieder exakt aus dem m.pos Array gelesen
  const c1 = m.pos[0] || ""; const c2 = m.pos[1] || ""; const c3 = m.pos[2] || ""; const c4 = m.pos[3] || "";
  
  const isSub1 = substitutions.some(s => s.outPos === c1 && m.id >= s.matchId);
@@ -1302,7 +1456,6 @@ function renderTable() {
  
  const nameOpacity = hasBeenPlayed ? "0.4" : "1";
  
- // KORREKTUR: Zuweisung der Styles direkt auf Tabellenzellen-Ebene
  const cellStyle = (pos, isSub) => {
      if (hasBeenPlayed && res.checkerPos === pos) {
          return `style="opacity: 1 !important; color: #ffffff !important; font-weight: bold !important;"`;
@@ -1336,51 +1489,39 @@ function renderTable() {
  });
   document.getElementById("lbl_res_total").innerText = `${runningHome} : ${runningGuest}`; 
  
- // Prüfen, ob alle Spiele des aktuellen Spielplans gespielt wurden
  const gesamtSpieleAnzahl = mkkSchedule.length;
  let gespielteSpieleAnzahl = 0;
  mkkSchedule.forEach(m => {
    if (matchResults[m.id]) { gespielteSpieleAnzahl++; }
  });
 
-     const panelH = document.getElementById("panel_sig_fixed_H");
-    const panelG = document.getElementById("panel_sig_fixed_G");
-    const btnPrint = document.getElementById("btn_print_pdf");
-    const infoText = document.getElementById("sig_info_text");
+ const panelH = document.getElementById("panel_sig_fixed_H");
+ const panelG = document.getElementById("panel_sig_fixed_G");
+ const btnPrint = document.getElementById("btn_print_pdf");
+ const infoText = document.getElementById("sig_info_text");
 
-    if (gespielteSpieleAnzahl < gesamtSpieleAnzahl) {
-        // Das Spiel läuft noch -> Felder blockieren
-        if(panelH) panelH.classList.add("row-disabled");
-        if(panelG) panelG.classList.add("row-disabled");
-        if(btnPrint) btnPrint.classList.add("row-disabled");
-        if(infoText) {
-            infoText.style.color = "#ff3333";
-            infoText.innerText = `Spiel läuft noch: Es müssen noch ${gesamtSpieleAnzahl - gespielteSpieleAnzahl} von ${gesamtSpieleAnzahl} Spielen erfasst werden!`;
-        }
-    } else {
-        // Alle 34 Spiele absolviert -> Felder freischalten
-        if(panelH) panelH.classList.remove("row-disabled");
-        if(panelG) panelG.classList.remove("row-disabled");
-        
-        const hatUnterschriftH = localStorage.getItem("mkk_sig_data_H") !== null;
-        const hatUnterschriftG = localStorage.getItem("mkk_sig_data_G") !== null;
-        
-        if(btnPrint) btnPrint.classList.remove("row-disabled");
-        if(infoText) {
-            infoText.style.display = "block";
-            infoText.style.color = "#00cc66";
-            infoText.innerText = "Spielbericht vollständig! Der PDF-Druck ist jetzt freigegeben.";
-        }
+ if (gespielteSpieleAnzahl < gesamtSpieleAnzahl) {
+     if(panelH) panelH.classList.add("row-disabled");
+     if(panelG) panelG.classList.add("row-disabled");
+     if(btnPrint) btnPrint.classList.add("row-disabled");
+     if(infoText) {
+         infoText.style.color = "#ff3333";
+         infoText.innerText = `Spiel läuft noch: Es müssen noch ${gesamtSpieleAnzahl - gespielteSpieleAnzahl} von ${gesamtSpieleAnzahl} Spielen erfasst werden!`;
+     }
+ } else {
+     if(panelH) panelH.classList.remove("row-disabled");
+     if(panelG) panelG.classList.remove("row-disabled");
+     if(btnPrint) btnPrint.classList.remove("row-disabled");
+     if(infoText) {
+         infoText.style.display = "block";
+         infoText.style.color = "#00cc66";
+         infoText.innerText = "Spielbericht vollständig! Der PDF-Druck ist jetzt freigegeben.";
+     }
+ }
 
-    }
-
-
-
+ // Berechnet am Ende der Tabelle die Statistiken komplett frisch aus den Tabellenwerten
  updateStats();
 }
-
-
-
 
 
 
@@ -1508,149 +1649,249 @@ activePopupMatchId >= s.matchId); if(!alreadyUsed) inG.innerHTML +=  `<option va
 document.getElementById("livePopup").style.display = "block";
 }
 
-function executePopupSubstitution(teamSide) {
- const outPos = document.getElementById("pop_sub_out_" + teamSide).value; const inPos = document.getElementById("pop_sub_in_" + teamSide).value;
- if(!outPos || !inPos) { alert("Bitte wähle einen aktiven Spieler und einen Einwechselspieler aus!"); return; }
- substitutions.push({ matchId: Number(activePopupMatchId), outPos: outPos, inPos: inPos });
- for(let i=1; i<=4; i++) { document.getElementById("sub_print_H_"+i).innerText = ""; document.getElementById("sub_print_G_"+i).innerText = ""; }
- let h=1, g=1;
- substitutions.sort((a,b)=>a.matchId-b.matchId).forEach(s => {
-  if (s.outPos.startsWith("H") && h <= 4) { document.getElementById("sub_print_H_"+h).innerText = `Sp. ${s.matchId}: ${s.inPos} für ${s.outPos}`; h++; }
-  else if (s.outPos.startsWith("G") && g <= 4) { document.getElementById("sub_print_G_"+g).innerText = `Sp. ${s.matchId}: ${s.inPos} für ${s.outPos}`; g++; }
- });
- alert("Auswechslung erfolgreich registriert!");
- renderTable(); openLivePopup(activePopupMatchId);
- document.getElementById("popup_sub_toggle_area").style.display = "none";
- document.getElementById("popup_toggle_sub_btn").innerText = " 🛠 Auswechslungen anzeigen";
+function executePopupSubstitution (teamSide) {
+  const outPos = document.getElementById("pop_sub_out_" + teamSide).value; 
+  const inPos = document.getElementById("pop_sub_in_" + teamSide).value;
+  if(!outPos || !inPos) { 
+    alert("Bitte wähle einen aktiven Spieler und einen Einwechselspieler aus!"); 
+    return; 
+  }
+  substitutions.push({ matchId: Number(activePopupMatchId), outPos: outPos, inPos: inPos });
+
+  for(let i=1; i<=4; i++) {
+    if(document.getElementById("sub_print_H_"+i)) document.getElementById("sub_print_H_"+i).innerText = "";
+    if(document.getElementById("sub_print_G_"+i)) document.getElementById("sub_print_G_"+i).innerText = "";
+  }
+  let h=1, g=1;
+  substitutions.sort((a,b)=>a.matchId-b.matchId).forEach(s => {
+    if (s.outPos.startsWith("H") && h <= 4) {
+      document.getElementById("sub_print_H_"+h).innerText = `${s.matchId} ➔ ${s.inPos} für ${s.outPos}`; 
+      h++; 
+    } else if (s.outPos.startsWith("G") && g<=4) {
+      document.getElementById("sub_print_G_"+g).innerText = `${s.matchId} ➔ ${s.inPos} für ${s.outPos}`; 
+      g++; 
+    }
+  });
+  alert("Auswechslung erfolgreich registriert!");
+  renderTable(); 
+  openLivePopup(activePopupMatchId);
+  document.getElementById("popup_sub_toggle_area").style.display = "none";
+  document.getElementById("popup_toggle_sub_btn").innerText = "Auswechslungen anzeigen";
 }
 
-function removeSubstitution(matchId, outPos) {
- substitutions = substitutions.filter(s => !(s.matchId === matchId && s.outPos === outPos));
- updatePrintSubstitutions(); renderTable(); saveMatchdayToLocalStorage(); openLivePopup(activePopupMatchId); alert("Auswechslung gelöscht!");
+function removeSubstitution (matchId, outPos) {
+  substitutions = substitutions.filter(s => !(s.matchId === matchId && s.outPos === outPos));
+  updatePrintSubstitutions(); 
+  renderTable(); 
+  saveMatchdayToLocalStorage();
+  openLivePopup(activePopupMatchId); 
+  alert("Auswechslung gelöscht!");
 }
 
-function navigatePopupMatch(direction) { const targetId = activePopupMatchId + direction; if(targetId >= 1 && targetId <= 34) { openLivePopup(targetId); } }
+function navigatePopupMatch (direction) { 
+  const targetId = activePopupMatchId + direction; 
+  if(targetId >=1 && targetId <=34) { openLivePopup(targetId); } 
+}
 
 function unlockCurrentMatchForFix() {
- if(matchResults[activePopupMatchId]) {
- delete matchResults[activePopupMatchId];
- const tempResults = {...matchResults}; matchResults = {}; playerScores = {};
- Object.keys(tempResults).forEach(id => {
- const r = tempResults[id]; matchResults[id] = r;
- if(!playerScores[r.checkerPos]) playerScores[r.checkerPos] = { check: 0, assist: 0 };
- playerScores[r.checkerPos].check += 1; // KORREKTUR: Erhöht den Check-Zähler nur um 1
- if(r.assistantPos) { 
- if(!playerScores[r.assistantPos]) playerScores[r.assistantPos] = { check: 0, assist: 0 }; 
- playerScores[r.assistantPos].assist += 1; // Erhöht den Assist-Zähler um 1
- }
- });
- renderTable(); saveMatchdayToLocalStorage(); 
- openLivePopup(activePopupMatchId);
- alert("Spielwertung zurückgesetzt!");
- }
+  if(matchResults[activePopupMatchId]) {
+    delete matchResults[activePopupMatchId];
+    playerScores = {};
+    Object.keys(matchResults).forEach(id => {
+      const r = matchResults[id];
+      if (!r) return;
+      if (r.checkerPos) {
+        const checkerName = resolvePlayerName(r.checkerPos, id);
+        if (checkerName) {
+          if (!playerScores[checkerName]) playerScores[checkerName] = { check: 0, assist: 0 };
+          playerScores[checkerName].check += 1;
+        }
+      }
+      if (r.assistantPos) {
+        const assistantName = resolvePlayerName(r.assistantPos, id);
+        if (assistantName) {
+          if (!playerScores[assistantName]) playerScores[assistantName] = { check: 0, assist: 0 };
+          playerScores[assistantName].assist += 1;
+        }
+      }
+    });
+    renderTable();
+    saveMatchdayToLocalStorage();
+    openLivePopup(activePopupMatchId);
+    alert(`Spiel ${activePopupMatchId} wurde erfolgreich freigeschaltet! Du kannst das Ergebnis oder Auswechslungen jetzt korrigieren, ohne dass deine restlichen Statistiken verloren gehen.`);
+  }
 }
 
-function registerWinner(ignoredName, checkerPos, side, ignoredAssName = null, assistantPos = null) {
- matchResults[activePopupMatchId] = { heim: side === 'H' ? 1 : 0, gast: side === 'G' ? 1 : 0, checkerPos: checkerPos, assistantPos: assistantPos };
- 
- // 1. Echten Namen für den Hauptgewinner (Checker) über die Position holen
- const checkerName = resolvePlayerName(checkerPos, activePopupMatchId);
- if (checkerName) {
- if (!playerScores[checkerName]) playerScores[checkerName] = { check: 0, assist: 0 }; 
- playerScores[checkerName].check += 1; // Registriert 1 Check
- }
- 
- // 2. Echten Namen für den Teampartner (Assistant) über die Position holen
- if (assistantPos) { 
- const assistantName = resolvePlayerName(assistantPos, activePopupMatchId);
- if (assistantName) {
- if (!playerScores[assistantName]) playerScores[assistantName] = { check: 0, assist: 0 }; 
- playerScores[assistantName].assist += 1; // Registriert 1 Assist
- }
- }
- renderTable(); 
- saveMatchdayToLocalStorage();
- setTimeout(() => { 
- if(activePopupMatchId < 34) { openLivePopup(activePopupMatchId + 1); } 
- else { alert("Alle 34 Spiele erfasst! Der Spielberichtsbogen ist fertig."); closeLivePopup(); } 
- }, 300);
+function registerWinner (ignoredName, checkerPos, side, ignoredAssName = null, assistantPos = null) {
+  matchResults[activePopupMatchId] = { 
+    heim: side === 'H'? 1:0, 
+    gast: side === 'G'? 1:0, 
+    checkerPos: checkerPos, 
+    assistantPos: assistantPos 
+  };
+  const checkerName = resolvePlayerName(checkerPos, activePopupMatchId);
+  if (checkerName) {
+    if (!playerScores[checkerName]) playerScores[checkerName] = { check: 0, assist: 0};
+    playerScores[checkerName].check += 1;
+  }
+  if (assistantPos) {
+    const assistantName = resolvePlayerName(assistantPos, activePopupMatchId);
+    if (assistantName) {
+      if (!playerScores[assistantName]) playerScores[assistantName] = { check: 0, assist: 0 };
+      playerScores[assistantName].assist += 1;
+    }
+  }
+  renderTable();
+  saveMatchdayToLocalStorage();
+  setTimeout(() => {
+    if(activePopupMatchId < 34) { 
+      openLivePopup(activePopupMatchId + 1); 
+    } else { 
+      alert("Alle 34 Spiele erfasst! Der Spielberichtsbogen ist fertig.");
+      closeLivePopup(); 
+    }
+  }, 300);
 }
+
 function updateStats() {
- const hLive = document.getElementById("live_stats_H_body"); const gLive = document.getElementById("live_stats_G_body");
- const hB = document.getElementById("print_stats_H"); const gB = document.getElementById("print_stats_G");
- if(!hLive || !gLive || !hB || !gB) return; hB.innerHTML = ""; gB.innerHTML = ""; hLive.innerHTML = ""; gLive.innerHTML = "";
- const posHome = ["H1", "H2", "H3", "H4", "HE1", "HE2", "HE3", "HE4"]; const posGuest = ["G1", "G2", "G3", "G4", "GE1", "GE2", "GE3", "GE4"];
- 
- // Befüllung Heimteam
- posHome.forEach(p => { 
- const el = document.getElementById("p_" + p); 
- if (el && el.value) { 
- const s = playerScores[el.value] || { check: 0, assist: 0 };
- // Jedes gewonnene Spiel (Check) zählt 2 Punkte, jeder Assist zählt 1 Punkt
- const punkteGesamt = (s.check * 2) + (s.assist * 1);
- const rowHtml = `<tr><td>${el.value}</td><td>${s.check}</td><td>${s.assist}</td><td style="color:#ffcc00; font-weight:bold;">${punkteGesamt}</td></tr>`; 
- hB.innerHTML += rowHtml; 
- hLive.innerHTML += rowHtml; 
- } 
- });
- 
- // Befüllung Gastteam
- posGuest.forEach(p => { 
- const el = document.getElementById("p_" + p); 
- if (el && el.value) { 
- const s = playerScores[el.value] || { check: 0, assist: 0 };
- // Jedes gewonnene Spiel (Check) zählt 2 Punkte, jeder Assist zählt 1 Punkt
- const punkteGesamt = (s.check * 2) + (s.assist * 1);
- const rowHtml = `<tr><td>${el.value}</td><td>${s.check}</td><td>${s.assist}</td><td style="color:#ffcc00; font-weight:bold;">${punkteGesamt}</td></tr>`; 
- gB.innerHTML += rowHtml; 
- gLive.innerHTML += rowHtml; 
- } 
- });
+  const hLive = document.getElementById("live_stats_H_body"); 
+  const gLive = document.getElementById("live_stats_G_body");
+  const hB = document.getElementById("print_stats_H"); 
+  const gB = document.getElementById("print_stats_G");
+  if(!hLive || !gLive || !hB || !gB) return; 
+  hB.innerHTML = ""; gB.innerHTML = ""; hLive.innerHTML = ""; gLive.innerHTML = "";
+  
+  const dynamischeScores = {};
+  Object.keys(matchResults).forEach(id => {
+    const res = matchResults[id];
+    if (!res) return;
+    if (res.checkerPos) {
+      const cName = resolvePlayerName(res.checkerPos, id);
+      if (cName) {
+        if (!dynamischeScores[cName]) dynamischeScores[cName] = { check: 0, assist: 0 };
+        dynamischeScores[cName].check += 1;
+      }
+    }
+    if (res.assistantPos) {
+      const aName = resolvePlayerName(res.assistantPos, id);
+      if (aName) {
+        if (!dynamischeScores[aName]) dynamischeScores[aName] = { check: 0, assist: 0 };
+        dynamischeScores[aName].assist += 1;
+      }
+    }
+  });
+  
+  // Die festen 8 Positionen für beide Teams
+  const posHome = ["H1", "H2", "H3", "H4", "HE1", "HE2", "HE3", "HE4"];
+  const posGuest = ["G1", "G2", "G3", "G4", "GE1", "GE2", "GE3", "GE4"];
+  
+  // Befüllung Heimteam (Immer 8 Zeilen)
+  posHome.forEach(p => {
+    const el = document.getElementById("p_" + p);
+    let spielerName = el ? el.value.trim() : "";
+    let istErsatz = p.startsWith("HE");
+    
+    let anzeigeName = spielerName;
+    let styleZusatz = "";
+    
+    // Wenn das Feld leer ist oder nur den Standard-Auswahltext enthält
+    if (!spielerName || spielerName.includes("--")) {
+      anzeigeName = istErsatz ? "-kein Ersatz-" : "-nicht besetzt-";
+      styleZusatz = 'style="color: #888888; font-style: italic;"';
+    }
+    
+    const s = dynamischeScores[spielerName] || { check: 0, assist: 0 };
+    const punkteGesamt = (s.check * 2) + (s.assist * 1);
+    
+    // Am Bildschirm bekommt der Name ein Klick-Event, wenn ein echter Spieler da ist
+    let cellLive = (!spielerName || spielerName.includes("--")) 
+      ? `<td ${styleZusatz}>${anzeigeName}</td>`
+      : `<td class="clickable-player-name" onclick="zeigeSpielerDetails('${spielerName}')"><b>${anzeigeName}</b></td>`;
+      
+    let rowLive = `<tr>${cellLive}<td>${s.check}</td><td>${s.assist}</td><td style="color:#ffcc00; font-weight:bold;">${punkteGesamt}</td></tr>`;
+    let rowPrint = `<tr><td ${styleZusatz}>${anzeigeName}</td><td>${s.check}</td><td>${s.assist}</td><td style="font-weight:bold;">${punkteGesamt}</td></tr>`;
+    
+    hLive.innerHTML += rowLive;
+    hB.innerHTML += rowPrint;
+  });
+  
+  // Befüllung Gastteam (Immer 8 Zeilen)
+  posGuest.forEach(p => {
+    const el = document.getElementById("p_" + p);
+    let spielerName = el ? el.value.trim() : "";
+    let istErsatz = p.startsWith("GE");
+    
+    let anzeigeName = spielerName;
+    let styleZusatz = "";
+    
+    if (!spielerName || spielerName.includes("--")) {
+      anzeigeName = istErsatz ? "-kein Ersatz-" : "-nicht besetzt-";
+      styleZusatz = 'style="color: #888888; font-style: italic;"';
+    }
+    
+    const s = dynamischeScores[spielerName] || { check: 0, assist: 0 };
+    const punkteGesamt = (s.check * 2) + (s.assist * 1);
+    
+    let cellLive = (!spielerName || spielerName.includes("--")) 
+      ? `<td ${styleZusatz}>${anzeigeName}</td>`
+      : `<td class="clickable-player-name" onclick="zeigeSpielerDetails('${spielerName}')"><b>${anzeigeName}</b></td>`;
+      
+    let rowLive = `<tr>${cellLive}<td>${s.check}</td><td>${s.assist}</td><td style="color:#ffcc00; font-weight:bold;">${punkteGesamt}</td></tr>`;
+    let rowPrint = `<tr><td ${styleZusatz}>${anzeigeName}</td><td>${s.check}</td><td>${s.assist}</td><td style="font-weight:bold;">${punkteGesamt}</td></tr>`;
+    
+    gLive.innerHTML += rowLive;
+    gB.innerHTML += rowPrint;
+  });
+  
+  playerScores = dynamischeScores;
+  localStorage.setItem("mkk_live_player_scores", JSON.stringify(playerScores));
 }
-
-
 
 function syncMetaToLabels() {
- const groupVal = document.getElementById("meta_group").value;
- 
- // Diese Abfragen prüfen weiterhin auf "Gruppe A/B/C", damit die Kreuze 
- // im PDF-Druck-Layout an der richtigen Stelle landen:
- document.getElementById("lbl_group_A").innerText = (groupVal === "Gruppe A") ? "X" : "";
- document.getElementById("lbl_group_B").innerText = (groupVal === "Gruppe B") ? "X" : "";
- document.getElementById("lbl_group_C").innerText = (groupVal === "Gruppe C") ? "X" : "";
- 
- document.getElementById("lbl_day").innerText = document.getElementById("meta_day").value;
- document.getElementById("lbl_date").innerText = document.getElementById("meta_date").value;
- // ... Rest der Funktion bleibt unverändert ...
-
- document.getElementById("lbl_name_home").innerText = document.getElementById("team_home").value;
- document.getElementById("lbl_name_guest").innerText = document.getElementById("team_guest").value;
- document.getElementById("lbl_captain_home").innerText = document.getElementById("captain_home").value;
- document.getElementById("lbl_captain_guest").innerText = document.getElementById("captain_guest").value;
- const ids = ["H1","H2","H3","H4","HE1","HE2","HE3","HE4","G1","G2","G3","G4","GE1","GE2","GE3","GE4"];
- ids.forEach(id => {
-  const el = document.getElementById("p_" + id); const lbl = document.getElementById("lbl_p_" + id); if(el && lbl) { lbl.innerText = el.value || ""; }
-  const passEl = document.getElementById("pass_" + id); const passLbl = document.getElementById("lbl_pass_" + id); if(passEl && passLbl) { passLbl.innerText = passEl.value || ""; }
- });
+  const groupVal = document.getElementById("meta_group").value;
+  document.getElementById("lbl_group_A").innerText = (groupVal === "Gruppe A") ? "X" : "";
+  document.getElementById("lbl_group_B").innerText = (groupVal === "Gruppe B") ? "X" : "";
+  document.getElementById("lbl_group_C").innerText = (groupVal === "Gruppe C") ? "X" : "";
+  document.getElementById("lbl_day").innerText = document.getElementById("meta_day").value;
+  document.getElementById("lbl_date").innerText = document.getElementById("meta_date").value;
+  document.getElementById("lbl_name_home").innerText = document.getElementById("team_home").value;
+  document.getElementById("lbl_name_guest").innerText = document.getElementById("team_guest").value;
+  document.getElementById("lbl_captain_home").innerText = document.getElementById("captain_home").value;
+  document.getElementById("lbl_captain_guest").innerText = document.getElementById("captain_guest").value;
+  const ids = ["H1", "H2", "H3", "H4", "HE1", "HE2", "HE3", "HE4", "G1", "G2", "G3", "G4", "GE1", "GE2", "GE3", "GE4"];
+  ids.forEach(id => {
+    const el = document.getElementById("p_" + id); 
+    const lbl = document.getElementById("lbl_p_" + id); 
+    if(el && lbl) { lbl.innerText = el.value || ""; }
+    const passEl = document.getElementById("pass_" + id); 
+    const passLbl = document.getElementById("lbl_pass_" + id); 
+    if(passEl && passLbl) { passLbl.innerText = passEl.value || ""; }
+  });
 }
 
 function saveMatchdayToLocalStorage() {
- localStorage.setItem("mkk_live_match_results", JSON.stringify(matchResults));
- localStorage.setItem("mkk_live_substitutions", JSON.stringify(substitutions));
- localStorage.setItem("mkk_live_player_scores", JSON.stringify(playerScores));
+  localStorage.setItem("mkk_live_match_results", JSON.stringify(matchResults));
+  localStorage.setItem("mkk_live_substitutions", JSON.stringify(substitutions));
+  localStorage.setItem("mkk_live_player_scores", JSON.stringify(playerScores));
 }
 
 function updatePrintSubstitutions() {
- for(let i=1; i<=4; i++) {
-  if(document.getElementById("sub_print_H_"+i)) document.getElementById("sub_print_H_"+i).innerText = "";
-  if(document.getElementById("sub_print_G_"+i)) document.getElementById("sub_print_G_"+i).innerText = "";
- }
- let h=1, g=1;
- substitutions.sort((a,b)=>a.matchId-b.matchId).forEach(s => {
-  if (s.outPos.startsWith("H") && h <= 4) { document.getElementById("sub_print_H_"+h).innerText = `Sp. ${s.matchId}: ${s.inPos} für ${s.outPos}`; h++; }
-  else if (s.outPos.startsWith("G") && g <= 4) { document.getElementById("sub_print_G_"+g).innerText = `Sp. ${s.matchId}: ${s.inPos} für ${s.outPos}`; g++; }
- });
+  for(let i=1; i<=4; i++) {
+    if(document.getElementById("sub_print_H_"+i)) document.getElementById("sub_print_H_"+i).innerText = "";
+    if(document.getElementById("sub_print_G_"+i)) document.getElementById("sub_print_G_"+i).innerText = "";
+  }
+  let h=1, g=1;
+  substitutions.sort((a,b)=>a.matchId-b.matchId).forEach(s => {
+    if (s.outPos.startsWith("H") && h<=4) {
+      document.getElementById("sub_print_H_"+h).innerText = `${s.matchId} ➔ ${s.inPos} für ${s.outPos}`; 
+      h++; 
+    } else if (s.outPos.startsWith("G") && g<=4) {
+      document.getElementById("sub_print_G_"+g).innerText = `${s.matchId} ➔ ${s.inPos} für ${s.outPos}`; 
+      g++; 
+    }
+  });
 }
+
 
 function resetWholeMatchday() {
  if(confirm("Möchtest du wirklich alle eingetragenen Ergebnisse, Auswechslungen und geladenen Teams löschen, um ein neues Spiel zu starten?")) {
@@ -2104,37 +2345,113 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function starteSpezialDruck() {
-    // Sicherheitscheck
+    // Sicherheitscheck: Prüfen, ob der Button gesperrt ist
     const btn = document.getElementById("btn_print_pdf");
     if (btn && btn.classList.contains("row-disabled")) {
         alert("Hinweis: Der Ausdruck ist erst nach Erfassung aller Spiele möglich!");
-        return; // Blockiert jetzt korrekterweise NUR, wenn das Spiel unvollständig ist
+        return; 
     }
-    
-    // 1. Daten für den Dateinamen einsammeln
-    const speicherDatum = document.getElementById("meta_date").value || "Datum";
-    const heimTeam = document.getElementById("team_home").value || "Heimteam";
-    const gastTeam = document.getElementById("team_guest").value || "Gastteam";
-    const ergebnisText = document.getElementById("lbl_res_total").innerText || "0 : 0";
-    
-    // Formatieren des Ergebnisses (vermeidet verbotene Doppelpunkte im Dateinamen)
-    const sauberesErgebnis = ergebnisText.replace(":", "zu").trim();
-    
-    // 2. Den alten Titel sichern
-    const alterTitel = document.title;
-    
-    // 3. Den Seitentitel exakt auf das Wunschformat setzen
-    document.title = `${speicherDatum} ${heimTeam} gegen ${gastTeam} - ${sauberesErgebnis}`;
-    
-    // 4. Den Druckdialog des Browsers öffnen
-    window.print();
-    
-    // 5. Nach dem Schließen des Druckfensters den Titel für die Web-App wiederherstellen
-    setTimeout(() => {
-        document.title = alterTitel;
-    }, 1000);
-}
 
+    // 1. Metadaten einsammeln
+    const metaGroup = document.getElementById("meta_group")?.value || "";
+    const metaDay = document.getElementById("meta_day")?.value || "";
+    const metaDate = document.getElementById("meta_date")?.value || "";
+    const teamH = document.getElementById("team_home")?.value || "";
+    const teamG = document.getElementById("team_guest")?.value || "";
+    const capH = document.getElementById("captain_home")?.value || "";
+    const capG = document.getElementById("captain_guest")?.value || "";
+
+    // 2. Metadaten auf das Druckblatt schreiben
+    if(document.getElementById("lbl_group_A"))
+        document.getElementById("lbl_group_A").innerText = (metaGroup === "Gruppe A") ? "X" : "";
+    if(document.getElementById("lbl_group_B"))
+        document.getElementById("lbl_group_B").innerText = (metaGroup === "Gruppe B") ? "X" : "";
+    if(document.getElementById("lbl_group_C"))
+        document.getElementById("lbl_group_C").innerText = (metaGroup === "Gruppe C") ? "X" : "";
+        
+    if(document.getElementById("lbl_day")) document.getElementById("lbl_day").innerText = metaDay;
+    if(document.getElementById("lbl_date")) document.getElementById("lbl_date").innerText = metaDate;
+    if(document.getElementById("lbl_name_home")) document.getElementById("lbl_name_home").innerText = teamH;
+    if(document.getElementById("lbl_name_guest")) document.getElementById("lbl_name_guest").innerText = teamG;
+    if(document.getElementById("lbl_captain_home")) document.getElementById("lbl_captain_home").innerText = capH;
+    if(document.getElementById("lbl_captain_guest")) document.getElementById("lbl_captain_guest").innerText = capG;
+
+    // 3. Aufstellung & Passnummern übertragen
+    const ids = ["H1", "H2", "H3", "H4", "HE1", "HE2", "HE3", "HE4", "G1", "G2", "G3", "G4", "GE1", "GE2", "GE3", "GE4"];
+    ids.forEach(id => {
+        const el = document.getElementById("p_" + id);
+        const lbl = document.getElementById("lbl_p_" + id);
+        if(el && lbl) lbl.innerText = el.value || "";
+        const passEl = document.getElementById("pass_" + id);
+        const passLbl = document.getElementById("lbl_pass_" + id);
+        if(passEl && passLbl) passLbl.innerText = passEl.value || "";
+    });
+
+    // 4. Alle Matches für das Papier aufbauen
+    const printBody = document.getElementById("print_table_all");
+    if (printBody && typeof mkkSchedule !== "undefined") {
+        printBody.innerHTML = "";
+        let runningHome = 0;
+        let runningGuest = 0;
+
+        mkkSchedule.forEach(m => {
+            const res = (typeof matchResults !== "undefined" && matchResults[m.id]) || { heim: 0, gast: 0, checkerPos: "", assistantPos: "" };
+            const hasBeenPlayed = (typeof matchResults !== "undefined" && !!matchResults[m.id]);
+            if (hasBeenPlayed) { 
+                runningHome += res.heim; 
+                runningGuest += res.gast; 
+            }
+
+            const c1 = (m.pos && m.pos[0]) ? m.pos[0] : "";
+            const c2 = (m.pos && m.pos[1]) ? m.pos[1] : "";
+            const c3 = (m.pos && m.pos[2]) ? m.pos[2] : "";
+            const c4 = (m.pos && m.pos[3]) ? m.pos[3] : "";
+
+            const mark1 = res.checkerPos === c1 ? "X" : (res.assistantPos === c1 ? "/" : "");
+            const mark2 = res.checkerPos === c2 ? "X" : (res.assistantPos === c2 ? "/" : "");
+            const mark3 = c3 ? (res.checkerPos === c3 ? "X" : (res.assistantPos === c3 ? "/" : "")) : "";
+            const mark4 = c4 ? (res.checkerPos === c4 ? "X" : (res.assistantPos === c4 ? "/" : "")) : "";
+
+            const scoreDisplayHome = hasBeenPlayed ? runningHome : "";
+            const scoreDisplayGuest = hasBeenPlayed ? runningGuest : "";
+
+            const trP = document.createElement("tr");
+            trP.innerHTML = '<td style="border:1.2px solid #000; padding:1px; font-size:8.5px;"><b>' + m.id + '</b></td>' +
+                '<td style="border: 1.2px solid #000; padding:1px; font-size:8.5px;">' + m.type + '</td>' +
+                '<td style="border: 1.2px solid #000; padding:1px; font-size:8.5px; font-weight:bold;">' + c1 + '</td>' +
+                '<td style="border:1.2px solid #000; background:#e8e8e8; font-weight:bold; width: 12px; padding:1px; font-size:8.5px;">' + mark1 + '</td>' +
+                '<td style="border: 1.2px solid #000; padding:1px; font-size:8.5px; font-weight:bold;">' + c2 + '</td>' +
+                '<td style="border:1.2px solid #000; background:#e8e8e8; font-weight:bold; width: 12px; padding:1px; font-size:8.5px;">' + mark2 + '</td>' +
+                '<td style="border: 1.2px solid #000; padding:1px; font-size:8.5px; font-weight:bold;">' + c3 + '</td>' +
+                '<td style="border:1.2px solid #000; background:#e8e8e8; font-weight:bold; width: 12px; padding:1px; font-size:8.5px;">' + mark3 + '</td>' +
+                '<td style="border: 1.2px solid #000; padding:1px; font-size:8.5px; font-weight:bold;">' + c4 + '</td>' +
+                '<td style="border: 1.2px solid #000; background:#e8e8e8; font-weight:bold; width: 12px; padding:1px; font-size:8.5px;">' + mark4 + '</td>' +
+                '<td style="border: 1.2px solid #000; padding:1px; font-size:8.5px;"><b>' + scoreDisplayHome + '</b></td>' +
+                '<td style="border:1.2px solid #000; padding:1px; font-size:8.5px;"><b>' + scoreDisplayGuest + '</b></td>';
+            printBody.appendChild(trP);
+        });
+    }
+
+    // 5. Gesamtergebnis eintragen & Titel für PDF-Dateinamen setzen
+    const ergebnisText = document.getElementById("lbl_res_total")?.innerText || "0 : 0";
+    const sauberesErgebnis = ergebnisText.replace(":", "zu").trim();
+    const alterTitel = document.title;
+    document.title = metaDate + " " + teamH + " gegen " + teamG + " " + sauberesErgebnis;
+
+    // 6. Vollbild-Modus sauber beenden (wichtig für iOS)
+    if (document.exitFullscreen) { 
+        document.exitFullscreen().catch(() => {}); 
+    } else if (document.webkitExitFullscreen) { 
+        document.webkitExitFullscreen(); 
+    }
+
+    // 7. NACH DER VERZÖGERUNG: Druckdialog öffnen (Sowohl für Android als auch iOS stabil)
+    setTimeout(() => {
+        window.print();
+        // Stellt den Titel der Web-App nach dem Schließen des Druckfensters wieder her
+        setTimeout(() => { document.title = alterTitel; }, 1000);
+    }, 350);
+}
 
 
 
@@ -2145,14 +2462,109 @@ function openSetupPopup(side) {
  document.body.style.overflow = "hidden";
 }
 function closeSetupPopup(side) {
- document.getElementById("popup_setup_" + side).style.display = "none";
- document.body.style.overflow = "auto";
- validateRosterAndSetup();
- syncMetaToLabels();
- saveActiveDropdowns();
+  // Liste aller Positions-IDs für das jeweilige Team
+  const spielerIds = side === 'H' 
+    ? ["H1", "H2", "H3", "H4", "HE1", "HE2", "HE3", "HE4"] 
+    : ["G1", "G2", "G3", "G4", "GE1", "GE2", "GE3", "GE4"];
+    
+  let fehlendePässe = [];
+
+  // Alle ausgewählten Spieler auf fehlende Passnummern prüfen
+  spielerIds.forEach(id => {
+    const spielerName = document.getElementById("p_" + id)?.value;
+    const passNummer = document.getElementById("pass_" + id)?.value.trim();
+    
+    // Wenn ein Spieler ausgewählt ist, aber das Passnummer-Feld leer ist
+    if (spielerName && spielerName !== "" && !spielerName.includes("--") && !passNummer) {
+      fehlendePässe.push(`${id}: ${spielerName}`);
+    }
+  });
+
+  // Falls Spieler ohne Passnummer gefunden wurden, Warnung anzeigen
+  if (fehlendePässe.length > 0) {
+    const textListe = fehlendePässe.join("\n");
+    const weiter = confirm(`Achtung! Folgende aufgestellte Spieler haben keine Passnummer:\n\n${textListe}\n\nMöchtest du die Aufstellung trotzdem so speichern und das Fenster schließen?`);
+    if (!weiter) {
+      return; // Bricht das Schließen ab, das Popup bleibt offen zum Korrigieren
+    }
+  }
+
+  // Wenn alles okay ist oder der Nutzer "Ok" geklickt hat, normal schließen und speichern
+  document.getElementById("popup_setup_" + side).style.display = "none";
+  document.body.style.overflow = "auto";
+  validateRosterAndSetup();
+  syncMetaToLabels();
+  saveActiveDropdowns();
 }
 // FIX: Erzwingt, dass die App beim allerersten S
 window.scrollTo(0, 0);
+
+
+
+
+
+
+
+
+
+function zeigeFehlendePflichtfelder() {
+  // Wenn das Spiel bereits freigeschaltet (grün) ist, brauchen wir keine Warnung ausgeben
+  if (isMatchPlayable) return;
+
+  const metaG = document.getElementById("meta_group").value;
+  const metaD = document.getElementById("meta_day").value;
+  const capH = document.getElementById("captain_home").value;
+  const capG = document.getElementById("captain_guest").value;
+  const teamH = document.getElementById("team_home").value;
+  const teamG = document.getElementById("team_guest").value;
+  
+  let checkliste = [];
+
+  // 1. Allgemeine Spieldaten prüfen
+  if (!metaG) checkliste.push("❌ Liga/Gruppe fehlt noch");
+  if (!metaD) checkliste.push("❌ Spieltag fehlt noch");
+
+  // 2. Heimteam prüfen
+  if (!teamH) {
+    checkliste.push("❌ Heimteam: Mannschaft wurde noch nicht ausgewählt");
+  } else {
+    if (!capH) checkliste.push(`❌ Heimteam (${teamH}): Kapitän (TC) fehlt noch`);
+    
+    // Stammspieler einzeln prüfen
+    for (let i = 1; i <= 4; i++) {
+      const p = document.getElementById("p_H" + i).value;
+      if (!p || p.includes("--")) {
+        checkliste.push(`❌ Heimteam: Stammspieler H${i} fehlt noch`);
+      }
+    }
+  }
+
+  // 3. Gastteam prüfen
+  if (!teamG) {
+    checkliste.push("❌ Gastteam: Mannschaft wurde noch nicht ausgewählt");
+  } else {
+    if (!capG) checkliste.push(`❌ Gastteam (${teamG}): Kapitän (TC) fehlt noch`);
+    
+    // Stammspieler einzeln prüfen
+    for (let i = 1; i <= 4; i++) {
+      const p = document.getElementById("p_G" + i).value;
+      if (!p || p.includes("--")) {
+        checkliste.push(`❌ Gastteam: Stammspieler G${i} fehlt noch`);
+      }
+    }
+  }
+
+  // Checkliste als übersichtliches Fenster ausgeben
+  if (checkliste.length > 0) {
+    alert(`📋 Folgende Angaben fehlen noch für die Freigabe:\n\n${checkliste.join("\n")}`);
+  }
+}
+
+
+
+
+
+
 
 </script>
 
@@ -2252,29 +2664,92 @@ window.starteSpezialDruck = function() {
 
 <style>
 @media print {
-    body > .container { 
-        display: block !important; 
-        border: none !important; 
+    body > .container {
+        display: block !important;
+        border: none !important;
         box-shadow: none !important;
         background: transparent !important;
         padding: 0 !important;
         margin: 0 !important;
         max-width: 100% !important;
     }
-    h1, .tab-navigation, #tab_setup, .panel, .status-bar, .flex-buttons, 
+    h1, .tab-navigation, #tab_setup, .panel, .status-bar, .flex-buttons,
     .fixed-sig-panel, .accordion-menu, #tab_game > h3, #tab_game > .main-grid,
     #tab_game > div, .print-btn, #livePopup, .popup-overlay {
         display: none !important;
     }
-    #print-layout-root { 
-        display: block !important; 
+    #print-layout-root {
+        display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
     }
+    /* NEU: Entfernt die Unterstreichung der Spielernamen im PDF-Druck */
+    .clickable-player-name {
+        text-decoration: none !important;
+        cursor: default !important;
+    }
+}
+
+/* Stil für die Klickbarkeit der Spielernamen NUR im Live-Punktekonto auf dem Bildschirm */
+.clickable-player-name { 
+    cursor: pointer; 
+    text-decoration: underline; 
+    text-underline-offset: 3px; 
+}
+.clickable-player-name:hover { 
+    color: #ffcc00 !important; 
 }
 </style>
 
+<script>
+// ==========================================================================
+// HINWEIS: Hier oben drüber im Script-Bereich stehen deine restlichen Funktionen!
+// Die neuen Kontroll-Funktionen stehen jetzt vorschriftsmäßig ganz unten:
+// ==========================================================================
 
+function zeigeSpielerDetails(playerName) {
+  const titleEl = document.getElementById("statsDetailTitle");
+  const bodyEl = document.getElementById("statsDetailTableBody");
+  if (!titleEl || !bodyEl) return;
+
+  titleEl.innerText = `🎯 Punkte-Kontrolle: ${playerName}`;
+  bodyEl.innerHTML = "";
+  let trefferGefunden = false;
+
+  mkkSchedule.forEach(m => {
+    const res = matchResults[m.id];
+    if (!res) return;
+
+    const istChecker = (resolvePlayerName(res.checkerPos, m.id) === playerName);
+    const istAssistant = (res.assistantPos && resolvePlayerName(res.assistantPos, m.id) === playerName);
+
+    if (istChecker || istAssistant) {
+      trefferGefunden = true;
+      let typText = m.type === "E" ? "Einzel" : (m.type === "D" ? "Doppel" : "Cricket");
+      let rolle = istChecker ? `<span style="color: #00cc66; font-weight: bold;">✓ Check (2 Pkt.)</span>` : `<span style="color: #ffcc00; font-weight: bold;">🤝 Assist (1 Pkt.)</span>`;
+      let zusatzInfo = "-";
+      if (m.type !== "E") {
+        let partnerPos = istChecker ? res.assistantPos : res.checkerPos;
+        if (partnerPos) zusatzInfo = `Mit: ${resolvePlayerName(partnerPos, m.id)}`;
+      } else {
+        let gegnerPos = m.pos.find(p => p && p !== (istChecker ? res.checkerPos : ""));
+        if (gegnerPos) zusatzInfo = `Gegen: ${resolvePlayerName(gegnerPos, m.id)}`;
+      }
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td><b>${m.id}</b></td><td>${typText}</td><td>${rolle}</td><td style="text-align: left; padding-left: 10px;">${zusatzInfo}</td>`;
+      bodyEl.appendChild(tr);
+    }
+  });
+
+  if (!trefferGefunden) {
+    bodyEl.innerHTML = `<tr><td colspan="4" style="padding: 20px; color: #aaa;">Dieser Spieler hat in diesem Match noch keine Punkte erzielt.</td></tr>`;
+  }
+  document.getElementById("statsDetailPopup").style.display = "block";
+}
+
+function closeStatsDetailPopup() {
+  document.getElementById("statsDetailPopup").style.display = "none";
+}
 </script>
 
 </body>
