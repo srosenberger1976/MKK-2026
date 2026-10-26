@@ -1937,6 +1937,7 @@ function switchTab (tabName) {
 
 
 document.addEventListener("DOMContentLoaded", () => {
+ladeSpielplanVonGitHub();
   if ('serviceWorker' in navigator) {
    navigator.serviceWorker.register('/MKK-2026/sw.js')
 
@@ -2032,17 +2033,30 @@ previewText.style.display = "none";
   syncMetaToLabels(); 
   validateRosterAndSetup();
 
-  document.querySelectorAll("select, input").forEach(el => {
-    el.addEventListener("change", () => {
-      if(el.id === "team_home") { handleTeamSelection('H'); }
-      else if(el.id === "team_guest") { handleTeamSelection('G'); }
-      else if(el.id.startsWith("p_H") || el.id === "captain_home") { rebuildPlayerDropdowns('H', false); }
-      else if(el.id.startsWith("p_G") || el.id === "captain_guest") { rebuildPlayerDropdowns('G', false); }
-      validateRosterAndSetup(); 
-      syncMetaToLabels(); 
-      saveActiveDropdowns();
-    });
-    el.addEventListener("input", () => { syncMetaToLabels(); saveActiveDropdowns(); });
+document.querySelectorAll("select, input").forEach(el => {
+  el.addEventListener("change", () => {
+    if(el.id === "team_home") { handleTeamSelection('H'); }
+    else if(el.id === "team_guest") { handleTeamSelection('G'); }
+    
+    // Automatische Spielplan-Erkennung triggern
+    if(el.id === "team_home" || el.id === "team_guest") {
+      autoDetectLeagueAndMatchday();
+    }
+
+    else if(el.id.startsWith("p_H") || el.id === "captain_home") {
+      rebuildPlayerDropdowns ('H', false);
+    }
+    else if(el.id.startsWith("p_G") || el.id === "captain_guest") {
+      rebuildPlayerDropdowns ('G', false);
+    }
+    validateRosterAndSetup();
+    syncMetaToLabels();
+    saveActiveDropdowns();
+  });
+  
+  el.addEventListener("input", () => { 
+    syncMetaToLabels();
+    saveActiveDropdowns(); 
   });
 });
 
@@ -2750,6 +2764,135 @@ function zeigeSpielerDetails(playerName) {
 function closeStatsDetailPopup() {
   document.getElementById("statsDetailPopup").style.display = "none";
 }
+
+
+// =========================================================================
+// AUTOMATISCHE SPIELPLAN-ERKENNUNG AUS DER TXT-VORLAGE (GITHUB)
+// =========================================================================
+
+// Globaler Speicher für den dynamisch geladenen Spielplan
+let mkkLoadedSchedules = {};
+
+// 1. FUNKTION: Lädt die spielplan.txt von GitHub
+function ladeSpielplanVonGitHub() {
+  const url = "/MKK-2026/spielplan.txt"; // Pfad zu deiner Spielplan-TXT auf GitHub
+  
+  fetch(url)
+    .then(response => {
+      if (!response.ok) throw new Error("Spielplan-Datei konnte nicht geladen werden.");
+      return response.text();
+    })
+    .then(text => {
+      verarbeiteSpielplanText(text);
+      console.log("MKK-Spielplan erfolgreich geladen und strukturiert!");
+      // Falls beim Start schon Teams geladen wurden, direkt Erkennung prüfen
+      autoDetectLeagueAndMatchday();
+    })
+    .catch(error => {
+      console.error("Fehler beim Abrufen des Spielplans:", error);
+    });
+}
+
+// 2. FUNKTION: Liest die Vorlage ein und schaut nach der dazugehörigen Überschrift
+function verarbeiteSpielplanText(text) {
+  mkkLoadedSchedules = {};
+  
+  // Text in einzelne Zeilen zerlegen
+  const lines = text.split("\n");
+  let aktuelleGruppe = ""; // Hält die aktive Liga-Überschrift im Gedächtnis
+
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return;
+
+    // Blick auf die Überschrift: Wenn "Spielplan:" vorkommt, Liga wechseln
+    if (trimmed.toLowerCase().includes("spielplan:")) {
+      if (trimmed.toUpperCase().includes("B-LIGA")) {
+        aktuelleGruppe = "Gruppe B";
+      } else if (trimmed.toUpperCase().includes("C-LIGA")) {
+        aktuelleGruppe = "Gruppe C";
+      } else if (trimmed.toUpperCase().includes("A-LIGA")) {
+        aktuelleGruppe = "Gruppe A";
+      }
+      
+      // Falls die Gruppe im Speicher noch nicht existiert, neu anlegen
+      if (aktuelleGruppe && !mkkLoadedSchedules[aktuelleGruppe]) {
+        mkkLoadedSchedules[aktuelleGruppe] = [];
+      }
+      return;
+    }
+
+    // Spiele unterhalb dieser Überschrift auslesen (z. B. "Spiel 14: ...")
+    if (aktuelleGruppe && trimmed.toLowerCase().startsWith("spiel") && trimmed.includes("vs.")) {
+      try {
+        // "Spiel " abschneiden, um an die Nummer zu kommen
+        const nachSpiel = trimmed.substring(6); 
+        const doppelpunktIndex = nachSpiel.indexOf(":");
+        
+        // Holt die Spielnummer (z. B. "14") vor dem Doppelpunkt
+        const spielNummer = nachSpiel.substring(0, doppelpunktIndex).trim();
+        // Macht daraus exakt den Wert deines Dropdowns ("14. Spieltag")
+        const spieltagDropdownWert = spielNummer + ". Spieltag";
+
+        // Paarung hinter dem Doppelpunkt aufteilen
+        const paarungText = nachSpiel.substring(doppelpunktIndex + 1).trim();
+        const teams = paarungText.split("vs.");
+        const heimTeam = teams[0].trim();
+        const gastTeam = teams[1].trim();
+
+        // Spiel der aktuell aktiven Liga-Überschrift zuordnen
+        mkkLoadedSchedules[aktuelleGruppe].push({
+          day: spieltagDropdownWert,
+          home: heimTeam,
+          guest: gastTeam
+        });
+      } catch (e) {
+        console.log("Zeile übersprungen (Format passt nicht):", trimmed);
+      }
+    }
+  });
+}
+
+// 3. FUNKTION: Sucht die ausgewählte Paarung und stellt die Dropdowns ein
+function autoDetectLeagueAndMatchday() {
+  const homeTeam = document.getElementById("team_home")?.value;
+  const guestTeam = document.getElementById("team_guest")?.value;
+
+  // Abbrechen, wenn noch nicht beide Teams im Setup gewählt wurden
+  if (!homeTeam || !guestTeam) return; 
+
+  let matchFound = false;
+
+  // Schleife durch alle Gruppen, die wir aus den Überschriften gelernt haben
+  for (const groupName in mkkLoadedSchedules) {
+    const matches = mkkLoadedSchedules[groupName];
+    
+    // Suchen, ob Heim- und Gastteam genau so in dieser Liga zusammenspielen
+    const found = matches.find(m => m.home === homeTeam && m.guest === guestTeam);
+    
+    if (found) {
+      // 1. Die dazugehörige Liga-Überschrift im Dropdown auswählen ("Gruppe B" / "Gruppe C")
+      const groupSelect = document.getElementById("meta_group");
+      if (groupSelect) groupSelect.value = groupName;
+
+      // 2. Die Spielnummer als Spieltag eintragen (z. B. "14. Spieltag")
+      const daySelect = document.getElementById("meta_day");
+      if (daySelect) daySelect.value = found.day;
+
+      matchFound = true;
+      break; // Abbrechen, da Spielpaarung eindeutig gefunden wurde
+    }
+  }
+
+  // Wenn das Spiel im System gefunden wurde, Benutzeroberfläche aktualisieren
+  if (matchFound) {
+    if (typeof syncMetaToLabels === "function") syncMetaToLabels();
+    if (typeof validateRosterAndSetup === "function") validateRosterAndSetup();
+    if (typeof saveActiveDropdowns === "function") saveActiveDropdowns();
+  }
+}
+
+
 </script>
 
 </body>
