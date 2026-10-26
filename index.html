@@ -1937,7 +1937,6 @@ function switchTab (tabName) {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-ladeSpielplanVonGitHub();
   if ('serviceWorker' in navigator) {
    navigator.serviceWorker.register('/MKK-2026/sw.js')
 
@@ -2033,30 +2032,17 @@ previewText.style.display = "none";
   syncMetaToLabels(); 
   validateRosterAndSetup();
 
-document.querySelectorAll("select, input").forEach(el => {
-  el.addEventListener("change", () => {
-    if(el.id === "team_home") { handleTeamSelection('H'); }
-    else if(el.id === "team_guest") { handleTeamSelection('G'); }
-    
-    // Automatische Spielplan-Erkennung triggern
-    if(el.id === "team_home" || el.id === "team_guest") {
-      autoDetectLeagueAndMatchday();
-    }
-
-    else if(el.id.startsWith("p_H") || el.id === "captain_home") {
-      rebuildPlayerDropdowns ('H', false);
-    }
-    else if(el.id.startsWith("p_G") || el.id === "captain_guest") {
-      rebuildPlayerDropdowns ('G', false);
-    }
-    validateRosterAndSetup();
-    syncMetaToLabels();
-    saveActiveDropdowns();
-  });
-  
-  el.addEventListener("input", () => { 
-    syncMetaToLabels();
-    saveActiveDropdowns(); 
+  document.querySelectorAll("select, input").forEach(el => {
+    el.addEventListener("change", () => {
+      if(el.id === "team_home") { handleTeamSelection('H'); }
+      else if(el.id === "team_guest") { handleTeamSelection('G'); }
+      else if(el.id.startsWith("p_H") || el.id === "captain_home") { rebuildPlayerDropdowns('H', false); }
+      else if(el.id.startsWith("p_G") || el.id === "captain_guest") { rebuildPlayerDropdowns('G', false); }
+      validateRosterAndSetup(); 
+      syncMetaToLabels(); 
+      saveActiveDropdowns();
+    });
+    el.addEventListener("input", () => { syncMetaToLabels(); saveActiveDropdowns(); });
   });
 });
 
