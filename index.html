@@ -625,11 +625,11 @@ function aktiviereVollbild() {
         </button>
 
         <div style="margin-top: 20px; padding: 10px; background: #222; border: 1px dashed #555; border-radius: 4px;">
-            <span style="font-size: 11px; color: #aaa; display: block; margin-bottom: 4px;">Status der Erkennung:</span>
-            <div style="font-size: 13px; color: #00cc66; font-weight: bold;">
-                ✓ Spielplan-Laderoutine aktiv verknüpft
-            </div>
+            <span style="font-size: 11px; color: #aaa; display: block; margin-bottom: 6px;">Geladener Spielplan (Vorschau):</span>
+            <!-- Das neue Sichtfenster -->
+            <textarea id="txt_spielplan_preview" readonly placeholder="Noch kein Spielplan geladen. Klicke oben auf den gelben Button..." style="width: 100%; height: 150px; background: #111; color: #00cc66; border: 1px solid #444; padding: 8px; font-family: monospace; font-size: 12px; border-radius: 4px; box-sizing: border-box; resize: vertical;"></textarea>
         </div>
+
     </div>
 
     <!-- Globaler Schließen-Button am Ende des Zahnrad-Menüs -->
@@ -2976,12 +2976,15 @@ function ladeSpielplanVonGitHub() {
     });
 }
 
-// 2. FUNKTION: Liest die Vorlage ein und schaut nach der dazugehörigen Überschrift
 function verarbeiteSpielplanText(text) {
-  mkkLoadedSchedules = {};
-  
-  // Text in einzelne Zeilen zerlegen
-  const lines = text.split("\n");
+    // Schreibt den rohen Text direkt in unser neues Sichtfenster
+    const previewBox = document.getElementById("txt_spielplan_preview");
+    if (previewBox) { previewBox.value = text.trim(); }
+
+    mkkLoadedSchedules = {};
+    // Text in einzelne Zeilen zerlegen
+    const lines = text.split("\n");
+
   let aktuelleGruppe = ""; // Hält die aktive Liga-Überschrift im Gedächtnis
 
   lines.forEach(line => {
