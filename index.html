@@ -2142,21 +2142,29 @@ document.addEventListener("DOMContentLoaded", () => {
   const spielerTextarea = document.getElementById("txt_import_area"); 
 
   // 1. ZUERST: Lokales Backup aus dem Browser laden, falls vorhanden
-  const savedTeams = localStorage.getItem("mkk_dart_teams");
-  if (savedTeams) { importedTeams = JSON.parse(savedTeams); }
-  const savedRawText = localStorage.getItem("mkk_dart_raw_text");
-  if (savedRawText && spielerTextarea) { spielerTextarea.value = savedRawText; }
+const savedTeams = localStorage.getItem("mkk_dart_teams");
+if (savedTeams) { importedTeams = JSON.parse(savedTeams); }
+
+// === NEU: GELADENEN SPIELPLAN AUS BROWSER-SPEICHER WIEDERHERSTELLEN ===
+const savedSchedules = localStorage.getItem("mkk_dart_loaded_schedules");
+if (savedSchedules) { 
+    mkkLoadedSchedules = JSON.parse(savedSchedules); 
+}
+const savedSpielplanRaw = localStorage.getItem("mkk_dart_spielplan_raw");
+const previewBox = document.getElementById("txt_spielplan_preview");
+if (savedSpielplanRaw && previewBox) { 
+    previewBox.value = savedSpielplanRaw.trim(); 
+}
+// =====================================================================
+
+const savedRawText = localStorage.getItem("mkk_dart_raw_text");
+if (savedRawText && spielerTextarea) { spielerTextarea.value = savedRawText; }
+
   initTeamDropdowns();
  aktualisiereKombiButtonText(); // Setzt den Button-Text direkt beim Starten der App richtig
 
   // 2. DANACH: Das frische Update von GitHub ziehen (Lokaler, sicherer Abruf)
  
-
-
-
-
-
-
 
   // 3. Alte Dropdown-Auswahlen wiederherstellen
   const savedDropdowns = localStorage.getItem("mkk_live_dropdown_state");
@@ -2994,64 +3002,74 @@ function verarbeiteSpielplanText(text) {
     // Schreibt den rohen Text direkt in unser neues Sichtfenster
     const previewBox = document.getElementById("txt_spielplan_preview");
     if (previewBox) { previewBox.value = text.trim(); }
-
+    
     mkkLoadedSchedules = {};
+    
     // Text in einzelne Zeilen zerlegen
     const lines = text.split("\n");
-
-  let aktuelleGruppe = ""; // Hält die aktive Liga-Überschrift im Gedächtnis
-
-  lines.forEach(line => {
-    const trimmed = line.trim();
-    if (!trimmed) return;
-
-    // Blick auf die Überschrift: Wenn "Spielplan:" vorkommt, Liga wechseln
-    if (trimmed.toLowerCase().includes("spielplan:")) {
-      if (trimmed.toUpperCase().includes("B-LIGA")) {
-        aktuelleGruppe = "Gruppe B";
-      } else if (trimmed.toUpperCase().includes("C-LIGA")) {
-        aktuelleGruppe = "Gruppe C";
-      } else if (trimmed.toUpperCase().includes("A-LIGA")) {
-        aktuelleGruppe = "Gruppe A";
-      }
-      
-      // Falls die Gruppe im Speicher noch nicht existiert, neu anlegen
-      if (aktuelleGruppe && !mkkLoadedSchedules[aktuelleGruppe]) {
-        mkkLoadedSchedules[aktuelleGruppe] = [];
-      }
-      return;
-    }
-
-    // Spiele unterhalb dieser Überschrift auslesen (z. B. "Spiel 14: ...")
-    if (aktuelleGruppe && trimmed.toLowerCase().startsWith("spiel") && trimmed.includes("vs.")) {
-      try {
-        // "Spiel " abschneiden, um an die Nummer zu kommen
-        const nachSpiel = trimmed.substring(6); 
-        const doppelpunktIndex = nachSpiel.indexOf(":");
+    let aktuelleGruppe = ""; // Hält die aktive Liga-Überschrift im Gedächtnis
+    
+    lines.forEach(line => {
+        const trimmed = line.trim();
+        if (!trimmed) return;
         
-        // Holt die Spielnummer (z. B. "14") vor dem Doppelpunkt
-        const spielNummer = nachSpiel.substring(0, doppelpunktIndex).trim();
-        // Macht daraus exakt den Wert deines Dropdowns ("14. Spieltag")
-        const spieltagDropdownWert = spielNummer + ". Spieltag";
-
-        // Paarung hinter dem Doppelpunkt aufteilen
-        const paarungText = nachSpiel.substring(doppelpunktIndex + 1).trim();
-        const teams = paarungText.split("vs.");
-        const heimTeam = teams[0].trim();
-        const gastTeam = teams[1].trim();
-
-        // Spiel der aktuell aktiven Liga-Überschrift zuordnen
-        mkkLoadedSchedules[aktuelleGruppe].push({
-          day: spieltagDropdownWert,
-          home: heimTeam,
-          guest: gastTeam
-        });
-      } catch (e) {
-        console.log("Zeile übersprungen (Format passt nicht):", trimmed);
-      }
-    }
-  });
+        // Blick auf die Überschrift: Wenn "spielplan:" vorkommt, Liga wechseln
+        if (trimmed.toLowerCase().includes("spielplan:")) {
+            if (trimmed.toUpperCase().includes("B-LIGA")) {
+                aktuelleGruppe = "Gruppe B";
+            } else if (trimmed.toUpperCase().includes("C-LIGA")) {
+                aktuelleGruppe = "Gruppe C";
+            } else if (trimmed.toUpperCase().includes("A-LIGA")) {
+                aktuelleGruppe = "Gruppe A";
+            }
+            
+            // Falls die Gruppe im Speicher noch nicht existiert, neu anlegen
+            if (aktuelleGruppe && !mkkLoadedSchedules[aktuelleGruppe]) {
+                mkkLoadedSchedules[aktuelleGruppe] = [];
+            }
+            return;
+        }
+        
+        // Spiele unterhalb dieser Überschrift auslesen (z. B. "Spiel 14: ...")
+        if (aktuelleGruppe && trimmed.toLowerCase().startsWith("spiel") && trimmed.includes("vs.")) {
+            try {
+                // "Spiel " abschneiden, um an die Nummer zu kommen
+                const nachSpiel = trimmed.substring(6);
+                const doppelpunktIndex = nachSpiel.indexOf(":");
+                
+                // Holt die Spielnummer (z. B. "14") vor dem Doppelpunkt
+                const spielNummer = nachSpiel.substring(0, doppelpunktIndex).trim();
+                
+                // Macht daraus exakt den Wert deines Dropdowns ("14. Spieltag")
+                const spieltagDropdownWert = spielNummer + ". Spieltag";
+                
+                // Paarung hinter dem Doppelpunkt aufteilen
+                const paarungText = nachSpiel.substring(doppelpunktIndex + 1).trim();
+                const teams = paarungText.split("vs.");
+                
+                // KORREKTUR: Einzelne Array-Elemente statt des ganzen Arrays trimmen!
+                const heimTeam = teams[0] ? teams[0].trim() : "";
+                const gastTeam = teams[1] ? teams[1].trim() : "";
+                
+                if (heimTeam && gastTeam) {
+                    // Spiel der aktuell aktiven Liga-Überschrift zuordnen
+                    mkkLoadedSchedules[aktuelleGruppe].push({
+                        day: spieltagDropdownWert,
+                        home: heimTeam,
+                        guest: gastTeam
+                    });
+                }
+            } catch (e) {
+                console.log("Zeile übersprungen (Format passt nicht):", trimmed);
+            }
+        }
+    });
+    
+    // Den verarbeiteten Spielplan und den Rohtext dauerhaft im Browser speichern!
+    localStorage.setItem("mkk_dart_loaded_schedules", JSON.stringify(mkkLoadedSchedules));
+    localStorage.setItem("mkk_dart_spielplan_raw", text);
 }
+
 
 // 3. FUNKTION: Sucht die ausgewählte Paarung und stellt die Dropdowns ein
 function autoDetectLeagueAndMatchday() {
