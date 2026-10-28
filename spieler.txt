@@ -1,24 +1,24 @@
 Aktualisiert am 22.10.2026 - Update 1
-DC HighFlyer 2,Rosenberger, Stefan,97
-DC HighFlyer 2,Raab, Jens,101
-DC HighFlyer 2,Röder, Andreas,100
-DC HighFlyer 2,Tamas, Christian,103
-DC HighFlyer 2,Naumann, Stefan,104
-DC HighFlyer 2,Rüffer, Dustin,102
-DC HighFlyer 2,Rosenberger, Diana,106
-DC HighFlyer 2,Rosenberger, David,98
-DC HighFlyer 2,Bernhard, Prang,99
-DC HighFlyer 2,Robin, Blos,105
-DC HighFlyer 2,Schüssler, Frank,107
-DC HighFlyer 2,,108
-DC HighFlyer 2,,109
-DC HighFlyer 2,,110
-DC HighFlyer 2,,111
-DC HighFlyer 2,,112
-DC HighFlyer 2,,
-DC HighFlyer 2,,
-DC HighFlyer 2,,
-DC HighFlyer 2,,
+DC High Flyer,Rosenberger, Stefan,97
+DC High Flyer,Raab, Jens,101
+DC High Flyer,Röder, Andreas,100
+DC High Flyer,Tamas, Christian,103
+DC High Flyer,Naumann, Stefan,104
+DC High Flyer,Rüffer, Dustin,102
+DC High Flyer,Rosenberger, Diana,106
+DC High Flyer,Rosenberger, David,98
+DC High Flyer,Bernhard, Prang,99
+DC High Flyer,Robin, Blos,105
+DC High Flyer,Schüssler, Frank,107
+DC High Flyer,,108
+DC High Flyer,,109
+DC High Flyer,,110
+DC High Flyer,,111
+DC High Flyer,,112
+DC High Flyer,,
+DC High Flyer,,
+DC High Flyer,,
+DC High Flyer,,
 ,,
 DC Joschis,Rott, Frank,161
 DC Joschis,Rott, Rainer,162
