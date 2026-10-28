@@ -3010,14 +3010,14 @@ function verarbeiteSpielplanText(text) {
         const trimmed = line.trim();
         if (!trimmed) return;
         
-        // 1. Liga-Überschrift erkennen
+        // 1. Liga-Überschrift erkennen und EXAKT an die HTML-Option-Values anpassen
         if (trimmed.toLowerCase().includes("spielplan:")) {
-            if (trimmed.toUpperCase().includes("B-LIGA")) {
-                aktuelleGruppe = "Gruppe B";
+            if (trimmed.toUpperCase().includes("A-LIGA")) {
+                aktuelleGruppe = "Gruppe A"; // Entspricht value="Gruppe A"
+            } else if (trimmed.toUpperCase().includes("B-LIGA")) {
+                aktuelleGruppe = "Gruppe B"; // Entspricht value="Gruppe B"
             } else if (trimmed.toUpperCase().includes("C-LIGA")) {
-                aktuelleGruppe = "Gruppe C";
-            } else if (trimmed.toUpperCase().includes("A-LIGA")) {
-                aktuelleGruppe = "Gruppe A";
+                aktuelleGruppe = "Gruppe C"; // Entspricht value="Gruppe C"
             }
             
             if (aktuelleGruppe && !mkkLoadedSchedules[aktuelleGruppe]) {
@@ -3031,7 +3031,7 @@ function verarbeiteSpielplanText(text) {
             return;
         }
         
-        // 2. Spielpaarung auslesen (z.B. "Spiel 14: Up Town 1 vs. Special Elite")
+        // 2. Spielpaarung auslesen (z.B. "Spiel 1: Dartschützen Oberzell vs. Bad Boyz 9.1")
         if (aktuelleGruppe && trimmed.toLowerCase().startsWith("spiel") && trimmed.includes("vs.")) {
             try {
                 const doppelpunktIndex = trimmed.indexOf(":");
