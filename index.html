@@ -516,66 +516,81 @@ flex-end; height: 45px; border-bottom: 1.2px solid #000 !important; font-size:
  }
 
 
+
+
+
+
+/* Versteckt das Hauptmenü vollautomatisch, wenn das Zahnrad-Menü geöffnet ist */
+body.settings-open .setup-hide-on-settings {
+    display: none !important;
+}
+
+
+
 /* ISOLIERTE SMARTPHONE-KORREKTUR NUR FÜR DEN MITTLEREN METADATEN-BLOCK */
 @media (max-width: 768px) {
-.tab-navigation { gap: 6px !important; }
-.tab-navigation .tab-btn { font-size: 12px !important; padding: 10px 4px !important; text-align: center; }
-.settings-btn, .tab-navigation button[onclick^="resetWholeMatchday"] { width: 38px !important; height: 38px !important; min-width: 38px !important; font-size: 16px !important; }
-.main-grid { display: flex !important; flex-direction: column !important; gap: 15px !important; }
-.panel { padding: 12px !important; width: 100% !important; box-sizing: border-box !important; }
-input, select { font-size: 15px !important; padding: 10px !important; }
-.click-box { font-size: 15px !important; padding: 12px !important; }
+  .tab-navigation { gap: 6px !important; }
+  .tab-navigation .tab-btn { font-size: 12px !important; padding: 10px 4px !important; text-align: center; }
+  .settings-btn, .tab-navigation button[onclick^="resetWholeMatchday"] { width: 38px !important; height: 38px !important; min-width: 38px !important; font-size: 16px !important; }
+  .main-grid { display: flex !important; flex-direction: column !important; gap: 15px !important; }
+  .panel { padding: 12px !important; width: 100% !important; box-sizing: border-box !important; }
+  input, select { font-size: 15px !important; padding: 10px !important; }
 
+  /* Optimierung für das Live-Spiele-Popup auf dem Handy */
+  .popup-content {
+    width: 95% !important;
+    max-width: 100% !important;
+    padding: 12px !important;
+    box-sizing: border-box !important;
+  }
 
-
-
-
-
-
-
+  .click-box { 
+    font-size: 15px !important; 
+    padding: 16px 10px !important; /* Macht die Buttons höher -> viel leichter zu treffen! */
+    margin: 8px 0 !important;
+    min-height: 54px !important;
+    box-sizing: border-box !important;
+  }
+  
+  .popup-header {
+    font-size: 16px !important;
+    margin-bottom: 10px !important;
+  }
  
-/* Verhindert das Aufbrechen der Spielerkarten auf Smartphones */
-.setup-popup-content .row-flex {
- display: grid !important;
- grid-template-columns: 2fr 1fr !important; /* Name bekommt 2 Teile, Passnummer 1 Teil */
- gap: 10px !important;
+  /* Verhindert das Aufbrechen der Spielerkarten auf Smartphones */
+  .setup-popup-content .row-flex {
+    display: grid !important;
+    grid-template-columns: 2fr 1fr !important; /* Name bekommt 2 Teile, Passnummer 1 Teil */
+    gap: 10px !important;
+  }
+
+  .flex-buttons { 
+    display: flex !important; 
+    flex-direction: column !important; 
+    gap: 10px !important; 
+  }
 }
-
-
- .flex-buttons { display: flex !important; flex-direction: column !important; gap: 10px !important; }
-}
-
-
-
-
 
 /* Vergrößert die Auswechselspieler-Sektion im Popup */
 #popup_sub_toggle_area label {
- font-size: 14px !important;
- font-weight: bold;
+  font-size: 14px !important;
+  font-weight: bold;
 }
 #popup_sub_toggle_area select {
- font-size: 15px !important;
- height: 42px !important;
- padding: 6px !important;
+  font-size: 15px !important;
+  height: 42px !important;
+  padding: 6px !important;
 }
 #popup_sub_toggle_area button {
- font-size: 15px !important;
- height: 42px !important;
+  font-size: 15px !important;
+  height: 42px !important;
 }
 .sub-popup-title {
- font-size: 15px !important;
- margin: 12px 0 6px 0 !important;
+  font-size: 15px !important;
+  margin: 12px 0 6px 0 !important;
 }
-
-
-
-
-
-
-
-
 </style>
+
 <script>
 // Die Funktion wird hier oben sofort beim Laden für den Browser bereitgestellt
 function aktiviereVollbild() {
@@ -1747,21 +1762,33 @@ if (m.type === "E") {
         { name: p2, pos: realPos2, side: side2, scoreNum: 2 }
     ];
     einzelPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
-    einzelPlayers.forEach(p => {
-        const sideBadge = p.side === 'H' ? 'Heim' : 'Gast';
-        const btnStyle = p.side === 'H'
-            ? 'background: #00cc66 !important; color: #000 !important; font-weight:bold; padding: 12px; margin:6px 0; border: none; display:block;'
-            : 'background: #ffcc00 !important; color: #000 !important; font-weight:bold; padding: 12px; margin:6px 0; border: none; display:block;';
-        
-        area.innerHTML += ` <div class="click-box ${disabledAttr}" style="${btnStyle}" onclick="registerWinner('${p.name}', '${p.pos}', '${p.side}')">
-            <div style="display:grid; grid-template-columns: 70px 75px 65px 1fr; align-items:center; text-align:left; width: 100%;">
-                <span style="font-size: 12px; opacity:0.9; border-right: 1px solid rgba(0,0,0,0.2); padding-right: 5px; ">${sideBadge}</span>
-                <span style="background: transparent; padding: 2px 6px; font-size:11px; text-align:center; border-right: 1px solid rgba(0,0,0,0.2); margin-right: 10px; ">Score ${p.scoreNum}</span>
-                <span style="font-size: 11px; font-weight: bold; text-align: center; border-right: 1px solid rgba(0,0,0,0.2); margin-right: 15px; text-transform: uppercase;">${p.pos}</span>
-                <span style="font-size:19px; padding-left:10px; letter-spacing:0.3px; font-weight: bold;">${p.name}</span>
-            </div>
-        </div>`;
-    });
+   
+
+
+
+
+        einzelPlayers.forEach(p => {
+            const sideBadge = p.side === 'H' ? 'Heim' : 'Gast';
+            const btnStyle = p.side === 'H'
+                ? 'background: #00cc66 !important; color: #000 !important; font-weight:bold; padding: 12px; margin:6px 0; border: none; display:block;'
+                : 'background: #ffcc00 !important; color: #000 !important; font-weight:bold; padding: 12px; margin:6px 0; border: none; display:block;';
+                
+            area.innerHTML += `<div class="click-box ${disabledAttr}" style="${btnStyle}" onclick="registerWinner('${p.name}', '${p.pos}', '${p.side}')">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left;">
+                    <div style="display: flex; align-items: center; gap: 10px; min-width: 120px;">
+                        <span style="font-size: 11px; opacity: 0.8; border-right: 1px solid rgba(0,0,0,0.2); padding-right: 8px; min-width: 35px;">${sideBadge}</span>
+                        <span style="font-size: 11px; opacity: 0.8; border-right: 1px solid rgba(0,0,0,0.2); padding-right: 8px;">Score ${p.scoreNum}</span>
+                    </div>
+                    <span style="font-size: 20px; font-weight: bold; flex: 1; text-align: center; padding: 0 10px;">
+                        ${p.name}
+                    </span>
+                    <span style="font-size: 14px; font-weight: 900; text-transform: uppercase; opacity: 0.9; text-align: right; min-width: 40px; padding-right: 5px;">
+                        ${p.pos}
+                    </span>
+                </div>
+            </div>`;
+        });
+
 } else {
     const hPlayers = [], gPlayers = [];
     
@@ -1780,25 +1807,32 @@ if (m.type === "E") {
     gPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
     let allPopupPlayers = [...hPlayers, ...gPlayers];
     allPopupPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
-    allPopupPlayers.forEach(p => {
-        const isHome = p.pos.startsWith("H");
-        const sideBadge = isHome ? 'Heim' : 'Gast';
-        const partnerList = isHome ? hPlayers : gPlayers;
-        const partner = partnerList.find(x => x.pos !== p.pos) || {name: null, pos: null};
-        const currentSideCode = isHome ? 'H' : 'G';
-        const btnStyle = isHome
-            ? 'background: #00cc66 !important; color: #000 !important; font-weight:bold; padding: 12px; margin:5px 0; border: none; display:block;'
-            : 'background:#ffcc00 !important; color: #000 !important; font-weight:bold; padding: 12px; margin:5px 0; border: none; display:block;';
-        
-        area.innerHTML += ` <div class="click-box ${disabledAttr}" style="${btnStyle}" onclick="registerWinner('${p.name}', '${p.pos}', '${currentSideCode}', '${partner.name}', '${partner.pos}')">
-            <div style="display:grid; grid-template-columns: 70px 75px 65px 1fr; align-items:center; text-align:left; width: 100%;">
-                <span style="font-size:12px; opacity:0.9; border-right: 1px solid rgba(0,0,0,0.2); padding-right: 5px; ">${sideBadge}</span>
-                <span style="background: transparent; padding: 2px 6px; font-size:11px; text-align:center; border-right: 1px solid rgba(0,0,0,0.2); margin-right: 10px; ">Score ${p.scoreNum}</span>
-                <span style="font-size: 11px; font-weight: bold; text-align: center; border-right: 1px solid rgba(0,0,0,0.2); margin-right: 15px; text-transform: uppercase;">${p.pos}</span>
-                <span style="font-size:19px; padding-left:10px; letter-spacing:0.3px; font-weight: bold;">${p.name}</span>
-            </div>
-        </div>`;
-    });
+        allPopupPlayers.forEach(p => {
+            const isHome = p.pos.startsWith("H");
+            const sideBadge = isHome ? 'Heim' : 'Gast';
+            const partnerList = isHome ? hPlayers : gPlayers;
+            const partner = partnerList.find(x => x.pos !== p.pos) || {name: null, pos: null};
+            const currentSideCode = isHome ? 'H' : 'G';
+            const btnStyle = isHome
+                ? 'background: #00cc66 !important; color: #000 !important; font-weight:bold; padding: 12px; margin:5px 0; border: none; display:block;'
+                : 'background: #ffcc00 !important; color: #000 !important; font-weight: bold; padding: 12px; margin:5px 0; border: none; display:block;';
+                
+            area.innerHTML += `<div class="click-box ${disabledAttr}" style="${btnStyle}" onclick="registerWinner('${p.name}', '${p.pos}', '${currentSideCode}', '${partner.name}', '${partner.pos}')">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left;">
+                    <div style="display: flex; align-items: center; gap: 10px; min-width: 120px;">
+                        <span style="font-size: 11px; opacity: 0.8; border-right: 1px solid rgba(0,0,0,0.2); padding-right: 8px; min-width: 35px;">${sideBadge}</span>
+                        <span style="font-size: 11px; opacity: 0.8; border-right: 1px solid rgba(0,0,0,0.2); padding-right: 8px;">Score ${p.scoreNum}</span>
+                    </div>
+                    <span style="font-size: 20px; font-weight: bold; flex: 1; text-align: center; padding: 0 10px;">
+                        ${p.name}
+                    </span>
+                    <span style="font-size: 14px; font-weight: 900; text-transform: uppercase; opacity: 0.9; text-align: right; min-width: 40px; padding-right: 5px;">
+                        ${p.pos}
+                    </span>
+                </div>
+            </div>`;
+        });
+
 }
 
 
