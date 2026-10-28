@@ -136,8 +136,66 @@ pointer-events: none !important; }
 
 
 .settings-btn:hover { background: #ffcc00; color: #000; transform: scale(1.05); }
-/* Blendet den restlichen Setup-Inhalt aus, wenn das Einstellungs-Menü offen ist */
-.settings-open .setup-hide-on-settings { display: none !important; }
+
+/* Versteckt die alten Labels und die ungenutzten Dropdowns im Popup vollständig */
+#popup_setup_H label[for="team_home"], 
+#popup_setup_G label[for="team_guest"],
+#popup_setup_H select[id="team_home"],
+#popup_setup_G select[id="team_guest"] {
+    display: none !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Stil für unsere zentrierte 3D-Mannschaftsüberschrift im Popup */
+.popup-team-headline {
+    text-align: center !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #ffcc00 !important;
+    font-size: 26px !important;
+    font-weight: 900 !important;
+    margin: 15px 0 25px 0 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+    text-shadow: 0px 1px 0px #997a00,
+                 0px 2px 0px #806600,
+                 0px 3px 0px #665200,
+                 0px 4px 5px rgba(0,0,0,0.6) !important;
+}
+
+
+/* Stil für unsere zentrierte 3D-Mannschaftsüberschrift im Popup */
+.popup-team-headline {
+    text-align: center !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #ffcc00 !important;
+    font-size: 26px !important;
+    font-weight: 900 !important;
+    margin: 15px 0 25px 0 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+    text-shadow: 0px 1px 0px #997a00,
+                 0px 2px 0px #806600,
+                 0px 3px 0px #665200,
+                 0px 4px 5px rgba(0,0,0,0.6) !important;
+}
+
+
 
 /* Untermenü-Struktur im Zahnrad-Fenster */
 .sub-nav-settings { display: flex; gap: 5px; margin-bottom: 15px; border-bottom: 2px solid #555; padding-bottom: 5px; }
@@ -567,228 +625,147 @@ function aktiviereVollbild() {
         <button id="sub_btn_report" class="sub-tab-btn" onclick="switchSubSettings('report')">📅 Spielplan</button>
     </div>
 
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <!-- 1. UNTERMENÜ: SPIELER & TEAMS -->
     <div id="sub_settings_players" class="sub-settings-content active">
-        <label style="font-weight: bold; color: #ffcc00; display: block; margin-bottom:8px;">
-            Spieler-TXT hier einfügen und speichern (Format: Team, Nachname, Vorname, Passnummer):
-        </label>
-        <textarea id="txt_import_area" placeholder="Füge hier deine komplette Liste mit allen Mannschaften ein..." style="width:100%; height:120px; background:#222; color:#fff; border: 1px solid #555; padding:8px; border-radius: 4px; box-sizing: border-box; font-family: monospace;"></textarea>
+        <label style="font-weight: bold; color: #ffcc00; display: block; margin-bottom:8px;">Spieler-TXT hier einfügen und speichern (Format: Team, Nachname, Vorname, Passnummer):</label>
+        <textarea id="txt_import_area" placeholder="Füge hier deine komplette Liste mit allen Mannschaften ein..." style="width: 100%; height:120px; background: #222; color:#fff; border: 1px solid #555; padding: 8px; border-radius: 4px; box-sizing: border-box; font-family: monospace; "></textarea>
         
-        <button id="btn_kombi_import" onclick="fuehreKombiUpdateAus()" style="margin-top:8px; padding: 14px; background: #00cc66; color: #000; border: 2px solid #fff; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; font-size: 14px; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-            Spielerliste frisch laden & dauerhaft speichern
-        </button>
+        <button id="btn_kombi_import" onclick="fuehreKombiUpdateAus()" style="margin-top:8px; padding: 14px; background: #00cc66; color: #000; border: 2px solid #fff; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; font-size: 14px; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">Spielerliste frisch laden & dauerhaft speichern</button>
 
         <!-- Manueller Offline-Eintrag für Spieler -->
         <div style="margin-top: 22px; padding-top: 15px; border-top: 1px dashed #555; text-align: left;">
-            <label style="font-weight: bold; color: #ffcc00; display: block; margin-bottom:4px; font-size: 14px;">
-                + Spieler manuell hinzufügen (Offline-Direkteingabe)
-            </label>
-            <p style="font-size: 11px; color: #bbb; margin: 0 0 12px 0; line-height: 1.3;">
-                Wähle eine geladene Mannschaft aus, gib den Namen sowie die Passnummer ein.
-            </p>
+            <label style="font-weight: bold; color: #ffcc00; display: block; margin-bottom:4px; font-size: 14px;">+ Spieler manuell hinzufügen (Offline-Direkteingabe)</label>
+            <p style="font-size: 11px; color: #bbb; margin: 0 0 12px 0; line-height: 1.3;">Wähle eine geladene Mannschaft aus, gib den Namen sowie die Passnummer ein.</p>
             <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px;">
                 <div>
                     <label style="font-size: 11px; color: #aaa; margin-bottom: 2px; display: block;">Mannschaft auswählen: </label>
-                    <select id="manual_team_select" style="width: 100%; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 4px; height: 38px;"></select>
+                    <select id="manual_team_select" style="width: 100%; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 4px; height: 38px; "></select>
                 </div>
                 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
                     <div>
-                        <label style="font-size: 11px; color: #aaa; margin-bottom: 2px; display: block;">Spielername: </label>
+                        <label style="font-size: 11px; color: #aaa; margin-bottom: 2px; display: block; ">Spielername: </label>
                         <input type="text" id="manual_player_name" placeholder="z.B. Müller, Thomas" style="width: 100%; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 4px; height: 38px; box-sizing: border-box;">
                     </div>
                     <div>
-                        <label style="font-size: 11px; color: #aaa; margin-bottom: 2px; display: block;">Passnummer: </label>
+                        <label style="font-size: 11px; color: #aaa; margin-bottom: 2px; display: block; ">Passnummer: </label>
                         <input type="text" id="manual_player_pass" placeholder="z.B. 107" style="width: 100%; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 4px; height: 38px; box-sizing: border-box; text-align: center;">
                     </div>
                 </div>
             </div>
-            
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 15px;">
-                <button onclick="fuegeSpielerManuellHinzu()" style="padding: 12px; background: #00cc66; color: #000; border: 1px solid #fff; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 13px; text-transform: uppercase; box-shadow: 0 2px 6px rgba(0,0,0,0.4); width: 100%;">
-                    Spieler Offline speichern
-                </button>
+                <button onclick="fuegeSpielerManuellHinzu()" style="padding: 12px; background: #00cc66; color: #000; border: 1px solid #fff; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 13px; text-transform: uppercase; box-shadow: 0 2px 6px rgba(0,0,0,0.4); width: 100%;">Spieler Offline speichern</button>
             </div>
         </div>
     </div>
 
     <!-- 2. UNTERMENÜ: DYNAMISCHER SPIELPLAN AUS GITHUB -->
     <div id="sub_settings_report" class="sub-settings-content" style="display: none;">
-        <label style="font-weight: bold; color: #ffcc00; display: block; margin-bottom:8px;">
-            MKK Ligaspielplan (automatische Erkennung):
-        </label>
-        <p style="font-size: 13px; color: #ccc; margin: 0 0 15px 0; line-height: 1.4;">
-            Hier kannst du den Spielplan direkt aus deiner hinterlegten <code style="color:#ffcc00;">spielplan.txt</code> von GitHub abrufen und aktualisieren.
-        </p>
-        
-        <button id="btn_plan_import" onclick="ladeSpielplanVonGitHub()" style="padding: 14px; background: #ffcc00; color: #000; border: 2px solid #fff; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; font-size: 14px; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-            Spielplan frisch von GitHub abrufen 🔄
-        </button>
-
+        <label style="font-weight: bold; color: #ffcc00; display: block; margin-bottom:8px;">MKK Ligaspielplan (automatische Erkennung):</label>
+        <p style="font-size: 13px; color: #ccc; margin: 0 0 15px 0; line-height: 1.4;">Hier kannst du den Spielplan direkt aus deiner hinterlegten <code style="color:#ffcc00;">spielplan.txt</code> von GitHub abrufen und aktualisieren.</p>
+        <button id="btn_plan_import" onclick="ladeSpielplanVonGitHub()" style="padding: 14px; background: #ffcc00; color: #000; border: 2px solid #fff; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; font-size: 14px; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">Spielplan frisch von GitHub abrufen 🔄</button>
         <div style="margin-top: 20px; padding: 10px; background: #222; border: 1px dashed #555; border-radius: 4px;">
-            <span style="font-size: 11px; color: #aaa; display: block; margin-bottom: 6px;">Geladener Spielplan (Vorschau):</span>
-            <!-- Das neue Sichtfenster -->
-            <textarea id="txt_spielplan_preview" readonly placeholder="Noch kein Spielplan geladen. Klicke oben auf den gelben Button..." style="width: 100%; height: 150px; background: #111; color: #00cc66; border: 1px solid #444; padding: 8px; font-family: monospace; font-size: 12px; border-radius: 4px; box-sizing: border-box; resize: vertical;"></textarea>
+            <span style="font-size: 11px; color: #aaa; display: block; margin-bottom: 6px;">Geladener Spielplan (Vorschau): </span>
+            <textarea id="txt_spielplan_preview" readonly placeholder="Noch kein Spielplan geladen. Klicke oben auf den gelben Button..." style="width: 100%; height: 150px; background: #111; color: #00cc66; border: 1px solid #444; padding: 8px; font-family: monospace; font-size: 12px; border-radius: 4px; box-sizing: border-box; resize: vertical; "></textarea>
         </div>
-
     </div>
 
-    <!-- Globaler Schließen-Button am Ende des Zahnrad-Menüs -->
-    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #444;">
-        <button onclick="toggleAccordion()" style="padding: 12px; background: #cc3333; color: #fff; border: 1px solid #ff5555; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 13px; text-transform: uppercase; box-shadow: 0 2px 6px rgba(0,0,0,0.4); width: 100%;">
-            Fenster schließen X
-        </button>
-    </div>
-</div> <!-- Ende des Einstellungs-Panels -->
-
-
-
-
-
-
+<!-- Globaler Schließen-Button am Ende des Zahnrad-Menüs -->
+<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #444;">
+<button onclick="toggleAccordion()" style="padding: 12px; background: #cc3333; color: #fff; border: 1px solid #ff5555; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 13px; text-transform: uppercase; box-shadow: 0 2px 6px rgba(0,0,0,0.4); width: 100%;">Fenster schließen X</button>
+</div>
+</div> <!-- Ende des Einstellungs-Panels (accordion_panel) -->
 
 <div id="tab_setup" class="tab-content active">
- 
+<!-- Container für den unteren Bereich (Ausblend-Sektion) -->
+<div class="setup-hide-on-settings">
+<!-- NEUES HAUPTPANEL: TEAMS & METADATEN DIREKT AUF DER HAUPTSEITE -->
+<div class="panel" style="margin-bottom: 15px; display: flex; flex-direction: column; gap: 15px;">
+<!-- 1. HEIMTEAM AUSWAHL -->
+<div>
+<label style="font-weight: bold; color: #ffcc00; display: block; margin-bottom: 5px;"> Heimteam Auswahl:</label>
 
+                <select id="team_home" onchange="handleTeamSelection('H'); autoDetectLeagueAndMatchday();" style="width: 100%; padding: 10px; background: #222; border: 1px solid #555; color: #fff; border-radius: 4px; font-size: 15px; height: 42px;">
+                    <option value="">-- Heimteam wählen --</option>
+                </select>
+            </div>
 
-   <!-- Das versteckte Einstellungs-Panel sitzt jetzt perfekt bündig im Container -->
-    <div id="accordion_panel" class="panel" style="display: none; margin-bottom: 20px; border: 1px solid #ffcc00;">
-        <!-- Unsichtbare Hilfselemente, um JS-Fehler zu vermeiden -->
-        <span id="accordion_title" style="display:none;"></span><span id="accordion_arrow" style="display:none;"></span>
+            <!-- VS TRENNER -->
+            <div style="text-align: center; font-size: 22px; font-weight: 900; color: #ffcc00; margin: 5px 0; letter-spacing: 2px; text-shadow: 0 0 8px rgba(255,204,0,0.4);">
+                ⚡ VS ⚡
+            </div>
 
-        <label style="font-weight: bold; color: #ffcc00; display: block; margin-bottom:8px;">
-            Spieler-TXT hier einfügen und speichern (Format: Team, Nachname, Vorname, Passnummer):
-        </label>
-        <textarea id="txt_import_area" placeholder="Füge hier deine komplette Liste mit allen Mannschaften ein..." style="width:100%; height:120px; background:#222; color:#fff; border: 1px solid #555; padding:8px; border-radius: 4px; box-sizing: border-box;"></textarea>
-        
-        <button id="btn_kombi_import" onclick="fuehreKombiUpdateAus()" style="margin-top:8px; padding: 14px; background: #00cc66; color: #000; border: 2px solid #fff; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; font-size: 14px; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-            Spielerliste frisch laden & dauerhaft speichern
-        </button>
+            <!-- 2. GASTTEAM AUSWAHL -->
+            <div>
+                <label style="font-weight: bold; color: #ffcc00; display: block; margin-bottom: 5px;">🚀 Gastteam Auswahl:</label>
+                <select id="team_guest" onchange="handleTeamSelection('G'); autoDetectLeagueAndMatchday();" style="width: 100%; padding: 10px; background: #222; border: 1px solid #555; color: #fff; border-radius: 4px; font-size: 15px; height: 42px;">
+                    <option value="">-- Gastteam wählen --</option>
+                </select>
+            </div>
 
-        <!-- Manueller Offline-Eintrag für Spieler -->
-        <div style="margin-top: 22px; padding-top: 15px; border-top: 1px dashed #555; text-align: left;">
-            <label style="font-weight: bold; color: #ffcc00; display: block; margin-bottom:4px; font-size: 14px;">
-                + Spieler manuell hinzufügen (Offline-Direkteingabe)
-            </label>
-            <p style="font-size: 11px; color: #bbb; margin: 0 0 12px 0; line-height: 1.3;">
-                Wähle eine geladene Mannschaft aus, gib den Namen sowie die Passnummer ein.
-            </p>
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px;">
+            <!-- TRENNLINIE ZU DEN METADATEN -->
+            <div style="border-top: 1px dashed #444; margin: 10px 0;"></div>
+
+            <!-- GRUPPE, SPIELTAG & DATUM -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
                 <div>
-                    <label style="font-size: 11px; color: #aaa; margin-bottom: 2px; display: block;">Mannschaft auswählen: </label>
-                    <select id="manual_team_select" style="width: 100%; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 4px; height: 38px;"></select>
+                    <label style="font-weight: bold; color: #aaa; display: block; margin-bottom: 5px;">Gruppe:</label>
+                    <select id="meta_group" onchange="syncMetaToLabels()" style="width: 100%; padding: 10px; background: #222; border: 1px solid #555; color: #fff; border-radius: 4px; font-size: 15px; height: 42px;">
+                        <option value="">-- wählen --</option>
+                        <option value="Gruppe A">A Liga</option>
+                        <option value="Gruppe B">B Liga</option>
+                        <option value="Gruppe C">C Liga</option>
+                    </select>
                 </div>
-                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
-                    <div>
-                        <label style="font-size: 11px; color: #aaa; margin-bottom: 2px; display: block;">Spielername: </label>
-                        <input type="text" id="manual_player_name" placeholder="z.B. Müller, Thomas" style="width: 100%; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 4px; height: 38px; box-sizing: border-box;">
-                    </div>
-                    <div>
-                        <label style="font-size: 11px; color: #aaa; margin-bottom: 2px; display: block;">Passnummer: </label>
-                        <input type="text" id="manual_player_pass" placeholder="z.B. 107" style="width: 100%; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 4px; height: 38px; box-sizing: border-box; text-align: center;">
-                    </div>
+                <div>
+                    <label style="font-weight: bold; color: #aaa; display: block; margin-bottom: 5px;">Spieltag:</label>
+                    <select id="meta_day" onchange="syncMetaToLabels()" style="width: 100%; padding: 10px; background: #222; border: 1px solid #555; color: #fff; border-radius: 4px; font-size: 15px; height: 42px;">
+                        <option value="">-- wählen --</option>
+                        <script>
+                            for(let i=1; i<=30; i++) { document.write('<option value="'+i+'. Spieltag">'+i+'. Spieltag</option>'); }
+                        </script>
+                    </select>
                 </div>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 15px;">
-                <button onclick="fuegeSpielerManuellHinzu()" style="padding: 12px; background: #00cc66; color: #000; border: 1px solid #fff; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 13px; text-transform: uppercase; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">
-                    Spieler Offline speichern
-                </button>
-                <button onclick="toggleAccordion()" style="padding: 12px; background: #cc3333; color: #fff; border: 1px solid #ff5555; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 13px; text-transform: uppercase; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">
-                   
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- Fenster schließen X
-                </button>
-            </div>
-        </div>
-    </div>
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <!-- Neuer umschließender Container für den unteren Bereich (Ausblend-Sektion) -->
-    <div class="setup-hide-on-settings">
-        <!-- DIESER BLOCK ERSETZT DIE GEQUETSCHTEN FELDER FÜR SMARTPHONES -->
-        <div class="panel" style="margin-bottom: 15px; display: flex; flex-direction: column; gap: 12px;">
-            <div>
-                <label>Gruppe:</label>
-                <select id="meta_group" onchange="syncMetaToLabels()">
-                    <option value="">-- wählen --</option>
-                    <option value="Gruppe A">A Liga</option>
-                    <option value="Gruppe B">B Liga</option>
-                    <option value="Gruppe C">C Liga</option>
-                </select>
-            </div>
-            <div>
-                <label>Spieltag:</label>
-                <select id="meta_day" onchange="syncMetaToLabels()">
-                    <option value="">-- wählen --</option>
-                    <script>
-                        for(let i=1; i<=30; i++) { document.write('<option value="'+i+'. Spieltag">'+i+'. Spieltag</option>'); }
-                    </script>
-                </select>
-            </div>
-            <div>
-                <label>Datum:</label>
-                <input type="text" id="meta_date" value="" oninput="syncMetaToLabels()">
+                <div>
+                    <label style="font-weight: bold; color: #aaa; display: block; margin-bottom: 5px;">Datum:</label>
+                    <input type="text" id="meta_date" value="" oninput="syncMetaToLabels()" style="width: 100%; padding: 10px; background: #222; border: 1px solid #555; color: #fff; border-radius: 4px; font-size: 15px; height: 42px; box-sizing: border-box;">
+                </div>
             </div>
         </div>
 
-        <div id="validation_status_bar" class="status-bar status-locked" onclick="zeigeFehlendePflichtfelder()" style="cursor: pointer; transition: all 0.2s;" title="Klicken für Details zu den fehlenden Feldern">Spiel gesperrt: Bitte Teams wählen und mindestens 4 Hauptspieler (H1-H4 & G1-G4) besetzen!</div>
+        <!-- Validierungs-Statusleiste -->
+        <div id="validation_status_bar" class="status-bar status-locked" onclick="zeigeFehlendePflichtfelder()" style="cursor: pointer; transition: all 0.2s; margin-bottom: 15px;" title="Klicken für Details zu den fehlenden Feldern">Spiel gesperrt: Bitte Teams wählen und mindestens 4 Hauptspieler (H1-H4 & G1-G4) besetzen!</div>
 
-        <!-- Zusammengelegte Buttons für Heim- und Gastteam Aufstellung -->
-        <div style="display: flex; gap: 15px; margin-top: 15px; width: 100%;">
-            <button id="btn_setup_H" onclick="openSetupPopup('H')" style="flex: 1; padding: 14px; font-weight: bold; background: #333; color: #888; border: 1px solid #444; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px; transition: all 0.3s ease;">
-                Heimteam aufstellen (Unvollständig)
-            </button>
-            <button id="btn_setup_G" onclick="openSetupPopup('G')" style="flex: 1; padding: 14px; font-weight: bold; background: #333; color: #888; border: 1px solid #444; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px; transition: all 0.3s ease;">
-                Gastteam aufstellen (Unvollständig)
-            </button>
+        <!-- Die Buttons öffnen weiterhin die Popups für die Spielerbesetzung -->
+        <div style="display: flex; gap: 15px; width: 100%;">
+            <button id="btn_setup_H" onclick="openSetupPopup('H')" style="flex: 1; padding: 14px; font-weight: bold; background: #333; color: #888; border: 1px solid #444; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px; transition: all 0.3s ease;">Heimteam Spieler aufstellen</button>
+            <button id="btn_setup_G" onclick="openSetupPopup('G')" style="flex: 1; padding: 14px; font-weight: bold; background: #333; color: #888; border: 1px solid #444; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px; transition: all 0.3s ease;">Gastteam Spieler aufstellen</button>
         </div>
     </div> <!-- Ende der Sektion -->
 </div> <!-- HIER ENDET TAB_SETUP VOLLSTÄNDIG -->
-
-
 
 
 
@@ -799,9 +776,15 @@ function aktiviereVollbild() {
              <span>Aufstellung: Heimteam 🏠</span>
              <button class="setup-popup-close" onclick="closeSetupPopup('H')">Fertig & Schließen</button>
          </div>
-         <div class="panel">
-             <label>Mannschaft Heim-Team:</label>
-             <select id="team_home"><option value="">-- wählen --</option></select>
+
+
+
+<div class="panel">
+<label for="team_home">Mannschaft Heim-Team:</label>
+<select id="team_home"><option value="">-- wählen --</option></select>
+<!-- Hier landet die 3D-Überschrift -->
+<div id="team_home_headline" class="popup-team-headline"></div>
+
              
              <label style="color:#ffcc00; font-weight:bold;">Heim TC 👑 (Kapitän):</label>
              <select id="captain_home"></select>
@@ -872,14 +855,20 @@ function aktiviereVollbild() {
      <div class="setup-popup-content">
          <div class="setup-popup-header">
              <span>Aufstellung: Gastteam 🚀</span>
-             <button class="setup-popup-close" onclick="closeSetupPopup('G')">Fertig & Schließen</button>
-         </div>
-         <div class="panel">
-             <label>Mannschaft Gast-Team:</label>
-             <select id="team_guest"><option value="">-- wählen --</option></select>
-             
-             <label style="color:#ffcc00; font-weight:bold;">Gast TC 👑 (Kapitän):</label>
-             <select id="captain_guest"></select>
+          
+
+<button class="setup-popup-close" onclick="closeSetupPopup('G')">Fertig & Schließen</button>
+</div>
+
+
+<div class="panel">
+    <label for="team_guest">Mannschaft Gast-Team:</label>
+    <select id="team_guest"><option value="">-- wählen --</option></select>
+    <!-- Hier landet die 3D-Überschrift -->
+    <div id="team_guest_headline" class="popup-team-headline"></div>
+
+    <label style="color:#ffcc00; font-weight:bold;">Gast TC 👑 (Kapitän):</label>
+    <select id="captain_guest"></select>
              
              <h4 style="margin: 15px 0 5px 0; color: #ffcc00; border-bottom: 1px solid #555;">Stamm- & Ersatzspieler:</h4>
              
@@ -1746,63 +1735,71 @@ area.innerHTML += ` <div style="text-align:center; font-size:15px; font-weight:b
 const disabledAttr = isPlayed ? "click-box-disabled" : "";
 
 if (m.type === "E") {
-const side1 = c1.startsWith("H") ? "H" : "G";
-const side2 = c2.startsWith("H") ? "H" : "G";
-let einzelPlayers = [
-{ name: p1, pos: c1, side: side1, scoreNum: 1 },
-{ name: p2, pos: c2, side: side2, scoreNum: 2 }
-];
-einzelPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
-einzelPlayers.forEach(p => {
-const sideBadge = p.side === 'H' ? 'Heim': 'Gast';
-const btnStyle = p.side === 'H'
-? 'background: #00cc66 !important; color: #000 !important; font-weight:bold; padding: 12px; margin:6px 0; border: none; display:block;'
-: 'background: #ffcc00 !important; color: #000 !important; font-weight:bold; padding: 12px; margin:6px 0; border: none; display:block;';
-area.innerHTML += ` <div class="click-box ${disabledAttr}" style="${btnStyle}" onclick="registerWinner('${p.name}', '${p.pos}', '${p.side}')">
-<div style="display:grid; grid-template-columns: 70px 75px 25px 1fr; align-items:center; text-align:left; width: 100%;">
-<span style="font-size: 12px; opacity:0.9; border-right: 1px solid rgba(0,0,0,0.2); padding-right: 5px; ">${sideBadge}</span>
-<span style="background: transparent; padding: 2px 6px; font-size:11px; text-align:center; border-right: 1px solid rgba(0,0,0,0.2); margin-right: 10px; ">Score ${p.scoreNum}</span>
-<span style="text-align:center; font-size:14px;"> </span>
-<span style="font-size:19px; padding-left:25px; letter-spacing:0.3px; font-weight: bold; display: flex; gap: 10px; align-items: center;">
-    <span>${p.name}</span>
-    <span style="font-size: 15px; color: rgba(0,0,0,0.6); font-weight: 900;">${p.pos}</span>
-</span>
-</div>
-</div>`;
-});
+    const side1 = c1.startsWith("H") ? "H" : "G";
+    const side2 = c2.startsWith("H") ? "H" : "G";
+    
+    // Ermittelt die aktuell echten Positionen (Berücksichtigt aktive Wechsel!)
+    const realPos1 = resolvePlayerName(c1, activePopupMatchId, true);
+    const realPos2 = resolvePlayerName(c2, activePopupMatchId, true);
+    
+    let einzelPlayers = [
+        { name: p1, pos: realPos1, side: side1, scoreNum: 1 },
+        { name: p2, pos: realPos2, side: side2, scoreNum: 2 }
+    ];
+    einzelPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
+    einzelPlayers.forEach(p => {
+        const sideBadge = p.side === 'H' ? 'Heim' : 'Gast';
+        const btnStyle = p.side === 'H'
+            ? 'background: #00cc66 !important; color: #000 !important; font-weight:bold; padding: 12px; margin:6px 0; border: none; display:block;'
+            : 'background: #ffcc00 !important; color: #000 !important; font-weight:bold; padding: 12px; margin:6px 0; border: none; display:block;';
+        
+        area.innerHTML += ` <div class="click-box ${disabledAttr}" style="${btnStyle}" onclick="registerWinner('${p.name}', '${p.pos}', '${p.side}')">
+            <div style="display:grid; grid-template-columns: 70px 75px 65px 1fr; align-items:center; text-align:left; width: 100%;">
+                <span style="font-size: 12px; opacity:0.9; border-right: 1px solid rgba(0,0,0,0.2); padding-right: 5px; ">${sideBadge}</span>
+                <span style="background: transparent; padding: 2px 6px; font-size:11px; text-align:center; border-right: 1px solid rgba(0,0,0,0.2); margin-right: 10px; ">Score ${p.scoreNum}</span>
+                <span style="font-size: 11px; font-weight: bold; text-align: center; border-right: 1px solid rgba(0,0,0,0.2); margin-right: 15px; text-transform: uppercase;">${p.pos}</span>
+                <span style="font-size:19px; padding-left:10px; letter-spacing:0.3px; font-weight: bold;">${p.name}</span>
+            </div>
+        </div>`;
+    });
 } else {
-const hPlayers = [], gPlayers = [];
-if(c1.startsWith("H")) hPlayers.push({name: p1, pos: c1, scoreNum: 1}); else gPlayers.push({name: p1, pos: c1, scoreNum: 1});
-if(c2.startsWith("H")) hPlayers.push({name: p2, pos: c2, scoreNum: 2}); else gPlayers.push({name: p2, pos: c2, scoreNum: 2});
-if(c3) { if(c3.startsWith("H")) hPlayers.push({name: p3, pos: c3, scoreNum: 3}); else gPlayers.push({name: p3, pos: c3, scoreNum: 3}); }
-if(c4) { if(c4.startsWith("H")) hPlayers.push({name: p4, pos: c4, scoreNum: 4}); else gPlayers.push({name: p4, pos: c4, scoreNum: 4}); }
-hPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
-gPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
-let allPopupPlayers = [...hPlayers, ...gPlayers];
-allPopupPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
-allPopupPlayers.forEach(p => {
-const isHome = p.pos.startsWith("H");
-const sideBadge = isHome? 'Heim': 'Gast';
-const partnerList = isHome? hPlayers : gPlayers;
-const partner = partnerList.find(x => x.pos !== p.pos) || {name: null, pos: null};
-const currentSideCode = isHome? 'H': 'G';
-const btnStyle = isHome
-? 'background: #00cc66 !important; color: #000 !important; font-weight:bold; padding: 12px; margin:5px 0; border: none; display:block;'
-: 'background:#ffcc00 !important; color: #000 !important; font-weight:bold; padding: 12px; margin:5px 0; border: none; display:block;';
-area.innerHTML += ` <div class="click-box ${disabledAttr}" style="${btnStyle}" onclick="registerWinner('${p.name}', '${p.pos}', '${currentSideCode}', '${partner.name}', '${partner.pos}')">
-<div style="display:grid; grid-template-columns: 70px 75px 25px 1fr; align-items:center; text-align:left; width: 100%;">
-<span style="font-size:12px; opacity:0.9; border-right: 1px solid rgba(0,0,0,0.2); padding-right: 5px; ">${sideBadge}</span>
-<span style="background: transparent; padding: 2px 6px; font-size:11px; text-align:center; border-right: 1px solid rgba(0,0,0,0.2); margin-right: 10px; ">Score ${p.scoreNum}</span>
-<span style="text-align:center; font-size: 14px;"> </span>
-<span style="font-size:19px; padding-left:25px; letter-spacing:0.3px; font-weight: bold; display: flex; gap: 10px; align-items: center;">
-    <span>${p.name}</span>
-    <span style="font-size: 15px; color: rgba(0,0,0,0.6); font-weight: 900;">${p.pos}</span>
-</span>
-</div>
-</div>`;
-});
-}
+    const hPlayers = [], gPlayers = [];
+    
+    // Ermittelt die aktuell echten Positionen für Doppel/Cricket (Berücksichtigt aktive Wechsel!)
+    const rp1 = resolvePlayerName(c1, activePopupMatchId, true);
+    const rp2 = resolvePlayerName(c2, activePopupMatchId, true);
+    const rp3 = c3 ? resolvePlayerName(c3, activePopupMatchId, true) : "";
+    const rp4 = c4 ? resolvePlayerName(c4, activePopupMatchId, true) : "";
 
+    if(c1.startsWith("H")) hPlayers.push({name: p1, pos: rp1, scoreNum: 1}); else gPlayers.push({name: p1, pos: rp1, scoreNum: 1});
+    if(c2.startsWith("H")) hPlayers.push({name: p2, pos: rp2, scoreNum: 2}); else gPlayers.push({name: p2, pos: rp2, scoreNum: 2});
+    if(c3) { if(c3.startsWith("H")) hPlayers.push({name: p3, pos: rp3, scoreNum: 3}); else gPlayers.push({name: p3, pos: rp3, scoreNum: 3}); }
+    if(c4) { if(c4.startsWith("H")) hPlayers.push({name: p4, pos: rp4, scoreNum: 4}); else gPlayers.push({name: p4, pos: rp4, scoreNum: 4}); }
+    
+    hPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
+    gPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
+    let allPopupPlayers = [...hPlayers, ...gPlayers];
+    allPopupPlayers.sort((a, b) => a.scoreNum - b.scoreNum);
+    allPopupPlayers.forEach(p => {
+        const isHome = p.pos.startsWith("H");
+        const sideBadge = isHome ? 'Heim' : 'Gast';
+        const partnerList = isHome ? hPlayers : gPlayers;
+        const partner = partnerList.find(x => x.pos !== p.pos) || {name: null, pos: null};
+        const currentSideCode = isHome ? 'H' : 'G';
+        const btnStyle = isHome
+            ? 'background: #00cc66 !important; color: #000 !important; font-weight:bold; padding: 12px; margin:5px 0; border: none; display:block;'
+            : 'background:#ffcc00 !important; color: #000 !important; font-weight:bold; padding: 12px; margin:5px 0; border: none; display:block;';
+        
+        area.innerHTML += ` <div class="click-box ${disabledAttr}" style="${btnStyle}" onclick="registerWinner('${p.name}', '${p.pos}', '${currentSideCode}', '${partner.name}', '${partner.pos}')">
+            <div style="display:grid; grid-template-columns: 70px 75px 65px 1fr; align-items:center; text-align:left; width: 100%;">
+                <span style="font-size:12px; opacity:0.9; border-right: 1px solid rgba(0,0,0,0.2); padding-right: 5px; ">${sideBadge}</span>
+                <span style="background: transparent; padding: 2px 6px; font-size:11px; text-align:center; border-right: 1px solid rgba(0,0,0,0.2); margin-right: 10px; ">Score ${p.scoreNum}</span>
+                <span style="font-size: 11px; font-weight: bold; text-align: center; border-right: 1px solid rgba(0,0,0,0.2); margin-right: 15px; text-transform: uppercase;">${p.pos}</span>
+                <span style="font-size:19px; padding-left:10px; letter-spacing:0.3px; font-weight: bold;">${p.name}</span>
+            </div>
+        </div>`;
+    });
+}
 
 
 
@@ -2304,20 +2301,21 @@ function closePwaPopup() {
 
 
 function openSetupPopup(side) {
-    document.getElementById("popup_setup_" + side).style.display = "block";
-    // Verhindert das Scrollen des Hintergrunds, wenn das Popup offen ist
+    if (side === 'H') {
+        const elementsH = document.querySelectorAll("#team_home");
+        const teamNameH = (elementsH && elementsH[0]) ? elementsH[0].value : "";
+        const targetH = document.getElementById("team_home_headline");
+        if (targetH) targetH.innerText = teamNameH || "HEIMTEAM";
+    } else if (side === 'G') {
+        const elementsG = document.querySelectorAll("#team_guest");
+        const teamNameG = (elementsG && elementsG[0]) ? elementsG[0].value : "";
+        const targetG = document.getElementById("team_guest_headline");
+        if (targetG) targetG.innerText = teamNameG || "GASTTEAM";
+    }
+    const popup = document.getElementById("popup_setup_" + side);
+    if (popup) popup.style.display = "block";
     document.body.style.overflow = "hidden";
 }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2599,10 +2597,12 @@ function starteSpezialDruck() {
                 runningGuest += res.gast; 
             }
 
-            const c1 = (m.pos && m.pos[0]) ? m.pos[0] : "";
-            const c2 = (m.pos && m.pos[1]) ? m.pos[1] : "";
-            const c3 = (m.pos && m.pos[2]) ? m.pos[2] : "";
-            const c4 = (m.pos && m.pos[3]) ? m.pos[3] : "";
+// Ermittelt die aktuell echten Positionskürzel (Berücksichtigt aktive Wechsel für die Score-Zellen!)
+const c1 = (m.pos && m.pos[0]) ? resolvePlayerName(m.pos[0], m.id, true) : "";
+const c2 = (m.pos && m.pos[1]) ? resolvePlayerName(m.pos[1], m.id, true) : "";
+const c3 = (m.pos && m.pos[2]) ? resolvePlayerName(m.pos[2], m.id, true) : "";
+const c4 = (m.pos && m.pos[3]) ? resolvePlayerName(m.pos[3], m.id, true) : "";
+
 
             const mark1 = res.checkerPos === c1 ? "X" : (res.assistantPos === c1 ? "/" : "");
             const mark2 = res.checkerPos === c2 ? "X" : (res.assistantPos === c2 ? "/" : "");
@@ -2654,10 +2654,7 @@ function starteSpezialDruck() {
 
 
 
-function openSetupPopup(side) {
- document.getElementById("popup_setup_" + side).style.display = "block";
- document.body.style.overflow = "hidden";
-}
+
 function closeSetupPopup(side) {
   // Liste aller Positions-IDs für das jeweilige Team
   const spielerIds = side === 'H' 
@@ -2810,11 +2807,12 @@ window.starteSpezialDruck = function() {
             const hasBeenPlayed = (typeof matchResults !== "undefined" && ! ! matchResults[m.id]);
             if (hasBeenPlayed) { runningHome += res.heim; runningGuest += res.gast; }
             
-            // Holt die Kürzel einzeln aus dem m.pos Array heraus
-            const c1 = (m.pos && m.pos[0]) ? m.pos[0] : "";
-            const c2 = (m.pos && m.pos[1]) ? m.pos[1] : "";
-            const c3 = (m.pos && m.pos[2]) ? m.pos[2] : "";
-            const c4 = (m.pos && m.pos[3]) ? m.pos[3] : "";
+// Ermittelt die aktuell echten Positionskürzel (Berücksichtigt aktive Wechsel für die Score-Zellen!)
+const c1 = (m.pos && m.pos[0]) ? resolvePlayerName(m.pos[0], m.id, true) : "";
+const c2 = (m.pos && m.pos[1]) ? resolvePlayerName(m.pos[1], m.id, true) : "";
+const c3 = (m.pos && m.pos[2]) ? resolvePlayerName(m.pos[2], m.id, true) : "";
+const c4 = (m.pos && m.pos[3]) ? resolvePlayerName(m.pos[3], m.id, true) : "";
+
             
             // Markierungen für Haken (Assist) und Kreuz (Check)
             const mark1 = res.checkerPos === c1 ? "X" : (res.assistantPos === c1 ? "/" : "");
@@ -2956,10 +2954,15 @@ function closeStatsDetailPopup() {
 // Globaler Speicher für den dynamisch geladenen Spielplan
 let mkkLoadedSchedules = {};
 
-// 1. FUNKTION: Lädt die spielplan.txt von GitHub
 function ladeSpielplanVonGitHub() {
-  const url = "/MKK-2026/spielplan.txt"; // Pfad zu deiner Spielplan-TXT auf GitHub
+  const url = "/MKK-2026/spielplan.txt"; 
+  const kombiBtn = document.getElementById("btn_plan_import");
   
+  if(kombiBtn) {
+    kombiBtn.innerText = "Spielplan wird geladen...";
+    kombiBtn.style.opacity = "0.6";
+  }
+
   fetch(url)
     .then(response => {
       if (!response.ok) throw new Error("Spielplan-Datei konnte nicht geladen werden.");
@@ -2968,13 +2971,24 @@ function ladeSpielplanVonGitHub() {
     .then(text => {
       verarbeiteSpielplanText(text);
       console.log("MKK-Spielplan erfolgreich geladen und strukturiert!");
-      // Falls beim Start schon Teams geladen wurden, direkt Erkennung prüfen
+      
+      // Automatische Erkennung prüfen
       autoDetectLeagueAndMatchday();
+      
+      alert("Spielplan erfolgreich von GitHub abgerufen!");
     })
     .catch(error => {
       console.error("Fehler beim Abrufen des Spielplans:", error);
+      alert("Fehler beim Laden des Spielplans! Bitte Internetverbindung prüfen.");
+    })
+    .finally(() => {
+      if(kombiBtn) {
+        kombiBtn.innerText = "Spielplan frisch von GitHub abrufen 🔄";
+        kombiBtn.style.opacity = "1";
+      }
     });
 }
+
 
 function verarbeiteSpielplanText(text) {
     // Schreibt den rohen Text direkt in unser neues Sichtfenster
