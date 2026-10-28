@@ -2999,21 +2999,18 @@ function ladeSpielplanVonGitHub() {
 
 
 function verarbeiteSpielplanText(text) {
-    // Schreibt den rohen Text direkt in unser neues Sichtfenster
     const previewBox = document.getElementById("txt_spielplan_preview");
     if (previewBox) { previewBox.value = text.trim(); }
     
     mkkLoadedSchedules = {};
-    
-    // Text in einzelne Zeilen zerlegen
     const lines = text.split("\n");
-    let aktuelleGruppe = ""; // Hält die aktive Liga-Überschrift im Gedächtnis
+    let aktuelleGruppe = ""; 
     
     lines.forEach(line => {
         const trimmed = line.trim();
         if (!trimmed) return;
         
-        // Blick auf die Überschrift: Wenn "spielplan:" vorkommt, Liga wechseln
+        // 1. Liga-Überschrift erkennen
         if (trimmed.toLowerCase().includes("spielplan:")) {
             if (trimmed.toUpperCase().includes("B-LIGA")) {
                 aktuelleGruppe = "Gruppe B";
@@ -3023,36 +3020,35 @@ function verarbeiteSpielplanText(text) {
                 aktuelleGruppe = "Gruppe A";
             }
             
-            // Falls die Gruppe im Speicher noch nicht existiert, neu anlegen
             if (aktuelleGruppe && !mkkLoadedSchedules[aktuelleGruppe]) {
                 mkkLoadedSchedules[aktuelleGruppe] = [];
             }
             return;
         }
         
-        // Spiele unterhalb dieser Überschrift auslesen (z. B. "Spiel 14: ...")
+        // Zeilen wie HINRUNDE oder RÜCKRUNDE einfach überspringen
+        if (trimmed.toUpperCase() === "HINRUNDE" || trimmed.toUpperCase() === "RÜCKRUNDE") {
+            return;
+        }
+        
+        // 2. Spielpaarung auslesen (z.B. "Spiel 14: Up Town 1 vs. Special Elite")
         if (aktuelleGruppe && trimmed.toLowerCase().startsWith("spiel") && trimmed.includes("vs.")) {
             try {
-                // "Spiel " abschneiden, um an die Nummer zu kommen
-                const nachSpiel = trimmed.substring(6);
-                const doppelpunktIndex = nachSpiel.indexOf(":");
+                const doppelpunktIndex = trimmed.indexOf(":");
+                if (doppelpunktIndex === -1) return;
                 
-                // Holt die Spielnummer (z. B. "14") vor dem Doppelpunkt
-                const spielNummer = nachSpiel.substring(0, doppelpunktIndex).trim();
-                
-                // Macht daraus exakt den Wert deines Dropdowns ("14. Spieltag")
+                // Holt flexibel alles zwischen "Spiel" und dem Doppelpunkt (z.B. "1" oder "14")
+                const spielNummer = trimmed.substring(5, doppelpunktIndex).trim();
                 const spieltagDropdownWert = spielNummer + ". Spieltag";
                 
                 // Paarung hinter dem Doppelpunkt aufteilen
-                const paarungText = nachSpiel.substring(doppelpunktIndex + 1).trim();
+                const paarungText = trimmed.substring(doppelpunktIndex + 1).trim();
                 const teams = paarungText.split("vs.");
                 
-                // KORREKTUR: Einzelne Array-Elemente statt des ganzen Arrays trimmen!
                 const heimTeam = teams[0] ? teams[0].trim() : "";
                 const gastTeam = teams[1] ? teams[1].trim() : "";
                 
                 if (heimTeam && gastTeam) {
-                    // Spiel der aktuell aktiven Liga-Überschrift zuordnen
                     mkkLoadedSchedules[aktuelleGruppe].push({
                         day: spieltagDropdownWert,
                         home: heimTeam,
@@ -3065,11 +3061,9 @@ function verarbeiteSpielplanText(text) {
         }
     });
     
-    // Den verarbeiteten Spielplan und den Rohtext dauerhaft im Browser speichern!
     localStorage.setItem("mkk_dart_loaded_schedules", JSON.stringify(mkkLoadedSchedules));
     localStorage.setItem("mkk_dart_spielplan_raw", text);
 }
-
 
 // 3. FUNKTION: Sucht die ausgewählte Paarung und stellt die Dropdowns ein
 function autoDetectLeagueAndMatchday() {
