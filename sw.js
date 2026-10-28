@@ -1,11 +1,10 @@
-const CACHE_NAME = 'mkk-dart-v2';
+const CACHE_NAME = 'mkk-dart-v3'; // Einmalig auf v3 erhöht, damit der Browser die Änderung sofort kapiert!
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png',
-  './spieler.txt'
+  './icon-512.png'
 ];
 
 // Dateien beim ersten Laden in den Cache speichern
@@ -32,7 +31,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Anfragen abfangen (wichtig für den Android-Installations-Check)
+// Anfragen abfangen
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
@@ -44,5 +43,3 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
-
-
