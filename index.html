@@ -592,25 +592,28 @@ body.settings-open .setup-hide-on-settings {
 
 
 /* Massiver 3D-Effekt und Großschrift für die Mannschaftsauswahl - Perfekt zentriert */
+/* Massiver 3D-Effekt und Großschrift für die Mannschaftsauswahl - Dynamisch für lange Namen */
 #team_home, #team_guest {
-    font-size: 30px !important; 
+    font-size: calc(14px + 0.8vw) !important; /* Passt die Schriftgröße flexibel an das Display an */
     font-weight: 900 !important;
     color: #ffcc00 !important;
     text-transform: uppercase !important;
-    letter-spacing: 1.5px !important;
+    letter-spacing: 0.5px !important; /* Etwas enger zusammen, damit lange Namen Platz haben */
     
     /* Box-Größe und zentrierte Ausrichtung */
     height: 65px !important; 
-    padding: 0px 10px !important;
+    padding: 0px 5px !important;
     background: #222 !important;
     border: 2px solid #ffcc00 !important; 
     
-    /* Erzwingt absolute Zentrierung im geschlossenen Zustand */
+    /* Absolute Zentrierung */
     text-align: center !important;
     text-align-last: center !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    
+    /* Verhindert das Abschneiden und erlaubt Quetschen des Textes */
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
     
     /* Der 3D-Schatten */
     text-shadow: 0px 1px 0px #997a00,
@@ -621,7 +624,7 @@ body.settings-open .setup-hide-on-settings {
 
 /* Optionen in der aufgeklappten Liste zentriert und lesbar */
 #team_home option, #team_guest option {
-    font-size: 18px !important;
+    font-size: 16px !important;
     font-weight: bold !important;
     color: #fff !important;
     background: #222 !important;
@@ -2233,21 +2236,34 @@ function switchTab (tabName) {
     const panel = document.getElementById("accordion_panel");
     if (panel) panel.style.display = "none";
     document.body.classList.remove("settings-open");
-
+    
     document.getElementById("tab_setup").classList.remove("active");
     document.getElementById("tab_game").classList.remove("active");
     document.getElementById("tab_" + tabName).classList.add("active");
+    
     document.getElementById("btn_tab_setup").classList.remove("active");
     document.getElementById("btn_tab_game").classList.remove("active");
     document.getElementById("btn_tab_" + tabName).classList.add("active");
+    
     // Startet die Unterschriftenfelder neu, sobald der Spielplan-Tab geöffnet wird
     if (tabName === "game") {
-
         setTimeout(() => {
             if (typeof initFixedCanvasesWithoutPopup === "function") {
                 initFixedCanvasesWithoutPopup();
             }
         }, 100);
+        
+        // NEU: Bildschirm automatisch ins Querformat drehen und sperren
+        if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape')
+                .then(() => console.log("Bildschirm erfolgreich ins Querformat gedreht"))
+                .catch((err) => console.log("Drehung blockiert (erfordert vorherigen Klick/Vollbild):", err));
+        }
+    } else if (tabName === "setup") {
+        // NEU: Wenn man zurück zur Aufstellung geht, wieder ins normale Hochformat wechseln
+        if (screen.orientation && screen.orientation.unlock) {
+            screen.orientation.unlock();
+        }
     }
 }
 
