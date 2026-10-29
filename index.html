@@ -573,22 +573,110 @@ body.settings-open .setup-hide-on-settings {
 
 /* Vergrößert die Auswechselspieler-Sektion im Popup */
 #popup_sub_toggle_area label {
-  font-size: 14px !important;
+  font-size: 99px !important;
   font-weight: bold;
 }
 #popup_sub_toggle_area select {
-  font-size: 15px !important;
+  font-size: 44px !important;
   height: 42px !important;
-  padding: 6px !important;
+  padding: 56px !important;
 }
 #popup_sub_toggle_area button {
-  font-size: 15px !important;
-  height: 42px !important;
+  font-size: 22px !important;
+  height: 66px !important;
 }
 .sub-popup-title {
-  font-size: 15px !important;
-  margin: 12px 0 6px 0 !important;
+  font-size: 22px !important;
+  margin: 99px 0 6px 0 !important;
 }
+
+
+/* Massiver 3D-Effekt und Großschrift für die Mannschaftsauswahl - Perfekt zentriert */
+#team_home, #team_guest {
+    font-size: 30px !important; 
+    font-weight: 900 !important;
+    color: #ffcc00 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+    
+    /* Box-Größe und zentrierte Ausrichtung */
+    height: 65px !important; 
+    padding: 0px 10px !important;
+    background: #222 !important;
+    border: 2px solid #ffcc00 !important; 
+    
+    /* Erzwingt absolute Zentrierung im geschlossenen Zustand */
+    text-align: center !important;
+    text-align-last: center !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    
+    /* Der 3D-Schatten */
+    text-shadow: 0px 1px 0px #997a00,
+                 0px 2px 0px #806600,
+                 0px 3px 0px #665200,
+                 0px 4px 4px rgba(0,0,0,0.7) !important;
+}
+
+/* Optionen in der aufgeklappten Liste zentriert und lesbar */
+#team_home option, #team_guest option {
+    font-size: 18px !important;
+    font-weight: bold !important;
+    color: #fff !important;
+    background: #222 !important;
+    text-shadow: none !important;
+    text-align: center !important;
+    padding: 12px !important;
+}
+
+
+/* Zentrierung aller Labels (Überschriften der Felder) */
+label {
+    text-align: center !important;
+    width: 100% !important;
+}
+
+/* Zentrierung im Aufstellungs-Popup (Kapitän, Stamm- & Ersatzspieler) */
+.setup-popup-content select, 
+.setup-popup-content input[type="text"] {
+    text-align: center !important;
+    text-align-last: center !important;
+}
+
+/* Zentrierung der Titelüberschriften der Spielerkarten (z.B. H1 Stammspieler) */
+.setup-popup-content .card-title {
+    text-align: center !important;
+    width: 100% !important;
+}
+
+    /* Spielernamen in der großen Spielplantabelle zentrieren, vergrößern und fetten */
+    #matchTableBody td {
+        font-size: 16px !important; /* Größere Schrift für die Namen im Spielplan */
+        font-weight: bold !important; /* Namen fett drucken */
+        text-align: center !important; /* Namen in den Tabellenzellen zentrieren */
+    }
+
+    /* Spielernamen in der Live-Statistik (Punkte Heimteam / Gastteam) vergrößern und fetten */
+    #live_stats_H_body td, #live_stats_G_body td {
+        font-size: 15px !important; /* Größere Schrift für das Punktekonto */
+        font-weight: bold !important; /* Namen und Zahlen fett darstellen */
+    }
+
+
+
+
+
+
+/* Schriftgröße und Fettschrift für die Spielernamen in den Dropdown-Listen vergrößern */
+.setup-popup-content select,
+.setup-popup-content select option {
+    font-size: 20px !important; /* Macht den Namen im geschlossenen und geöffneten Dropdown deutlich größer */
+    font-weight: bold !important; /* Setzt den Namen auf Fett */
+}
+
+
+
 </style>
 
 <script>
@@ -610,16 +698,17 @@ function aktiviereVollbild() {
         <span style="font-size: 18px; color: #fff; font-weight: normal; font-style: italic;">Spielberichtsbogen</span>
     </h1>
 
-    <div class="tab-navigation">
-        <button class="settings-btn" onclick="toggleAccordion()" title="Mannschaften & Spieler verwalten">⚙️</button>
-        <button id="btn_tab_setup" class="tab-btn active" onclick="switchTab('setup')" style="flex: 1;">1. Aufstellung & Setup</button>
-        <button id="btn_tab_game" class="tab-btn" onclick="switchTab('game'); aktiviereVollbild();" style="flex: 1;">2. Live-Spielplan & Statistik</button>
-        <button onclick="resetWholeMatchday()" style="background: #2a2a2a; border: 1px solid #cc3333; color: #cc3333; font-size: 16px; cursor: pointer; padding: 0; width: 44px; height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center; border-radius: 5px; transition: all 0.2s; box-sizing: border-box;" title="Gesamtes Spiel zurücksetzen & Daten leeren" onmouseover="this.style.background='#cc3333'; this.style.color='#fff'; this.style.transform='scale(1.05)';" onmouseout="this.style.background='#2a2a2a'; this.style.color='#cc3333'; this.style.transform='scale(1)';">❌</button>
-    </div>
 
 
 
-
+<div class="tab-navigation">
+    <button class="settings-btn" onclick="toggleAccordion()" title="Mannschaften & Spieler verwalten">⚙️</button>
+    <!-- KORREKTUR: "1. Aufstellung & Setup" wird zu "Aufstellung" -->
+    <button id="btn_tab_setup" class="tab-btn active" onclick="switchTab('setup')" style="flex: 1;">Aufstellung</button>
+    <!-- KORREKTUR: "2. Live-Spielplan & Statistik" wird zu "Spielbericht" -->
+    <button id="btn_tab_game" class="tab-btn" onclick="switchTab('game'); aktiviereVollbild();" style="flex: 1;">Spielbericht</button>
+    <button onclick="resetWholeMatchday()" style="background: #2a2a2a; border: 1px solid #cc33333; color: #cc33333; font-size: 16px; cursor: pointer; padding: 0; width: 44px; height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center; border-radius: 5px; transition: all 0.2s; box-sizing: border-box;" title="Gesamtes Spiel zurücksetzen & Daten leeren" onmouseover="this.style.background='#cc3333'; this.style.color='#fff'; this.style.transform='scale(1.05)';" onmouseout="this.style.background='#2a2a2a'; this.style.color='#cc3333'; this.style.transform='scale(1)';">❌</button>
+</div>
 
 
 
@@ -1535,65 +1624,69 @@ function rebuildPlayerDropdowns(side, isInitialTeamLoad = false) {
  });
 }
 function validateRosterAndSetup() {
-const metaG = document.getElementById("meta_group").value;
-const metaD = document.getElementById("meta_day").value;
-const capH = document.getElementById("captain_home").value;
-const capG = document.getElementById("captain_guest").value;
-const teamH = document.getElementById("team_home").value;
-const teamG = document.getElementById("team_guest").value;
-const h1  = document.getElementById("p_H1").value; 
-const h2 = document.getElementById("p_H2").value;
-const h3 = document.getElementById("p_H3").value; 
-const h4 = document.getElementById("p_H4").value;
-const g1 = document.getElementById("p_G1").value; 
-const g2 = document.getElementById("p_G2").value;
-const g3 = document.getElementById("p_G3").value; 
-const g4 = document.getElementById("p_G4").value;
-const bar = document.getElementById("validation_status_bar");
+    const metaG = document.getElementById("meta_group").value;
+    const metaD = document.getElementById("meta_day").value;
+    const capH = document.getElementById("captain_home").value;
+    const capG = document.getElementById("captain_guest").value;
+    const teamH = document.getElementById("team_home").value;
+    const teamG = document.getElementById("team_guest").value;
+    
+    const h1 = document.getElementById("p_H1").value;
+    const h2 = document.getElementById("p_H2").value;
+    const h3 = document.getElementById("p_H3").value;
+    const h4 = document.getElementById("p_H4").value;
+    
+    const g1 = document.getElementById("p_G1").value;
+    const g2 = document.getElementById("p_G2").value;
+    const g3 = document.getElementById("p_G3").value;
+    const g4 = document.getElementById("p_G4").value;
+    
+    const bar = document.getElementById("validation_status_bar");
 
-// --- START NEUE ZUSAMMENGELEGTE BUTTON-STEUERUNG ---
-const btnH = document.getElementById("btn_setup_H");
-if (btnH) {
-    if (h1 && h2 && h3 && h4) {
-        btnH.style.background = "#00cc66";
-        btnH.style.color = "#000";
-        btnH.style.border = "none";
-        btnH.innerText = "🏠 Heimteam: Auswahl fertig! ✓";
-    } else {
-        btnH.style.background = "#333";
-        btnH.style.color = "#888";
-        btnH.style.border = "1px solid #444";
-        btnH.innerText = "🏠 Heimteam bearbeiten (Unvollständig)";
+    // Button-Steuerung Heimteam
+    const btnH = document.getElementById("btn_setup_H");
+    if (btnH) {
+        if (capH && h1 && h2 && h3 && h4) {
+            btnH.style.background = "#00cc66";
+            btnH.style.color = "#000";
+            btnH.style.border = "none";
+            btnH.innerText = "Heimteam: Auswahl fertig! ✓";
+        } else {
+            btnH.style.background = "#333";
+            btnH.style.color = "#888";
+            btnH.style.border = "1px solid #444";
+            btnH.innerText = "Heimteam bearbeiten (Unvollständig)";
+        }
     }
-}
 
-const btnG = document.getElementById("btn_setup_G");
-if (btnG) {
-    if (g1 && g2 && g3 && g4) {
-        btnG.style.background = "#00cc66"; // Wird ebenfalls ein schönes Dart-Grün bei Erfolg
-        btnG.style.color = "#000";
-        btnG.style.border = "none";
-        btnG.innerText = "🚀 Gastteam: Auswahl fertig! ✓";
-    } else {
-        btnG.style.background = "#333";
-        btnG.style.color = "#888";
-        btnG.style.border = "1px solid #444";
-        btnG.innerText = "🚀 Gastteam bearbeiten (Unvollständig)";
+    // Button-Steuerung Gastteam
+    const btnG = document.getElementById("btn_setup_G");
+    if (btnG) {
+        if (capG && g1 && g2 && g3 && g4) {
+            btnG.style.background = "#00cc66";
+            btnG.style.color = "#000";
+            btnG.style.border = "none";
+            btnG.innerText = "Gastteam: Auswahl fertig! ✓";
+        } else {
+            btnG.style.background = "#333";
+            btnG.style.color = "#888";
+            btnG.style.border = "1px solid #444";
+            btnG.innerText = "Gastteam bearbeiten (Unvollständig)";
+        }
     }
-}
-// --- ENDE NEUE ZUSAMMENGELEGTE BUTTON-STEUERUNG ---
 
-// Prüft, ob alle Mindest-Pflichtfelder ausgefüllt sind
-if(metaG && metaD && capH && capG && teamH && teamG && h1 && h2 && h3 && h4 && g1 && g2 && g3 && g4) {
-    isMatchPlayable = true;
-    bar.className = "status-bar status-ready";
-    bar.innerText = " Bereit! Der Spielberichtsbogen ist freigeschaltet. Wechsel oben in den Live-Spielplan!";
-} else {
-    isMatchPlayable = false;
-    bar.className = "status-bar status-locked";
-    bar.innerText = "Spiel gesperrt: Bitte Gruppe, Spieltag, Kapitäne wählen und mindestens 4 Hauptspieler (H1-H4 & G1-G4) besetzen!";
-}
-renderTable();
+    // Gesamte Freigabe des Spielberichts (Prüft alle Pflichtfelder)
+    if(metaG && metaD && capH && capG && teamH && teamG && h1 && h2 && h3 && h4 && g1 && g2 && g3 && g4) {
+        isMatchPlayable = true;
+        bar.className = "status-bar status-ready";
+        bar.innerText = "Bereit! Der Spielberichtsbogen ist freigeschaltet. Wechsel oben in den Live-Spielplan!";
+    } else {
+        isMatchPlayable = false;
+        bar.className = "status-bar status-locked";
+        bar.innerText = "Spiel gesperrt: Bitte Gruppe, Spieltag, Kapitäne wählen und mindestens 4 Hauptspieler (H1-H4 & G1-G4) besetzen!";
+    }
+    
+    renderTable();
 }
 
 
